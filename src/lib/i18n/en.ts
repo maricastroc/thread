@@ -352,6 +352,7 @@ export const en = {
     placesIntro: (name: string) => `Every place ${name} has mentioned, and every moment it comes up.`,
     stories: (n: number) => `${n} ${plural(n, "story", "stories")}`,
     moments: (n: number) => `${n} ${plural(n, "moment", "moments")}`,
+    unplaced: (n: number) => `${n} not placed in time`,
     momentsOf: (name: string) => `Every moment ${name} comes up`,
     alsoCalled: "Also called",
     themesIntro: (name: string) => `Stories ${name} has told, filed by what they are about.`,
