@@ -70,8 +70,9 @@ Each of these started as something the model "could do" and became deterministic
 - **Proper names in titles.** Gemma wrote "Mudança para fortaleza"; the code restores capitals from verified entity names.
 - **Related stories.** Shared people and places. No LLM call.
 - **Search sentence and confidence.** A template, plus thresholds over cosine similarity, the gap between the first and second result, and keyword coverage.
-- **Time said in words.** "42 anos tocando" becomes a span from the story's year to +42; "dois anos depois" becomes a point two years later. Same number parser as ages, two small pattern lists per language.
-- **Every mention, not just the first.** The model annotates a person once. The code then scans the word timestamps for every known name and alias, so the second "José" also lights up at the right second.
+- **Time said in words.** "No ano seguinte", "cinco anos mais tarde", "after two years" resolve only against a year said earlier in the same story, with nothing relative in between; otherwise they are refused. "42 anos tocando" is a length, never a placed span, because the words don't say when it began. Same number parser as ages, a few pattern lists per language.
+- **Whose age it is.** "Eu tinha 18 anos" is the narrator's; "meu pai tinha 40 anos" and "a Bia tem 88 anos" are not, and are refused with that reason instead of moving a story to the wrong decade.
+- **Every mention, not just the first.** The model annotates a person once. The code then scans the word timestamps for every known name, so the second "José" also lights up at the right second. It only counts words written as names: "rio" never becomes "rio Beberibe", and "mãe" counts as the narrator's mother only after "minha".
 
 ## Listening reveals the structure
 
@@ -79,8 +80,8 @@ Playing a memory used to light a few arcs for five seconds and forget them. Now 
 
 - The memory opens **in place on the lifeline**: its vestige becomes a waveform at its own year, and the rest of the life recedes.
 - When a name is spoken, it appears above the waveform at that second, and threads drop from that exact point to every other moment of the life where the same person or place appears. Those moments come back from the background.
-- When time is spoken, it lands on the axis. "Eu tinha 18 anos" marks *age 18* and the stage *youth*. "42 anos tocando" draws a span from 1966 to 2008 that ends just before José's last memory (2010). "Dois anos depois" places the wedding at c. 1968.
-- Nothing fades. Whatever has been heard stays, quieter, and the current mention takes the voice colour for five seconds.
+- When time is spoken and the words establish it, it lands on the axis. "Eu tinha 18 anos" marks *age 18* and the stage *youth*. "42 anos tocando" shows as a length at the story's own place, not as a span, and "dois anos depois" is refused because the 42 years sit between it and the year: a person can tell, the parser can't, so nothing is invented.
+- Nothing fades. The name being said takes the voice colour and draws all its threads; when the next name arrives, the previous one condenses to a single faint thread to its nearest moment, and its other moments stay highlighted. Detail follows attention, and the trace stays.
 - At the end the trace remains, and the memory says what it touched: "This memory reaches from 1954 to 2010, through 8 other moments", plus the open question it left ("What was the church where the wedding took place?").
 
 Everything is derived from timestamps that already exist. Nothing is generated during playback, and ten seconds with no new name or date show only the waveform moving. Positions of labels are packed from the whole story before playback starts, so nothing jumps when a new name appears.
@@ -88,6 +89,10 @@ Everything is derived from timestamps that already exist. Nothing is generated d
 The reveal layer is `aria-hidden`. The same information sits in the panel as a list with "play from here" buttons, keyboard order goes fragment → play → waveform slider, Escape closes the memory, and with reduced motion every thread is drawn at once.
 
 **A benchmark that changed the hierarchy.** I compared this with Horizonte, a music player I built earlier where the album *is* the interface. What makes it land is that one object owns the screen, that zooming from collection to track is one continuous change of scale instead of a new view, and that every reaction is measured from the real audio, with a hard ceiling so it accents instead of dancing. Cofre keeps its own quiet, editorial language, so none of the shaders, darkness or motion came over. The structural lessons did: the lifeline owns the screen, opening a memory is a change of scale on the line rather than a big player below it, and every visual reaction comes from something that was actually said.
+
+## Does it work for anyone? A second archive
+
+To check that none of this depends on the demo, a second archive with a different narrator (Armando, born 1939), three languages and deliberately different constructions went through the whole pipeline in an isolated data folder, before and after the generalization work. The expected result for each of 39 cases was written down before the first run. The code as it was got 19 right and one partly, 11 wrong (a father's age shown as the narrator's, "o pai da Helena" lighting up the narrator's father, a story placed in 1936, three years before the narrator was born), missed 3 and lost 5 because whole sentences fell outside every story. After the changes: 38 of 39, and the one miss is a refusal on the safe side. A third archive with 63 stories and 59 names checks density. Everything is in `docs/generalization/`.
 
 ## Bugs found by looking at real output
 

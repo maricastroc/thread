@@ -102,6 +102,19 @@ npm run reprocess
 
 `reprocess` re-reads every recording with the current model. The audio and transcripts stay as they are; only the index is rebuilt. Provenance checks live outside the interpreter, so any model goes through the same checks. See `.env.example` for every setting.
 
+## Beyond the demo
+
+Two more archives live in `fixtures/`: a second narrator in Portuguese, English and Spanish, with the expected result of every case written down, and a dense archive with 63 stories. Each one runs in its own data folder, so it never touches yours:
+
+```bash
+npm run build
+COFRE_DATA_DIR=/tmp/cofre-second npx next start -p 3901
+./scripts/fixture-archive.sh fixtures/second-archive http://localhost:3901
+node scripts/archive-report.mjs /tmp/cofre-second http://localhost:3901 /tmp/report
+```
+
+The results before and after the generalization work, case by case, are in [`docs/generalization`](docs/generalization/README.md).
+
 ## Built with
 
 Next.js, TypeScript, Tailwind CSS, SQLite (built into Node), whisper.cpp, Ollama, Gemma 4, EmbeddingGemma. Fonts: Newsreader, and Atkinson Hyperlegible Next and Mono, designed by the Braille Institute for readers with low vision.
