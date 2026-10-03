@@ -38,7 +38,7 @@ export default async function RecordingsPage() {
       <p className="t-meta mt-5 max-w-[40rem]">{t.recordings.intro(vault.subject)}</p>
       {recordings.length > 0 && <p className="mt-3 text-[0.9375rem]">{t.recordings.summary(recordings.length, formatDuration(seconds, "long"), stories)}</p>}
       <div className="mt-8 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-10">
-        <RecordLink label={t.home.recordAnother} />
+        <RecordLink label={t.nav.record} />
         <ImportButton hint={false} />
       </div>
 

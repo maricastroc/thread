@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AddStory } from "@/components/AddStory";
 import { ImportButton } from "@/components/ImportButton";
 import { ArrowIcon } from "@/components/icons";
 import { Lifeline } from "@/components/life/Lifeline";
@@ -111,9 +112,9 @@ export default async function Home(props: PageProps<"/">) {
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Lifeline life={life} initialStory={story} initialTrail={trail} />
-        <div className="mt-12 flex flex-col items-start gap-6 border-t border-rule pt-10 sm:flex-row sm:items-center sm:gap-10">
-          <RecordLink label={t.home.recordAnother} />
-          <ImportButton hint={false} />
+        <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-rule pt-8">
+          <AddStory subject={vault.subject} align="start" />
+          <p className="t-small text-ink-2">{t.add.closing(vault.subject)}</p>
         </div>
       </div>
     </>

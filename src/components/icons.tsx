@@ -65,3 +65,19 @@ export function RecordDot({ className, size = 12 }: IconProps) {
     </svg>
   );
 }
+
+export function PlusIcon({ className, size = 16 }: IconProps) {
+  return (
+    <svg viewBox="0 0 16 16" width={size} height={size} className={className} aria-hidden="true" focusable="false">
+      <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function ImportIcon({ className, size = 16 }: IconProps) {
+  return (
+    <svg viewBox="0 0 16 16" width={size} height={size} className={className} aria-hidden="true" focusable="false">
+      <path d="M8 2.5v7.5M4.75 6.75 8 10l3.25-3.25M3 12.5h10" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

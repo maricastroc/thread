@@ -233,7 +233,7 @@ export default async function RecordingPage(props: PageProps<"/recordings/[id]">
             {t.recording.next}
           </h2>
           <div className="mt-4 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-10">
-            <RecordLink label={t.home.recordAnother} />
+            <RecordLink label={t.nav.record} />
             <ImportButton hint={false} />
           </div>
           <div className="mt-10 flex flex-col items-start gap-4 border-t border-rule pt-6 sm:flex-row sm:items-start sm:gap-8">

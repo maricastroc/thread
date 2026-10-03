@@ -1,18 +1,19 @@
 import Link from "next/link";
+import { AddStory } from "@/components/AddStory";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { NavLink } from "@/components/NavLink";
 import { SearchField } from "@/components/SearchField";
 import { RecordDot } from "@/components/icons";
-import { t } from "@/lib/i18n";
 import { ThemeChoice } from "@/components/ThemeChoice";
+import { t } from "@/lib/i18n";
 
 export function RecordLink({ className = "", label = t.nav.record }: { className?: string; label?: string }) {
   return (
     <Link
       href="/record"
-      className={`inline-flex h-11 items-center gap-2.5 rounded-full bg-voice pr-5 pl-4 text-[0.9375rem] font-medium text-on-voice transition-[filter,transform] duration-150 hover:brightness-110 active:scale-[0.98] ${className}`}
+      className={`inline-flex h-11 items-center gap-2.5 rounded-full bg-ink pr-5 pl-4 text-[0.9375rem] font-medium text-paper transition-[background-color,transform] duration-150 hover:bg-[color-mix(in_oklab,var(--text),var(--canvas)_16%)] active:scale-[0.98] ${className}`}
     >
-      <RecordDot size={10} />
+      <RecordDot size={10} className="text-voice" />
       {label}
     </Link>
   );
@@ -63,7 +64,7 @@ export function SiteHeader({ subject, search = true }: { subject: string | null;
             <SearchField subject={subject} id="header-search" />
           </HeaderSearch>
         )}
-        {subject && <RecordLink />}
+        {subject && <AddStory subject={subject} />}
       </div>
       {subject && (
         <nav aria-label={t.nav.archiveOf(subject)} className="mx-auto -mt-2 flex max-w-6xl flex-wrap items-center gap-x-1 px-2 pb-1 md:hidden">

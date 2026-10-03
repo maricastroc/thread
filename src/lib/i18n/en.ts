@@ -389,6 +389,16 @@ export const en = {
     undated: "Undated",
   },
 
+  add: {
+    button: "Add a story",
+    title: (name: string) => `Add to ${possessive(name)} archive`,
+    record: "Record a story",
+    recordHint: "Tell a new memory now",
+    import: "Import a recording",
+    importHint: "Add audio you already have",
+    closing: (name: string) => `Every recording you add can place another moment in ${possessive(name)} life.`,
+  },
+
   theme: {
     label: "Theme",
     system: "System",
