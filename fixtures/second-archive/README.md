@@ -6,7 +6,7 @@ Run it against an isolated data directory:
 
 ```bash
 COFRE_DATA_DIR=/tmp/cofre-second npx next start -p 3901
-./scripts/second-archive.sh http://localhost:3901
+./scripts/fixture-archive.sh fixtures/second-archive http://localhost:3901
 node scripts/archive-report.mjs /tmp/cofre-second http://localhost:3901 docs/generalization/<run>
 ```
 

@@ -34,6 +34,9 @@ const marks = has("marks")
        FROM marks m LEFT JOIN entities e ON e.id = m.entity_id ORDER BY m.story_id, m.start_sec`,
     )
   : [];
+const rejections = has("rejections")
+  ? all("SELECT story_id AS storyId, kind, value, mention, reason FROM rejections ORDER BY id")
+  : [];
 const segments = (recordingId, start, end) =>
   all("SELECT start_sec AS start, end_sec AS end, text FROM segments WHERE recording_id = ? AND start_sec >= ? AND end_sec <= ? ORDER BY start_sec", recordingId, start - 0.05, end + 0.05);
 
@@ -61,7 +64,7 @@ async function lifeFromPage() {
 }
 
 const life = await lifeFromPage();
-writeFileSync(path.join(outDir, "archive.json"), JSON.stringify({ vault, recordings, stories, facts, entities, questions, marks }, null, 2));
+writeFileSync(path.join(outDir, "archive.json"), JSON.stringify({ vault, recordings, stories, facts, entities, questions, marks, rejections }, null, 2));
 writeFileSync(path.join(outDir, "life.json"), JSON.stringify(life, null, 2));
 
 const lines = [];
@@ -85,6 +88,11 @@ for (const recording of recordings) {
       const value = f.entity ? `${f.entity}${f.relation ? ` (${f.relation})` : ""}` : f.value;
       lines.push(`| ${f.kind} | ${value} | ${f.provenance} | ${f.evidence ?? ""} | ${clock(f.start)} | ${f.note ?? ""} |`);
     }
+    const refused = rejections.filter((r) => r.storyId === story.id);
+    if (refused.length) {
+      lines.push("", "Rejected by the verifier:", "", "| kind | proposed | words | reason |", "|---|---|---|---|");
+      for (const r of refused) lines.push(`| ${r.kind} | ${r.value} | ${r.mention ?? ""} | ${r.reason} |`);
+    }
     const own = marks.filter((m) => m.storyId === story.id);
     if (own.length) {
       lines.push("", "Derived marks:", "", "| kind | status | value | evidence | at | reason / note |", "|---|---|---|---|---|---|");
@@ -97,7 +105,14 @@ for (const recording of recordings) {
       lines.push("", "Shown during playback:", "");
       for (const m of view.mentions) lines.push(`- ${clock(m.time)} name · ${entityName.get(m.entityId) ?? m.entityId}`);
       for (const e of view.events) {
-        const what = e.kind === "age" ? `age ${e.age} → ${e.year}` : e.kind === "offset" ? `point ${e.year}` : `span ${e.year}–${e.to ?? "?"}`;
+        const what =
+          e.kind === "age"
+            ? `age ${e.age ?? e.value} → ${e.year ?? "not placed"}`
+            : e.kind === "offset"
+              ? `point ${e.year}`
+              : e.to
+                ? `span ${e.year}–${e.to}`
+                : `length of ${e.value} years, not placed`;
         lines.push(`- ${clock(e.time)} ${e.kind} · ${what} · “${e.evidence}”`);
       }
       const linked = new Map();
@@ -116,4 +131,4 @@ for (const recording of recordings) {
   }
 }
 writeFileSync(path.join(outDir, "report.md"), lines.join("\n"));
-console.log(`wrote ${outDir}/report.md, archive.json, life.json (${stories.length} stories, ${facts.length} facts, ${marks.length} marks)`);
+console.log(`wrote ${outDir}/report.md, archive.json, life.json (${stories.length} stories, ${facts.length} facts, ${marks.length} marks, ${rejections.length} rejections)`);

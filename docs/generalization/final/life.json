@@ -1,0 +1,1524 @@
+{
+  "narrator": "Armando",
+  "birthYear": 1939,
+  "now": 2026,
+  "latestRecordingId": "977z058hyz",
+  "stories": [
+    {
+      "id": "bx8wqw9jk0",
+      "recordingId": "syb2vsr9tc",
+      "title": "Nascimento e trabalho no porto",
+      "language": "pt",
+      "start": 0,
+      "end": 17.32,
+      "duration": 17.32,
+      "recordedAt": "2026-08-02T10:00:00.000Z",
+      "label": "1939",
+      "provenance": "said",
+      "lifeStage": "childhood",
+      "certainty": "exact",
+      "year": 1939,
+      "from": 1939,
+      "to": 1939,
+      "quote": {
+        "seg": 1,
+        "text": "Meu pai tinha 40 anos quando eu nasci, e já trabalhava no porto do Recife.",
+        "start": 7.61,
+        "end": 13.03
+      },
+      "age": 0,
+      "peaks": [
+        1,
+        0.937,
+        0.988,
+        1,
+        0.847,
+        0.867,
+        0.988,
+        0.969,
+        0.925,
+        0.957,
+        0.871,
+        0.961,
+        0.976,
+        0.949,
+        0.882,
+        0.898,
+        1,
+        0.808,
+        0.929,
+        0.984,
+        0.988,
+        0.957,
+        1,
+        0.78,
+        0,
+        0,
+        0,
+        0,
+        0.969,
+        0.918,
+        0.933,
+        0.89,
+        0.945,
+        0.776,
+        0.757,
+        0.878,
+        1,
+        0.796,
+        0.976,
+        0.949,
+        0.761,
+        0.871,
+        0.914,
+        0.89,
+        0.929,
+        0.953,
+        0.941,
+        0.937,
+        0.627,
+        0,
+        0,
+        0,
+        1,
+        0.922,
+        0.957,
+        0.91,
+        0.933,
+        0.969,
+        0.863,
+        0.827,
+        0.761,
+        0.984,
+        0.953,
+        0.635
+      ],
+      "rhythm": [
+        [
+          0,
+          0.37240184757505773
+        ],
+        [
+          0.4359122401847575,
+          0.7592378752886836
+        ],
+        [
+          0.8169745958429562,
+          1
+        ]
+      ],
+      "people": [
+        {
+          "id": "pdkeszt9vj",
+          "name": "Pai"
+        },
+        {
+          "id": "98m9eepzyn",
+          "name": "Avô"
+        }
+      ],
+      "places": [
+        {
+          "id": "yw24n966dd",
+          "name": "Linda"
+        },
+        {
+          "id": "sxvteqzvvy",
+          "name": "rio Beberibe"
+        },
+        {
+          "id": "ttge3tc4dd",
+          "name": "Recife"
+        }
+      ],
+      "themes": [
+        "travel"
+      ],
+      "mentions": [
+        {
+          "entityId": "yw24n966dd",
+          "kind": "place",
+          "time": 0.89
+        },
+        {
+          "entityId": "sxvteqzvvy",
+          "kind": "place",
+          "time": 4.9
+        },
+        {
+          "entityId": "pdkeszt9vj",
+          "kind": "person",
+          "time": 7.61
+        },
+        {
+          "entityId": "ttge3tc4dd",
+          "kind": "place",
+          "time": 12.16
+        },
+        {
+          "entityId": "98m9eepzyn",
+          "kind": "person",
+          "time": 14.18
+        }
+      ],
+      "events": [
+        {
+          "kind": "duration",
+          "time": 14.35,
+          "evidence": "trabalhou 30 anos",
+          "value": 30,
+          "year": null,
+          "anchored": false,
+          "note": "A length of 30 years; the words don't say when it started."
+        }
+      ],
+      "questions": [
+        "What was the father's job at the port of Recife?",
+        "What was the grandfather's role at the port?"
+      ]
+    },
+    {
+      "id": "k0hh949nnz",
+      "recordingId": "syb2vsr9tc",
+      "title": "Aprendizado de natação no rio",
+      "language": "pt",
+      "start": 17.32,
+      "end": 40.02,
+      "duration": 22.700000000000003,
+      "recordedAt": "2026-08-02T10:00:00.000Z",
+      "label": "1946",
+      "provenance": "inferred",
+      "lifeStage": "childhood",
+      "certainty": "approximate",
+      "year": 1946,
+      "from": 1944,
+      "to": 1948,
+      "quote": {
+        "seg": 4,
+        "text": "Quando eu tinha 7 anos, o Zé, filho da vizinha, me ensinou a nadar no rio.",
+        "start": 23.72,
+        "end": 29.5
+      },
+      "age": 7,
+      "peaks": [
+        0.51,
+        0,
+        0,
+        0.949,
+        0.922,
+        0.894,
+        0.976,
+        0.976,
+        0.937,
+        0.922,
+        0.925,
+        0.961,
+        0.953,
+        1,
+        0.686,
+        0,
+        0,
+        0,
+        1,
+        0.945,
+        0.878,
+        0.827,
+        0.871,
+        1,
+        0.933,
+        0.992,
+        0.957,
+        0.961,
+        0.91,
+        0.945,
+        0.949,
+        0.961,
+        0.937,
+        0.988,
+        0.882,
+        0.675,
+        0.996,
+        0.949,
+        0.914,
+        0.945,
+        0.839,
+        0.949,
+        0.871,
+        0.949,
+        0.894,
+        0.522,
+        0,
+        0,
+        0.957,
+        0.914,
+        0.973,
+        0.718,
+        0.922,
+        0.957,
+        0.678,
+        0.937,
+        0.914,
+        0.957,
+        0.992,
+        0.831,
+        0.949,
+        0.984,
+        0.91,
+        0.902
+      ],
+      "rhythm": [
+        [
+          0.05198237885462553,
+          0.2259911894273127
+        ],
+        [
+          0.2810572687224669,
+          0.5409691629955947
+        ],
+        [
+          0.558590308370044,
+          0.7039647577092508
+        ],
+        [
+          0.754625550660793,
+          0.8493392070484581
+        ],
+        [
+          0.8691629955947134,
+          1
+        ]
+      ],
+      "people": [
+        {
+          "id": "h87hg3syma",
+          "name": "Bia"
+        },
+        {
+          "id": "zn7wj4wj7e",
+          "name": "Zé"
+        },
+        {
+          "id": "kq5cthh4xa",
+          "name": "mãe do Zé"
+        },
+        {
+          "id": "rwfbrbx2sr",
+          "name": "Mãe"
+        }
+      ],
+      "places": [],
+      "themes": [
+        "family",
+        "travel"
+      ],
+      "mentions": [
+        {
+          "entityId": "h87hg3syma",
+          "kind": "person",
+          "time": 18.31
+        },
+        {
+          "entityId": "zn7wj4wj7e",
+          "kind": "person",
+          "time": 25.41
+        },
+        {
+          "entityId": "kq5cthh4xa",
+          "kind": "person",
+          "time": 30.13
+        },
+        {
+          "entityId": "zn7wj4wj7e",
+          "kind": "person",
+          "time": 30.59
+        },
+        {
+          "entityId": "rwfbrbx2sr",
+          "kind": "person",
+          "time": 34.56
+        }
+      ],
+      "events": [
+        {
+          "kind": "age",
+          "time": 23.84,
+          "evidence": "eu tinha 7 anos",
+          "value": 7,
+          "year": 1946,
+          "anchored": true,
+          "note": "About 1946: aged 7, counted from the year of birth, 1939."
+        }
+      ],
+      "questions": [
+        "Who was the neighbor whose son was Zé?",
+        "What kind of work did the mother of Zé do?"
+      ]
+    },
+    {
+      "id": "g58ca5sak0",
+      "recordingId": "syb2vsr9tc",
+      "title": "Escola e aprendizado de letra",
+      "language": "pt",
+      "start": 43.14,
+      "end": 65.53,
+      "duration": 22.39,
+      "recordedAt": "2026-08-02T10:00:00.000Z",
+      "label": "c. 1950",
+      "provenance": "said",
+      "lifeStage": "childhood",
+      "certainty": "range",
+      "year": 1950,
+      "from": 1948,
+      "to": 1952,
+      "quote": {
+        "seg": 9,
+        "text": "A professora era a Dona Lu, uma senhora baixinha que lia poesia em voz alta.",
+        "start": 46.32,
+        "end": 52.86
+      },
+      "age": 11,
+      "peaks": [
+        0.925,
+        1,
+        0.949,
+        0.843,
+        0.929,
+        0.988,
+        0.933,
+        0.827,
+        0.871,
+        0.671,
+        0,
+        0,
+        0.976,
+        0.957,
+        0.925,
+        0.973,
+        0.824,
+        1,
+        0.863,
+        0.945,
+        0.89,
+        0.98,
+        0.898,
+        0.957,
+        0.965,
+        0.945,
+        1,
+        0.804,
+        0.514,
+        0,
+        0,
+        0.925,
+        1,
+        0.918,
+        0.988,
+        0.914,
+        0.89,
+        0.973,
+        0.906,
+        0.851,
+        0.949,
+        0.984,
+        1,
+        0.851,
+        0.988,
+        1,
+        1,
+        0.961,
+        0.953,
+        1,
+        0.945,
+        0.627,
+        0,
+        0,
+        0.859,
+        0.976,
+        0.89,
+        0.816,
+        0.996,
+        0.922,
+        0.878,
+        0.996,
+        0.949,
+        0.667
+      ],
+      "rhythm": [
+        [
+          0,
+          0.14783385439928548
+        ],
+        [
+          0.19249665029030827,
+          0.4381420276909335
+        ],
+        [
+          0.4895042429656097,
+          0.8021438142027691
+        ],
+        [
+          0.8557391692719962,
+          0.9986601161232692
+        ]
+      ],
+      "people": [
+        {
+          "id": "1jt8pvgw99",
+          "name": "Dona Lu"
+        }
+      ],
+      "places": [
+        {
+          "id": "crpxjdmmt1",
+          "name": "igreja de São Bento"
+        }
+      ],
+      "themes": [
+        "school",
+        "love"
+      ],
+      "mentions": [
+        {
+          "entityId": "crpxjdmmt1",
+          "kind": "place",
+          "time": 44.67
+        },
+        {
+          "entityId": "1jt8pvgw99",
+          "kind": "person",
+          "time": 48
+        }
+      ],
+      "events": [],
+      "questions": [
+        "What was Dona Lu like outside of reading poetry?",
+        "What was in the blue book she gave you?"
+      ]
+    },
+    {
+      "id": "kqb03d2d2z",
+      "recordingId": "e7zaey7b7f",
+      "title": "Trabalho em Lisboa e casamento com Helena",
+      "language": "pt",
+      "start": 0,
+      "end": 44.5,
+      "duration": 44.5,
+      "recordedAt": "2026-08-09T10:00:00.000Z",
+      "label": "1958",
+      "provenance": "said",
+      "lifeStage": "youth",
+      "certainty": "exact",
+      "year": 1958,
+      "from": 1958,
+      "to": 1958,
+      "quote": {
+        "seg": 2,
+        "text": "No ano seguinte eu conheci a Helena, que trabalhava na revisão.",
+        "start": 12.348314606741575,
+        "end": 17.808988764044944
+      },
+      "age": 19,
+      "peaks": [
+        0.98,
+        0.941,
+        0.91,
+        1,
+        0.953,
+        0.898,
+        0.969,
+        1,
+        0.957,
+        0.784,
+        0,
+        0.973,
+        0.89,
+        1,
+        0.941,
+        0.871,
+        0.984,
+        0.816,
+        0.969,
+        0.969,
+        0.922,
+        0.965,
+        0.871,
+        0.91,
+        0.992,
+        0.796,
+        0.69,
+        1,
+        0.898,
+        1,
+        0.918,
+        0.984,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0.196,
+        0.992,
+        0.941,
+        0.906,
+        0.922,
+        1,
+        0.898,
+        1,
+        0.961,
+        0,
+        0.992,
+        0.992,
+        0.965,
+        0.937,
+        0.914,
+        0.973,
+        0.973,
+        0.008,
+        0.933,
+        0.925,
+        0.969,
+        0.988,
+        0.961,
+        0.851,
+        0.992,
+        0.929
+      ],
+      "rhythm": [
+        [
+          0,
+          0.15168539325842698
+        ],
+        [
+          0.17865168539325843,
+          0.2707865168539326
+        ],
+        [
+          0.2932584269662922,
+          0.39325842696629215
+        ],
+        [
+          0.4202247191011236,
+          0.4707865168539326
+        ],
+        [
+          0.48089887640449436,
+          0.5415730337078652
+        ],
+        [
+          0.6089887640449438,
+          0.7303370786516854
+        ],
+        [
+          0.7561797752808989,
+          0.8573033707865169
+        ],
+        [
+          0.8820224719101124,
+          1
+        ]
+      ],
+      "people": [
+        {
+          "id": "zaq7d44ykn",
+          "name": "Helena"
+        },
+        {
+          "id": "3vdx8hkzma",
+          "name": "pai da Helena"
+        },
+        {
+          "id": "h87hg3syma",
+          "name": "Bia"
+        }
+      ],
+      "places": [
+        {
+          "id": "tz7vtkzs3x",
+          "name": "Lisboa"
+        },
+        {
+          "id": "7d78wh57dw",
+          "name": "Alfama"
+        }
+      ],
+      "themes": [
+        "travel"
+      ],
+      "mentions": [
+        {
+          "entityId": "tz7vtkzs3x",
+          "kind": "place",
+          "time": 2.35
+        },
+        {
+          "entityId": "7d78wh57dw",
+          "kind": "place",
+          "time": 6.38
+        },
+        {
+          "entityId": "zaq7d44ykn",
+          "kind": "person",
+          "time": 14.57
+        },
+        {
+          "entityId": "3vdx8hkzma",
+          "kind": "person",
+          "time": 18.2
+        },
+        {
+          "entityId": "zaq7d44ykn",
+          "kind": "person",
+          "time": 18.45
+        },
+        {
+          "entityId": "h87hg3syma",
+          "kind": "person",
+          "time": 31.03
+        },
+        {
+          "entityId": "tz7vtkzs3x",
+          "kind": "place",
+          "time": 39.4
+        }
+      ],
+      "events": [
+        {
+          "kind": "offset",
+          "time": 12.35,
+          "evidence": "No ano seguinte",
+          "value": 1,
+          "year": 1959,
+          "anchored": true,
+          "note": "1 year after 1958 (“1958”)."
+        }
+      ],
+      "questions": [
+        "What kind of work did Helena do in revision?",
+        "What was the name of the small church near the river?"
+      ]
+    },
+    {
+      "id": "6krg7cdytj",
+      "recordingId": "5eez8sps4b",
+      "title": "Arrival in London and early life",
+      "language": "en",
+      "start": 0.1,
+      "end": 40.03,
+      "duration": 39.93,
+      "recordedAt": "2026-08-16T10:00:00.000Z",
+      "label": "1968",
+      "provenance": "said",
+      "lifeStage": "adulthood",
+      "certainty": "exact",
+      "year": 1968,
+      "from": 1968,
+      "to": 1968,
+      "quote": {
+        "seg": 3,
+        "text": "Hill, was 70 years old and corrected my grammar at breakfast.",
+        "start": 11.157770700636943,
+        "end": 16.407539389875964
+      },
+      "age": 29,
+      "peaks": [
+        0.957,
+        0.871,
+        0.745,
+        0.82,
+        0.8,
+        0.824,
+        0.831,
+        0.988,
+        0.969,
+        0.941,
+        0.957,
+        0.894,
+        0,
+        0.71,
+        0.761,
+        1,
+        1,
+        0.875,
+        1,
+        1,
+        0.855,
+        0.749,
+        0.878,
+        0.588,
+        0,
+        0.573,
+        0.937,
+        0.906,
+        0.882,
+        0.82,
+        0.808,
+        0.714,
+        0.98,
+        0.875,
+        0.843,
+        1,
+        0.882,
+        0.875,
+        0.859,
+        0.169,
+        0,
+        0,
+        0,
+        0.722,
+        1,
+        0.953,
+        0.882,
+        0.851,
+        0.6,
+        0,
+        0.871,
+        1,
+        0.827,
+        0.882,
+        0.918,
+        0.863,
+        0.671,
+        0,
+        0.89,
+        0.784,
+        0.937,
+        0.816,
+        0.784,
+        0.788
+      ],
+      "rhythm": [
+        [
+          0,
+          0.06887052341597796
+        ],
+        [
+          0.08264462809917356,
+          0.1853243175557225
+        ],
+        [
+          0.2128725269221137,
+          0.3693964437766091
+        ],
+        [
+          0.40070122714750817,
+          0.4845980465815176
+        ],
+        [
+          0.49711995992987723,
+          0.6060606060606061
+        ],
+        [
+          0.6836964688204357,
+          0.7575757575757576
+        ],
+        [
+          0.7838717756073127,
+          0.8840470823941897
+        ],
+        [
+          0.9153518657650889,
+          1
+        ]
+      ],
+      "people": [
+        {
+          "id": "238xrbvswn",
+          "name": "Hill"
+        },
+        {
+          "id": "5j7hzwerbh",
+          "name": "Ed"
+        },
+        {
+          "id": "yekxewwteg",
+          "name": "Tom"
+        },
+        {
+          "id": "zaq7d44ykn",
+          "name": "Helena"
+        }
+      ],
+      "places": [
+        {
+          "id": "5n00k114pq",
+          "name": "London"
+        },
+        {
+          "id": "3dpabwdqjm",
+          "name": "Leeds"
+        },
+        {
+          "id": "8x991fyv3d",
+          "name": "Elm Street"
+        }
+      ],
+      "themes": [
+        "moving",
+        "work",
+        "family"
+      ],
+      "mentions": [
+        {
+          "entityId": "5n00k114pq",
+          "kind": "place",
+          "time": 1.17
+        },
+        {
+          "entityId": "238xrbvswn",
+          "kind": "person",
+          "time": 11.16
+        },
+        {
+          "entityId": "5j7hzwerbh",
+          "kind": "person",
+          "time": 18.25
+        },
+        {
+          "entityId": "3dpabwdqjm",
+          "kind": "place",
+          "time": 19.46
+        },
+        {
+          "entityId": "yekxewwteg",
+          "kind": "person",
+          "time": 28.83
+        },
+        {
+          "entityId": "8x991fyv3d",
+          "kind": "place",
+          "time": 34.5
+        },
+        {
+          "entityId": "zaq7d44ykn",
+          "kind": "person",
+          "time": 35.55
+        }
+      ],
+      "events": [
+        {
+          "kind": "age",
+          "time": 3.77,
+          "evidence": "I was 29",
+          "value": 29,
+          "year": 1968,
+          "anchored": true,
+          "note": "About 1968: aged 29, counted from the year of birth, 1939."
+        },
+        {
+          "kind": "duration",
+          "time": 22.42,
+          "evidence": "for 20 years",
+          "value": 20,
+          "year": null,
+          "anchored": false,
+          "note": "A length of 20 years; the words don't say when it started."
+        }
+      ],
+      "questions": [
+        "What was the print shop like?",
+        "What was the church on Elm Street like?"
+      ]
+    },
+    {
+      "id": "rwey53vcwe",
+      "recordingId": "f3tszzdw0e",
+      "title": "Mudanza a Málaga en 1975",
+      "language": "es",
+      "start": 0.07,
+      "end": 23.06,
+      "duration": 22.99,
+      "recordedAt": "2026-08-23T10:00:00.000Z",
+      "label": "1975",
+      "provenance": "said",
+      "lifeStage": "adulthood",
+      "certainty": "exact",
+      "year": 1975,
+      "from": 1975,
+      "to": 1975,
+      "quote": {
+        "seg": 0,
+        "text": "En 1975 nos mudamos a Málaga.",
+        "start": 0.07,
+        "end": 3.579661859771258
+      },
+      "age": 36,
+      "peaks": [
+        0.992,
+        0.894,
+        0.875,
+        0.875,
+        0.914,
+        0.89,
+        0.89,
+        0.91,
+        0.773,
+        0,
+        1,
+        0.996,
+        0.929,
+        0.925,
+        0.902,
+        0.098,
+        0,
+        0,
+        0.886,
+        0.933,
+        0.835,
+        0.847,
+        0.906,
+        0.961,
+        1,
+        1,
+        0.976,
+        0.851,
+        0.992,
+        0.906,
+        1,
+        1,
+        0.906,
+        0.012,
+        0,
+        0.133,
+        0.918,
+        0.988,
+        0.843,
+        0.984,
+        0.894,
+        0.745,
+        0.957,
+        0.902,
+        0.886,
+        0.886,
+        0.918,
+        0.949,
+        0.769,
+        0,
+        0,
+        0.384,
+        0.961,
+        0.933,
+        1,
+        0.882,
+        0.996,
+        0.365,
+        0.894,
+        0.757,
+        1,
+        1,
+        0.808,
+        0.945
+      ],
+      "rhythm": [
+        [
+          0,
+          0.1361461505002175
+        ],
+        [
+          0.1557198782079165,
+          0.2296650717703349
+        ],
+        [
+          0.2862113962592432,
+          0.512396694214876
+        ],
+        [
+          0.5645933014354068,
+          0.758155719878208
+        ],
+        [
+          0.8103523270987386,
+          0.9995650282731623
+        ]
+      ],
+      "people": [
+        {
+          "id": "1bnth584ea",
+          "name": "Paco"
+        },
+        {
+          "id": "zaq7d44ykn",
+          "name": "Helena"
+        }
+      ],
+      "places": [
+        {
+          "id": "32rbe8dfj5",
+          "name": "Málaga"
+        },
+        {
+          "id": "ntc3d92qzw",
+          "name": "Olinda"
+        }
+      ],
+      "themes": [
+        "family",
+        "moving"
+      ],
+      "mentions": [
+        {
+          "entityId": "32rbe8dfj5",
+          "kind": "place",
+          "time": 2.64
+        },
+        {
+          "entityId": "1bnth584ea",
+          "kind": "person",
+          "time": 5.44
+        },
+        {
+          "entityId": "zaq7d44ykn",
+          "kind": "person",
+          "time": 7.08
+        },
+        {
+          "entityId": "ntc3d92qzw",
+          "kind": "place",
+          "time": 20.56
+        }
+      ],
+      "events": [
+        {
+          "kind": "age",
+          "time": 3.58,
+          "evidence": "Yo tenía 36 años",
+          "value": 36,
+          "year": 1975,
+          "anchored": true,
+          "note": "About 1975: aged 36, counted from the year of birth, 1939."
+        },
+        {
+          "kind": "duration",
+          "time": 8.58,
+          "evidence": "desde hacía 15 años",
+          "value": 15,
+          "year": null,
+          "anchored": false,
+          "note": "A length of 15 years; the words don't say when it started."
+        }
+      ],
+      "questions": [
+        "What was Paco's relationship to Helena?",
+        "What was the name of the church in the town?"
+      ]
+    },
+    {
+      "id": "aszq7fgt1s",
+      "recordingId": "977z058hyz",
+      "title": "Biá mora em Olinda perto da igreja",
+      "language": "pt",
+      "start": 0,
+      "end": 28.86,
+      "duration": 28.86,
+      "recordedAt": "2026-08-30T10:00:00.000Z",
+      "label": "1985",
+      "provenance": "extracted",
+      "lifeStage": "adulthood",
+      "certainty": "exact",
+      "year": 1985,
+      "from": 1985,
+      "to": 1985,
+      "quote": {
+        "seg": 2,
+        "text": "Hoje a Biá tem 88 anos e ainda mora em Olinda, do lado da igreja de Sã Bento.",
+        "start": 11.25,
+        "end": 18.05562162162162
+      },
+      "age": 46,
+      "peaks": [
+        0.871,
+        0.894,
+        0.961,
+        0.886,
+        0.918,
+        1,
+        0.969,
+        0.624,
+        0,
+        0.753,
+        1,
+        0.984,
+        0.875,
+        0.847,
+        1,
+        1,
+        0.902,
+        0.922,
+        0.941,
+        0.973,
+        0.906,
+        0.961,
+        0.902,
+        0,
+        0.031,
+        0.949,
+        0.953,
+        0.855,
+        0.882,
+        0.831,
+        0.996,
+        1,
+        1,
+        0.835,
+        1,
+        0.961,
+        0.804,
+        0.878,
+        0.635,
+        0,
+        0,
+        0.976,
+        0.984,
+        0.922,
+        0.925,
+        0.937,
+        0.847,
+        0.965,
+        0.012,
+        0,
+        1,
+        0.925,
+        0.996,
+        0.929,
+        0.855,
+        0.984,
+        1,
+        0.969,
+        0.98,
+        0.953,
+        0.965,
+        0.941,
+        0.922,
+        0.898
+      ],
+      "rhythm": [
+        [
+          0,
+          0.11434511434511434
+        ],
+        [
+          0.1541926541926542,
+          0.34996534996534995
+        ],
+        [
+          0.3898128898128898,
+          0.6046431046431047
+        ],
+        [
+          0.6444906444906445,
+          0.7484407484407485
+        ],
+        [
+          0.7900207900207901,
+          0.9961884961884963
+        ]
+      ],
+      "people": [
+        {
+          "id": "h87hg3syma",
+          "name": "Bia"
+        },
+        {
+          "id": "yekxewwteg",
+          "name": "Tom"
+        },
+        {
+          "id": "zn7wj4wj7e",
+          "name": "Zé"
+        }
+      ],
+      "places": [
+        {
+          "id": "ttge3tc4dd",
+          "name": "Recife"
+        },
+        {
+          "id": "ntc3d92qzw",
+          "name": "Olinda"
+        },
+        {
+          "id": "crpxjdmmt1",
+          "name": "igreja de São Bento"
+        }
+      ],
+      "themes": [
+        "family",
+        "work"
+      ],
+      "mentions": [
+        {
+          "entityId": "ttge3tc4dd",
+          "kind": "place",
+          "time": 2.61
+        },
+        {
+          "entityId": "h87hg3syma",
+          "kind": "person",
+          "time": 11.35
+        },
+        {
+          "entityId": "ntc3d92qzw",
+          "kind": "place",
+          "time": 14.32
+        },
+        {
+          "entityId": "crpxjdmmt1",
+          "kind": "place",
+          "time": 16.01
+        },
+        {
+          "entityId": "yekxewwteg",
+          "kind": "person",
+          "time": 18.16
+        },
+        {
+          "entityId": "zn7wj4wj7e",
+          "kind": "person",
+          "time": 21.67
+        }
+      ],
+      "events": [
+        {
+          "kind": "duration",
+          "time": 3.98,
+          "evidence": "passei 40 anos",
+          "value": 40,
+          "year": null,
+          "anchored": false,
+          "note": "A length of 40 years; the words don't say when it started."
+        }
+      ],
+      "questions": [
+        "What was the relationship between Zé and the narrator?",
+        "What happened after Zé died?"
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "id": "h87hg3syma",
+      "kind": "person",
+      "name": "Bia",
+      "relation": "irmã",
+      "storyIds": [
+        "k0hh949nnz",
+        "kqb03d2d2z",
+        "aszq7fgt1s"
+      ]
+    },
+    {
+      "id": "zaq7d44ykn",
+      "kind": "person",
+      "name": "Helena",
+      "relation": null,
+      "storyIds": [
+        "kqb03d2d2z",
+        "6krg7cdytj",
+        "rwey53vcwe"
+      ]
+    },
+    {
+      "id": "crpxjdmmt1",
+      "kind": "place",
+      "name": "igreja de São Bento",
+      "relation": null,
+      "storyIds": [
+        "g58ca5sak0",
+        "aszq7fgt1s"
+      ]
+    },
+    {
+      "id": "ntc3d92qzw",
+      "kind": "place",
+      "name": "Olinda",
+      "relation": null,
+      "storyIds": [
+        "rwey53vcwe",
+        "aszq7fgt1s"
+      ]
+    },
+    {
+      "id": "ttge3tc4dd",
+      "kind": "place",
+      "name": "Recife",
+      "relation": null,
+      "storyIds": [
+        "bx8wqw9jk0",
+        "aszq7fgt1s"
+      ]
+    },
+    {
+      "id": "yekxewwteg",
+      "kind": "person",
+      "name": "Tom",
+      "relation": "son",
+      "storyIds": [
+        "6krg7cdytj",
+        "aszq7fgt1s"
+      ]
+    },
+    {
+      "id": "zn7wj4wj7e",
+      "kind": "person",
+      "name": "Zé",
+      "relation": "filho da vizinha",
+      "storyIds": [
+        "k0hh949nnz",
+        "aszq7fgt1s"
+      ]
+    },
+    {
+      "id": "7d78wh57dw",
+      "kind": "place",
+      "name": "Alfama",
+      "relation": null,
+      "storyIds": [
+        "kqb03d2d2z"
+      ]
+    },
+    {
+      "id": "98m9eepzyn",
+      "kind": "person",
+      "name": "Avô",
+      "relation": "avô",
+      "storyIds": [
+        "bx8wqw9jk0"
+      ]
+    },
+    {
+      "id": "1jt8pvgw99",
+      "kind": "person",
+      "name": "Dona Lu",
+      "relation": "professora",
+      "storyIds": [
+        "g58ca5sak0"
+      ]
+    },
+    {
+      "id": "5j7hzwerbh",
+      "kind": "person",
+      "name": "Ed",
+      "relation": null,
+      "storyIds": [
+        "6krg7cdytj"
+      ]
+    },
+    {
+      "id": "8x991fyv3d",
+      "kind": "place",
+      "name": "Elm Street",
+      "relation": null,
+      "storyIds": [
+        "6krg7cdytj"
+      ]
+    },
+    {
+      "id": "238xrbvswn",
+      "kind": "person",
+      "name": "Hill",
+      "relation": "landlady",
+      "storyIds": [
+        "6krg7cdytj"
+      ]
+    },
+    {
+      "id": "3dpabwdqjm",
+      "kind": "place",
+      "name": "Leeds",
+      "relation": null,
+      "storyIds": [
+        "6krg7cdytj"
+      ]
+    },
+    {
+      "id": "yw24n966dd",
+      "kind": "place",
+      "name": "Linda",
+      "relation": null,
+      "storyIds": [
+        "bx8wqw9jk0"
+      ]
+    },
+    {
+      "id": "tz7vtkzs3x",
+      "kind": "place",
+      "name": "Lisboa",
+      "relation": null,
+      "storyIds": [
+        "kqb03d2d2z"
+      ]
+    },
+    {
+      "id": "5n00k114pq",
+      "kind": "place",
+      "name": "London",
+      "relation": null,
+      "storyIds": [
+        "6krg7cdytj"
+      ]
+    },
+    {
+      "id": "rwfbrbx2sr",
+      "kind": "person",
+      "name": "Mãe",
+      "relation": "mãe",
+      "storyIds": [
+        "k0hh949nnz"
+      ]
+    },
+    {
+      "id": "kq5cthh4xa",
+      "kind": "person",
+      "name": "mãe do Zé",
+      "relation": null,
+      "storyIds": [
+        "k0hh949nnz"
+      ]
+    },
+    {
+      "id": "32rbe8dfj5",
+      "kind": "place",
+      "name": "Málaga",
+      "relation": null,
+      "storyIds": [
+        "rwey53vcwe"
+      ]
+    },
+    {
+      "id": "1bnth584ea",
+      "kind": "person",
+      "name": "Paco",
+      "relation": "hermano de Helena",
+      "storyIds": [
+        "rwey53vcwe"
+      ]
+    },
+    {
+      "id": "pdkeszt9vj",
+      "kind": "person",
+      "name": "Pai",
+      "relation": "pai",
+      "storyIds": [
+        "bx8wqw9jk0"
+      ]
+    },
+    {
+      "id": "3vdx8hkzma",
+      "kind": "person",
+      "name": "pai da Helena",
+      "relation": null,
+      "storyIds": [
+        "kqb03d2d2z"
+      ]
+    },
+    {
+      "id": "sxvteqzvvy",
+      "kind": "place",
+      "name": "rio Beberibe",
+      "relation": null,
+      "storyIds": [
+        "bx8wqw9jk0"
+      ]
+    }
+  ]
+}
