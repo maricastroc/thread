@@ -164,12 +164,23 @@ export function AudioProvider({ narrator, children }: { narrator: string | null;
         pendingSeek.current = null;
       }
     };
+    const onTime = () => {
+      const { track } = store.get();
+      if (!track) return;
+      if (audio.currentTime >= track.end - 0.04) {
+        audio.pause();
+        store.set({ time: track.end, playing: false, ended: true });
+        return;
+      }
+      if (Math.abs(store.get().time - audio.currentTime) > 0.2) store.set({ time: audio.currentTime });
+    };
     const onWaiting = () => store.set({ loading: true });
     const onPlaying = () => store.set({ loading: false });
     const onError = () => store.set({ error: true, playing: false, loading: false });
     audio.addEventListener("play", onPlay);
     audio.addEventListener("pause", onPause);
     audio.addEventListener("loadedmetadata", onMeta);
+    audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("waiting", onWaiting);
     audio.addEventListener("playing", onPlaying);
     audio.addEventListener("canplay", onPlaying);
@@ -179,6 +190,7 @@ export function AudioProvider({ narrator, children }: { narrator: string | null;
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("loadedmetadata", onMeta);
+      audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("waiting", onWaiting);
       audio.removeEventListener("playing", onPlaying);
       audio.removeEventListener("canplay", onPlaying);

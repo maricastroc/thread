@@ -167,8 +167,15 @@ export async function search(query: string, birthYear: number | null): Promise<S
 
   if (strength === "none") return { strength, moments: [], semantic };
 
-  const kept = byCos
-    .filter((r, i) => i === 0 || r.cos >= topCos - COS_SPREAD || (r.cover >= 0.5 && r.cos >= topCos - COS_SPREAD * 2) || (!semantic && r.cover > 0))
+  const lexical = byCos.filter((r) => r.cover >= 0.5);
+  const trustWords = semantic && topCos < COS_STRONG && lexical.length > 0;
+  const kept = (
+    trustWords
+      ? [...lexical, ...(separated && !lexical.includes(byCos[0]) ? [byCos[0]] : [])]
+      : byCos.filter(
+          (r, i) => i === 0 || r.cos >= topCos - COS_SPREAD || (r.cover >= 0.5 && r.cos >= topCos - COS_SPREAD * 2) || (!semantic && r.cover > 0),
+        )
+  )
     .sort((a, b) => b.cos + b.cover * 0.05 - (a.cos + a.cover * 0.05))
     .slice(0, strength === "strong" ? MAX_RESULTS : 3);
 
