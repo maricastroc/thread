@@ -181,7 +181,8 @@ export function RecordingLive({ initial, removeMessage }: { initial: Status; rem
           {t.recording.back}
         </Link>
       </nav>
-      <h1 className="t-title mt-6 sm:mt-10">{t.processing.saved}</h1>
+      <p className="t-kicker mt-6 sm:mt-10">{t.recording.kicker}</p>
+      <h1 className="t-title mt-3">{t.processing.saved}</h1>
       <p className="t-meta mt-4">{duration ? t.processing.savedMeta(formatDuration(duration), when) : when}</p>
       {status.prompt && (
         <p className="mt-6 max-w-[34rem] font-serif text-[1.1875rem] leading-snug text-ink-2 italic">

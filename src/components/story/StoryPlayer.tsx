@@ -1,7 +1,7 @@
 "use client";
 
 import { isSameTrack, useAudio, useAudioState, type Track } from "@/components/audio/AudioProvider";
-import { Scrubber, type Marker } from "@/components/audio/Scrubber";
+import { Scrubber, type Marker, type Region } from "@/components/audio/Scrubber";
 import { TimeReadout } from "@/components/audio/TimeReadout";
 import { PauseIcon, PlayIcon } from "@/components/icons";
 import { t } from "@/lib/i18n";
@@ -10,10 +10,12 @@ type Props = {
   track: Track;
   peaks: number[];
   markers: Marker[];
+  regions?: Region[];
+  regionsLabel?: string;
   className?: string;
 };
 
-export function StoryPlayer({ track, peaks, markers, className = "" }: Props) {
+export function StoryPlayer({ track, peaks, markers, regions, regionsLabel, className = "" }: Props) {
   const { play, toggle, store } = useAudio();
   const playing = useAudioState((s) => isSameTrack(s.track, track) && s.playing);
   const started = useAudioState((s) => isSameTrack(s.track, track) && !s.ended && s.time > track.start + 0.2);
@@ -30,7 +32,7 @@ export function StoryPlayer({ track, peaks, markers, className = "" }: Props) {
 
   return (
     <div className={`z-20 bg-paper/95 backdrop-blur-md ${className}`}>
-      <div className="flex items-center gap-4 py-3 sm:gap-6">
+      <div className={`flex gap-4 py-3 sm:gap-6 ${regions?.length ? "items-start" : "items-center"}`}>
         <button
           type="button"
           onClick={onClick}
@@ -41,8 +43,8 @@ export function StoryPlayer({ track, peaks, markers, className = "" }: Props) {
           <span className="text-[1rem] font-medium">{label}</span>
           {loading && <span className="visually-hidden">…</span>}
         </button>
-        <Scrubber track={track} peaks={peaks} markers={markers} label={t.story.seek} height={44} className="min-w-0 flex-1" />
-        <TimeReadout track={track} className="hidden sm:inline" />
+        <Scrubber track={track} peaks={peaks} markers={markers} regions={regions} regionsLabel={regionsLabel} label={t.story.seek} height={44} className="min-w-0 flex-1" />
+        <TimeReadout track={track} className={`hidden sm:inline ${regions?.length ? "pt-5" : ""}`} />
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ import { RecordLink } from "@/components/SiteHeader";
 import { StoryPlayer } from "@/components/story/StoryPlayer";
 import { Transcript } from "@/components/story/Transcript";
 import { StoryRow } from "@/components/StoryRow";
-import { formatDate, formatDuration, languageName, sameDay } from "@/lib/format";
+import { formatClock, formatDate, formatDuration, languageName, sameDay } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
 import { getPeaks, getRecording, getSegments } from "@/lib/server/evidence";
@@ -168,12 +168,18 @@ export default async function RecordingPage(props: PageProps<"/recordings/[id]">
       <Dock id={`recording:${id}`} />
       <Back />
 
-      <header className="pt-6 pb-8 sm:pt-10">
+      <header className="pt-6 pb-6 sm:pt-10">
         <Column>
-          <p className="t-kicker mb-5">{t.recording.kicker}</p>
-          <h1 className="t-title">{formatDate(recording.recordedAt)}</h1>
-          <p className="t-meta mt-5">{meta.join(" · ")}</p>
-          {recording.originalName && recording.source === "imported" && <p className="t-small mt-1 break-words text-ink-3">{recording.originalName}</p>}
+          <p className="t-kicker mb-4">{t.recording.kicker}</p>
+          <h1 className="t-heading">{formatDate(recording.recordedAt)}</h1>
+          <p className="t-time mt-4 flex flex-wrap gap-x-2 gap-y-1 text-[0.875rem] text-ink-2">
+            {[recording.originalName && recording.source === "imported" ? recording.originalName : null, ...meta].filter(Boolean).map((item, i) => (
+              <span key={i} className={i === 0 && recording.originalName && recording.source === "imported" ? "break-all text-ink" : ""}>
+                {i > 0 && <span aria-hidden="true">· </span>}
+                {item}
+              </span>
+            ))}
+          </p>
           {recording.prompt && (
             <p className="mt-6 max-w-[34rem] font-serif text-[1.1875rem] leading-snug text-ink-2 italic">
               {t.record.asked}: {recording.prompt}
@@ -185,7 +191,9 @@ export default async function RecordingPage(props: PageProps<"/recordings/[id]">
       <StoryPlayer
         track={{ recordingId: id, storyId: null, title, start: 0, end: duration, language: recording.language }}
         peaks={slicePeaks(getPeaks(id), 0, duration, 260)}
-        markers={stories.map((s) => ({ time: s.start, label: s.title }))}
+        markers={[]}
+        regions={stories.map((s) => ({ start: s.start, end: s.end, label: s.title, href: `/stories/${s.id}`, lang: s.language ?? undefined }))}
+        regionsLabel={t.recording.stories}
         className="sticky top-0 border-b border-rule"
       />
 
@@ -201,8 +209,13 @@ export default async function RecordingPage(props: PageProps<"/recordings/[id]">
             <>
               <p className="mt-4 text-[1.0625rem]">{t.recording.holds(stories.length)}</p>
               <ol className="relative mt-2 max-w-4xl before:absolute before:top-9 before:bottom-14 before:left-[4px] before:w-px before:bg-rule">
-                {stories.map((story) => (
-                  <StoryRow key={story.id} story={story} peaks={rowPeaks.get(story.id) ?? []} />
+                {stories.map((story, i) => (
+                  <StoryRow
+                    key={story.id}
+                    story={story}
+                    peaks={rowPeaks.get(story.id) ?? []}
+                    context={t.recording.part(i + 1, formatClock(story.start), formatClock(story.end))}
+                  />
                 ))}
               </ol>
               <p className="mt-2 text-[0.9375rem] text-ink-2">

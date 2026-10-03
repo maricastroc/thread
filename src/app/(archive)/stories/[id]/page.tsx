@@ -5,6 +5,7 @@ import { Dock } from "@/components/audio/Dock";
 import { PlayButton } from "@/components/audio/PlayButton";
 import { ArrowIcon } from "@/components/icons";
 import { Note } from "@/components/story/Note";
+import { SourceRuler } from "@/components/story/SourceRuler";
 import { RenameTitle } from "@/components/story/RenameTitle";
 import { StoryPlayer } from "@/components/story/StoryPlayer";
 import { Transcript } from "@/components/story/Transcript";
@@ -14,7 +15,7 @@ import { formatClock, formatDate, formatDuration } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
 import { slicePeaks } from "@/lib/server/peaks";
-import { getPeaks } from "@/lib/server/evidence";
+import { getPeaks, getRecording } from "@/lib/server/evidence";
 import { getStory, relatedStories, storiesOfRecording } from "@/lib/server/interpretation";
 import { buildParagraphs, entityHref, toNote } from "@/lib/server/story-view";
 import { peaksForStories } from "@/lib/server/representation";
@@ -50,6 +51,7 @@ export default async function StoryPage(props: PageProps<"/stories/[id]">) {
 
   const { story, segments, facts, questions } = data;
   const siblings = storiesOfRecording(story.recordingId, vault.birthYear);
+  const recording = getRecording(story.recordingId);
   const part = siblings.findIndex((s) => s.id === story.id) + 1;
   const related = relatedStories(story.id, vault.birthYear).filter((r) => r.story.recordingId !== story.recordingId);
   const others = siblings.filter((s) => s.id !== story.id);
@@ -115,6 +117,7 @@ export default async function StoryPage(props: PageProps<"/stories/[id]">) {
             <span aria-hidden="true"> · </span>
             {formatDuration(story.end - story.start)}
           </p>
+          <SourceRuler recordingId={story.recordingId} date={formatDate(story.recordedAt)} duration={recording?.duration ?? 0} story={story} siblings={siblings} />
           {story.quote && (
             <figure className="mt-10 max-w-[44rem]">
               <blockquote className="t-quote" lang={lang}>

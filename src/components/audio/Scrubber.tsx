@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useRef } from "react";
 import { formatClock } from "@/lib/format";
 import { isSameTrack, useAudio, useAudioState, useAudioTime, type Track } from "./AudioProvider";
 
 export type Marker = { time: number; label: string };
-export type Region = { start: number; end: number; label: string; href?: string };
+export type Region = { start: number; end: number; label: string; href?: string; lang?: string };
 
 type Props = {
   track: Track;
@@ -13,6 +14,7 @@ type Props = {
   label: string;
   markers?: Marker[];
   regions?: Region[];
+  regionsLabel?: string;
   height?: number;
   className?: string;
 };
@@ -20,7 +22,7 @@ type Props = {
 const BAR = 3;
 const GAP = 2;
 
-export function Scrubber({ track, peaks, label, markers = [], regions = [], height = 56, className }: Props) {
+export function Scrubber({ track, peaks, label, markers = [], regions = [], regionsLabel, height = 56, className }: Props) {
   const { play, seek } = useAudio();
   const clipId = useId().replace(/:/g, "");
   const svgRef = useRef<SVGSVGElement>(null);
@@ -112,7 +114,7 @@ export function Scrubber({ track, peaks, label, markers = [], regions = [], heig
           {regions.map((r, i) => {
             const x = ((r.start - track.start) / span) * width;
             const w = ((r.end - r.start) / span) * width;
-            return <rect key={i} x={x} y={0} width={Math.max(0, w - 3)} height={height} className="fill-ink/[0.035]" />;
+            return <rect key={i} x={x} y={0} width={Math.max(0, w - 3)} height={height} className="fill-ink/[0.05]" />;
           })}
           <g className="text-wave transition-colors duration-200 group-hover:text-[color-mix(in_oklab,var(--wave),var(--text)_18%)]">
             {bars.map((p, i) => {
@@ -141,6 +143,27 @@ export function Scrubber({ track, peaks, label, markers = [], regions = [], heig
           </div>
         )}
       </div>
+      {regions.some((r) => r.href) && (
+        <ol aria-label={regionsLabel} className="relative mt-1 h-9">
+          {regions.map((r, i) => {
+            const now = active && time >= r.start && time < r.end;
+            return (
+              <li key={i} className="@container absolute top-0 min-w-0" style={{ left: `${((r.start - track.start) / span) * 100}%`, width: `calc(${((r.end - r.start) / span) * 100}% - 4px)` }}>
+                <Link
+                  href={r.href ?? "#"}
+                  className={`group/region flex min-h-8 items-baseline gap-1.5 border-t-2 pt-1 text-[0.8125rem] leading-tight transition-colors ${now ? "border-voice text-ink" : "border-ink text-ink-2 hover:text-ink"}`}
+                >
+                  <span className="t-time shrink-0">{i + 1}</span>
+                  <span lang={r.lang} className="hidden truncate decoration-rule-2 underline-offset-2 group-hover/region:underline @min-[5rem]:inline">
+                    {r.label}
+                  </span>
+                  <span className="visually-hidden @min-[5rem]:hidden">{r.label}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
+      )}
     </div>
   );
 }
