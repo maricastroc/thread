@@ -1,0 +1,126 @@
+[
+  {
+    "id": "Q1",
+    "q": "Quando ele foi para Lisboa?",
+    "strength": "strong",
+    "semantic": true,
+    "moments": [
+      {
+        "story": "Trabalho em Lisboa e casamento com Helena",
+        "at": 0,
+        "text": "Em 1958 eu fui pra Lisboa trabalhar numa gráfica, no bairro de Alfama. Fiquei morando num quarto alugado, em cima de uma padaria. No ano seguinte eu conheci a Helena, que trabalhava na revisão. O pai da Helena não gostou de mim. Dizia que tipógrafo não tinha futuro."
+      }
+    ]
+  },
+  {
+    "id": "Q2",
+    "q": "Who was Ed?",
+    "strength": "strong",
+    "semantic": true,
+    "moments": [
+      {
+        "story": "Arrival in London and early life",
+        "at": 0,
+        "text": "I arrived in London in 1968. I was 29, and I didn't speak a word of English. A landlady, Mrs. Hill, was 70 years old and corrected my grammar at breakfast. At the print shop I met Ed, a man from Leeds. He had worked at the docks for 20 years before he learned to set type."
+      }
+    ]
+  },
+  {
+    "id": "Q3",
+    "q": "la imprenta en Málaga",
+    "strength": "strong",
+    "semantic": true,
+    "moments": [
+      {
+        "story": "Mudanza a Málaga en 1975",
+        "at": 0,
+        "text": "En 1975 nos mudamos a Málaga. Yo tenía 36 años. Paco, el hermano de Helena, vivía allí desde hacía 15 años y nos buscó una casa."
+      },
+      {
+        "story": null,
+        "at": 12,
+        "text": "Cinco años después abrimos una pequeña imprenta junto a la iglesia del pueblo. Mi madre murió con 90 años, en Olinda, y no pude ir al entierro."
+      },
+      {
+        "story": "Escola e aprendizado de letra",
+        "at": 62,
+        "text": "A escola ficava atrás da igreja de São Bento. A professora era a Dona Lu, uma senhora baixinha que lia poesia em voz alta. Por volta de 1950, ela me deu um livro de capa azul, que eu guardo até hoje. Foi ali que eu aprendi a gostar de letra impressa."
+      }
+    ]
+  },
+  {
+    "id": "Q4",
+    "q": "o livro azul da professora",
+    "strength": "strong",
+    "semantic": true,
+    "moments": [
+      {
+        "story": "Escola e aprendizado de letra",
+        "at": 54,
+        "text": "A escola ficava atrás da igreja de São Bento. A professora era a Dona Lu, uma senhora baixinha que lia poesia em voz alta. Por volta de 1950, ela me deu um livro de capa azul, que eu guardo até hoje. Foi ali que eu aprendi a gostar de letra impressa."
+      }
+    ]
+  },
+  {
+    "id": "Q5",
+    "q": "aprender a nadar no rio",
+    "strength": "strong",
+    "semantic": true,
+    "moments": [
+      {
+        "story": "Aprendizado de natação no rio",
+        "at": 23,
+        "text": "A minha irmã Bia era a mais velha e mandava em todo o mundo. Quando eu tinha 7 anos, o Zé, filho da vizinha, me ensinou a nadar no rio. A mãe do Zé ficava na margem, gritando. A minha mãe nunca soube disso. Ela era costureira e passava o dia na máquina."
+      },
+      {
+        "story": null,
+        "at": 21,
+        "text": "O Zé morreu faz pouco tempo, e eu fui sozinho ver o rio onde ele me ensinou a nadar."
+      }
+    ]
+  },
+  {
+    "id": "Q6",
+    "q": "casamento",
+    "strength": "strong",
+    "semantic": true,
+    "moments": [
+      {
+        "story": "Trabalho em Lisboa e casamento com Helena",
+        "at": 31,
+        "text": "Dizia que tipógrafo não tinha futuro. Cinco anos mais tarde a gente casou numa igreja pequena, perto do rio. A Bia veio do Brasil para o casamento e chorou a cerimônia inteira. Depois de dez anos em Lisboa, eu já sabia que não ia ficar ali para sempre."
+      }
+    ]
+  },
+  {
+    "id": "Q7",
+    "q": "when was Tom born",
+    "strength": "strong",
+    "semantic": true,
+    "moments": [
+      {
+        "story": "Arrival in London and early life",
+        "at": 26,
+        "text": "He had worked at the docks for 20 years before he learned to set type. Two years later, our son Tom was born. The next year we bought a small flat near the church on Elm Street. Helena said it was the first place that felt like ours."
+      },
+      {
+        "story": "Biá mora em Linda perto da igreja",
+        "at": 18,
+        "text": "Hoje a Biá tem 88 anos e ainda mora em Linda, do lado da igreja de Sã Bento. O Tom vem visitar todo ano com os filhos."
+      }
+    ]
+  },
+  {
+    "id": "Q8",
+    "q": "voltar para o Recife",
+    "strength": "strong",
+    "semantic": true,
+    "moments": [
+      {
+        "story": null,
+        "at": 0,
+        "text": "Em 85 a gente voltou pro Recife. Eu passei 40 anos compondo os livros dos outros, e agora quero contar o meu."
+      }
+    ]
+  }
+]
