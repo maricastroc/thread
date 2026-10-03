@@ -50,18 +50,50 @@ export function entityHref(entity: { id: string; kind: "person" | "place" }): st
 
 const LIT_WINDOW = 5;
 
-export function useMentionState(story: LifeStory | null) {
-  return useAudioState((s) => {
-    if (!story || !isSameTrack(s.track, trackOf(story))) return "";
-    const lit = story.mentions.filter((m) => s.time >= m.time - 0.3 && s.time <= m.time + LIT_WINDOW).map((m) => m.entityId);
-    const said = story.mentions.filter((m) => s.time >= m.time - 0.3).map((m) => m.entityId);
-    return `${[...new Set(lit)].join(",")}|${[...new Set(said)].join(",")}`;
-  });
+export type Reveal = {
+  active: boolean;
+  playing: boolean;
+  ended: boolean;
+  said: Set<string>;
+  lit: Set<string>;
+  events: Set<number>;
+  litEvents: Set<number>;
+  quote: boolean;
+  heard: number;
+};
+
+function unique(values: string[]) {
+  return [...new Set(values)];
 }
 
-export function parseMentionState(value: string) {
-  const [lit = "", said = ""] = value.split("|");
-  return { lit: new Set(lit.split(",").filter(Boolean)), said: new Set(said.split(",").filter(Boolean)) };
+export function useReveal(story: LifeStory | null): Reveal {
+  const key = useAudioState((s) => {
+    if (!story || !isSameTrack(s.track, trackOf(story))) return "";
+    const time = s.ended ? Number.POSITIVE_INFINITY : s.time;
+    const said = unique(story.mentions.filter((m) => time >= m.time - 0.3).map((m) => m.entityId));
+    const lit = s.playing ? unique(story.mentions.filter((m) => s.time >= m.time - 0.3 && s.time <= m.time + LIT_WINDOW).map((m) => m.entityId)) : [];
+    const events = story.events.map((e, i) => (time >= e.time - 0.3 ? i : -1)).filter((i) => i >= 0);
+    const litEvents = s.playing ? story.events.map((e, i) => (s.time >= e.time - 0.3 && s.time <= e.time + LIT_WINDOW ? i : -1)).filter((i) => i >= 0) : [];
+    const quote = story.quote && s.playing && s.time >= story.quote.start - 0.2 && s.time <= story.quote.end ? 1 : 0;
+    const started = s.playing || s.ended || s.time > story.start + 0.3 ? 1 : 0;
+    const heard = story.mentions.filter((m) => time >= m.time - 0.3).length;
+    return [said.join(","), lit.join(","), events.join(","), litEvents.join(","), quote, s.ended ? 1 : 0, s.playing ? 1 : 0, started, heard].join("|");
+  });
+  if (!key) return { active: false, playing: false, ended: false, said: new Set(), lit: new Set(), events: new Set(), litEvents: new Set(), quote: false, heard: 0 };
+  const [said, lit, events, litEvents, quote, ended, playing, started, heard] = key.split("|");
+  const set = (value: string) => new Set(value.split(",").filter(Boolean));
+  const numbers = (value: string) => new Set(value.split(",").filter(Boolean).map(Number));
+  return {
+    active: started === "1",
+    playing: playing === "1",
+    ended: ended === "1",
+    said: set(said),
+    lit: set(lit),
+    events: numbers(events),
+    litEvents: numbers(litEvents),
+    quote: quote === "1",
+    heard: Number(heard),
+  };
 }
 
 export function useProgress(story: LifeStory | null, steps = 60) {
@@ -113,8 +145,12 @@ type OpenProps = {
 export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, headingLevel = "h2" }: OpenProps) {
   const { play } = useAudio();
   const track = trackOf(story);
-  const { lit, said } = parseMentionState(useMentionState(story));
-  const traces = [...story.people.map((p) => ({ ...p, kind: "person" as const })), ...story.places.map((p) => ({ ...p, kind: "place" as const }))];
+  const reveal = useReveal(story);
+  const firstAt = (id: string) => story.mentions.find((m) => m.entityId === id)?.time ?? Number.POSITIVE_INFINITY;
+  const traces = [...story.people.map((p) => ({ ...p, kind: "person" as const })), ...story.places.map((p) => ({ ...p, kind: "place" as const }))].sort(
+    (a, b) => firstAt(a.id) - firstAt(b.id),
+  );
+  const circa = (year: number) => (isCertain(story) ? String(year) : t.time.circa(String(year)));
   const lang = story.language ?? undefined;
   const Heading = headingLevel;
   const active = traces.find((trace) => trace.id === activeEntity) ?? null;
@@ -144,7 +180,12 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, 
       </div>
 
       {story.quote && (
-        <blockquote className={`mt-5 max-w-[40rem] font-serif italic ${compact ? "text-[1.125rem] leading-snug" : "text-[1.375rem] leading-[1.35]"}`} lang={lang}>
+        <blockquote
+          className={`mt-5 max-w-[40rem] border-l-2 pl-4 font-serif italic transition-colors duration-500 ${compact ? "text-[1.125rem] leading-snug" : "text-[1.375rem] leading-[1.35]"} ${
+            reveal.quote ? "border-voice" : "border-transparent"
+          }`}
+          lang={lang}
+        >
           <span aria-hidden="true">“</span>
           {story.quote.text}
           <span aria-hidden="true">”</span>
@@ -158,7 +199,6 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, 
           peaks={story.peaks}
           label={t.story.seek}
           height={compact ? 36 : 44}
-          markers={story.mentions.map((m) => ({ time: m.time, label: traces.find((x) => x.id === m.entityId)?.name ?? "" }))}
           className="min-w-0 flex-1"
         />
         <TimeReadout track={track} className="hidden sm:inline" />
@@ -169,14 +209,14 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, 
           <p className="t-small text-ink-2">{t.life.traces}</p>
           <ul className="mt-1 flex flex-wrap gap-x-5">
             {traces.map((trace) => {
-              const isLit = lit.has(trace.id);
+              const isLit = reveal.lit.has(trace.id);
               const isActive = activeEntity === trace.id;
               const first = story.mentions.find((m) => m.entityId === trace.id);
               return (
                 <li key={trace.id} className="flex items-center gap-2">
                   <span
                     aria-hidden="true"
-                    className={`size-2 rounded-full transition-colors duration-300 ${isLit ? "bg-voice" : said.has(trace.id) ? "bg-ink" : "bg-rule-2"}`}
+                    className={`size-2 rounded-full transition-colors duration-300 ${isLit ? "bg-voice" : reveal.said.has(trace.id) ? "bg-ink" : "bg-rule-2"}`}
                   />
                   <button
                     type="button"
@@ -203,6 +243,30 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, 
               );
             })}
           </ul>
+          {story.events.length > 0 && (
+            <ul className="mt-1 flex flex-wrap gap-x-5">
+              {story.events.map((e, i) => (
+                <li key={i} className="flex items-center gap-2">
+                  <span
+                    aria-hidden="true"
+                    className={`size-[7px] rotate-45 transition-colors duration-300 ${reveal.litEvents.has(i) ? "bg-voice" : reveal.events.has(i) ? "bg-ink" : "bg-rule-2"}`}
+                  />
+                  <span className="text-[1rem] whitespace-nowrap tabular-nums">
+                    {e.kind === "duration" ? `${circa(e.year)}–${e.to}` : e.kind === "age" ? t.life.age(e.age!) : circa(e.year)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => play(track, Math.max(story.start, e.time - 1))}
+                    className="t-small inline-flex min-h-11 items-center text-ink-2 italic hover:text-ink"
+                    aria-label={`${t.story.playMoment(formatClock(e.time - story.start))}: ${e.evidence}`}
+                    lang={lang}
+                  >
+                    “{e.evidence}”
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 

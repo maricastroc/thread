@@ -247,6 +247,10 @@ export const en = {
     clearTrail: "Show the whole life",
     everyMoment: (name: string) => `Every moment ${name} comes up`,
     traces: "In this memory",
+    traceTitle: "What this memory touched",
+    reach: (from: number, to: number, n: number) =>
+      n > 0 ? `This memory reaches from ${from} to ${to}, through ${n} other ${plural(n, "moment", "moments")}.` : `This memory spans ${from} to ${to}.`,
+    kindPerson: "person",
     age: (n: number) => `age ${n}`,
     aboutAge: (n: number) => `about ${n} years old`,
     close: "Close",
