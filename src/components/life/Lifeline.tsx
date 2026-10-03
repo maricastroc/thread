@@ -18,6 +18,7 @@ import {
   ageLabel,
   certaintyWord,
   entityHref,
+  eventLabel,
   gapsOf,
   glyphWidth,
   isCertain,
@@ -38,8 +39,11 @@ const PLAYER_H = 56;
 const THREAD_GAP = 40;
 const LANE_H = 17;
 const BUTTON = 52;
+const MAX_ROWS = 6;
 
 type Placed = { story: LifeStory; x: number; w: number; row: number };
+type Cluster = { ids: string[]; left: number; right: number; from: number; to: number; x: number };
+type Target = { key: string; x: number; y: number; year: number };
 type Linked = Map<string, { names: string[]; lit: boolean }>;
 
 type Props = {
@@ -60,19 +64,9 @@ function pack<T extends { x: number; w: number }>(items: T[], lines: number, gap
   const taken: { x: number; w: number }[][] = Array.from({ length: lines }, () => []);
   const fits = (line: number, x: number, w: number) => taken[line].every((p) => x + w + gap <= p.x || x >= p.x + p.w + gap);
   return items.map((item) => {
-    let line = taken.findIndex((_, l) => fits(l, item.x, item.w));
-    let x = item.x;
-    if (line < 0) {
-      const options = taken.map((row, l) => {
-        const candidates = [item.x, ...row.map((p) => p.x + p.w + gap)].filter((c) => c >= item.x).sort((a, b) => a - b);
-        return { l, x: candidates.find((c) => fits(l, c, item.w)) ?? item.x };
-      });
-      const best = options.reduce((a, b) => (b.x < a.x ? b : a));
-      line = best.l;
-      x = best.x;
-    }
-    taken[line].push({ x, w: item.w });
-    return { ...item, x, line };
+    const line = taken.findIndex((_, l) => fits(l, item.x, item.w));
+    if (line >= 0) taken[line].push({ x: item.x, w: item.w });
+    return { ...item, line };
   });
 }
 
@@ -192,7 +186,7 @@ function linksOf(life: Life, open: LifeStory | null, reveal: Reveal): Linked {
       if (storyId === open.id) continue;
       const current = map.get(storyId) ?? { names: [], lit: false };
       if (!current.names.includes(entity.name)) current.names.push(entity.name);
-      current.lit = current.lit || reveal.lit.has(id);
+      current.lit = current.lit || reveal.current === id;
       map.set(storyId, current);
     }
   }
@@ -233,21 +227,7 @@ function TrailSummary({
           {t.life.clearTrail}
         </button>
       </div>
-      <ol className="mt-4 grid gap-x-10 sm:grid-cols-2">
-        {stories.map((s) => (
-          <li key={s.id}>
-            <button type="button" onClick={() => onOpen(s.id)} className="group flex min-h-11 w-full items-baseline gap-4 py-1.5 text-left">
-              <span className={`w-20 shrink-0 text-[0.9375rem] tabular-nums ${isCertain(s) ? "text-ink" : "text-ink-2 italic"}`}>{whenLabel(s)}</span>
-              <span
-                className="font-serif text-[1.125rem] leading-snug decoration-rule-2 underline-offset-[0.2em] group-hover:underline"
-                lang={s.language ?? undefined}
-              >
-                {s.title}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ol>
+      <StoryList stories={stories} onOpen={onOpen} />
       <Link
         href={entityHref(entity)}
         className="mt-3 inline-flex min-h-11 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink"
@@ -255,6 +235,37 @@ function TrailSummary({
       >
         {t.life.everyMoment(entity.name)} <ArrowIcon size={14} />
       </Link>
+    </div>
+  );
+}
+
+function StoryList({ stories, onOpen }: { stories: LifeStory[]; onOpen: (id: string) => void }) {
+  return (
+    <ol className="mt-4 grid gap-x-10 sm:grid-cols-2">
+      {stories.map((s) => (
+        <li key={s.id}>
+          <button type="button" onClick={() => onOpen(s.id)} className="group flex min-h-11 w-full items-baseline gap-4 py-1.5 text-left">
+            <span className={`w-20 shrink-0 text-[0.9375rem] tabular-nums ${isCertain(s) ? "text-ink" : "text-ink-2 italic"}`}>{whenLabel(s)}</span>
+            <span className="font-serif text-[1.125rem] leading-snug decoration-rule-2 underline-offset-[0.2em] group-hover:underline" lang={s.language ?? undefined}>
+              {s.title}
+            </span>
+          </button>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function PeriodSummary({ from, to, stories, onOpen, onClear }: { from: number; to: number; stories: LifeStory[]; onOpen: (id: string) => void; onClear: () => void }) {
+  return (
+    <div className="animate-rise">
+      <div className="flex flex-wrap items-baseline justify-between gap-4">
+        <p className="t-heading">{t.life.period(from, to, stories.length)}</p>
+        <button type="button" onClick={onClear} className="inline-flex min-h-11 items-center rounded-full px-3 text-[0.9375rem] text-ink-2 hover:bg-ink/[0.05] hover:text-ink">
+          {t.life.clearTrail}
+        </button>
+      </div>
+      <StoryList stories={stories} onOpen={onOpen} />
     </div>
   );
 }
@@ -341,9 +352,8 @@ function MemoryPanel({ life, story, reveal, trail, setTrail, onFocusEntity, onCl
   const reach = [
     story.year,
     ...[...everything.keys()].map((id) => life.stories.find((s) => s.id === id)?.year ?? null),
-    ...story.events.flatMap((e) => [e.year, e.to ?? null]),
+    ...story.events.flatMap((e) => (e.anchored && e.year !== null ? [e.year] : [])),
   ].filter((y): y is number => typeof y === "number");
-  const circa = (year: number) => (isCertain(story) ? String(year) : t.time.circa(String(year)));
 
   return (
     <div className="grid gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
@@ -418,7 +428,7 @@ function MemoryPanel({ life, story, reveal, trail, setTrail, onFocusEntity, onCl
         <ul className="mt-1 space-y-0.5" onMouseLeave={() => onFocusEntity(null)}>
           {traces.map((m) => {
             const isSaid = reveal.said.has(m.entityId);
-            const isLit = reveal.lit.has(m.entityId);
+            const isLit = reveal.current === m.entityId;
             const isActive = trail === m.entityId;
             return (
               <li key={m.entityId} className={`flex items-center gap-2.5 transition-opacity duration-500 ${reveal.active && !isSaid ? "opacity-45" : ""}`}>
@@ -459,9 +469,7 @@ function MemoryPanel({ life, story, reveal, trail, setTrail, onFocusEntity, onCl
                   aria-hidden="true"
                   className={`size-[7px] shrink-0 rotate-45 transition-colors duration-300 ${isLit ? "bg-voice" : isRevealed ? "bg-ink" : "border border-ink-3"}`}
                 />
-                <span className="text-[1rem] whitespace-nowrap tabular-nums">
-                  {e.kind === "duration" ? `${circa(e.year)}–${e.to}` : e.kind === "age" ? t.life.age(e.age!) : circa(e.year)}
-                </span>
+                <span className="text-[1rem] whitespace-nowrap tabular-nums">{eventLabel(e)}</span>
                 <span className="t-small min-w-0 text-ink-3 italic" lang={lang}>
                   “{e.evidence}”
                 </span>
@@ -487,6 +495,7 @@ function Horizontal(props: Shared) {
   const frame = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(1100);
   const [focusHover, setFocusHover] = useState<string | null>(null);
+  const [period, setPeriod] = useState<{ from: number; to: number } | null>(null);
   const playingId = usePlayingStory();
   const progressOf = useProgress(open);
   useEffect(() => {
@@ -503,18 +512,36 @@ function Horizontal(props: Shared) {
   const dated = life.stories.filter((s) => s.year !== null);
   const undated = life.stories.filter((s) => s.year === null);
 
-  const placed: Placed[] = (() => {
+  const { placed, clusters } = (() => {
     const rows: { right: number }[][] = [];
     const result: Placed[] = [];
+    const extra: { story: LifeStory; x: number; w: number }[] = [];
     for (const story of [...dated].sort((a, b) => a.year! - b.year! || a.recordedAt.localeCompare(b.recordedAt))) {
       const w = glyphWidth(story.duration);
       const left = Math.min(width - w, Math.max(0, center(story.year!) - w / 2));
       let row = 0;
       while (rows[row]?.some((r) => left < r.right + 8)) row++;
+      if (row >= MAX_ROWS && story.id !== openId) {
+        extra.push({ story, x: left, w });
+        continue;
+      }
       rows[row] = [...(rows[row] ?? []), { right: left + w }];
       result.push({ story, x: left, w, row });
     }
-    return result;
+    const groups: Cluster[] = [];
+    for (const o of extra.sort((a, b) => a.x - b.x)) {
+      const last = groups[groups.length - 1];
+      if (last && o.x <= last.right + 24) {
+        last.ids.push(o.story.id);
+        last.right = Math.max(last.right, o.x + o.w);
+        last.from = Math.min(last.from, o.story.year!);
+        last.to = Math.max(last.to, o.story.year!);
+        last.x = (last.left + last.right) / 2;
+      } else {
+        groups.push({ ids: [o.story.id], left: o.x, right: o.x + o.w, from: o.story.year!, to: o.story.year!, x: o.x + o.w / 2 });
+      }
+    }
+    return { placed: result, clusters: groups };
   })();
 
   const opened = open && open.year !== null ? open : null;
@@ -550,11 +577,21 @@ function Horizontal(props: Shared) {
 
   const firsts = new Map<string, number>();
   if (opened) for (const m of opened.mentions) if (!firsts.has(m.entityId)) firsts.set(m.entityId, m.time);
+  const clusterY = (row: number) => topOf(row) - 22;
+  const clusterTop = clusterY(MAX_ROWS - 1);
+  const targetsOf = (storyIds: string[], except: string | null): Target[] => {
+    const own = placed
+      .filter((p) => p.story.id !== except && storyIds.includes(p.story.id))
+      .map((p) => ({ key: p.story.id, x: p.x + p.w / 2, y: topOf(p.row) + 3, year: p.story.year! }));
+    const hidden = clusters
+      .filter((c) => c.ids.some((id) => id !== except && storyIds.includes(id)))
+      .map((c) => ({ key: `cluster-${c.left}`, x: c.x, y: clusterTop + 18, year: (c.from + c.to) / 2 }));
+    return [...own, ...hidden];
+  };
   const threads = [...firsts.entries()].flatMap(([id, time]) => {
     const entity = life.entities.find((e) => e.id === id);
     if (!opened || !entity || !reveal.said.has(id)) return [];
-    const targets = placed.filter((p) => p.story.id !== opened.id && entity.storyIds.includes(p.story.id));
-    return [{ id, entity, x: xAt(time), lit: reveal.lit.has(id), targets }];
+    return [{ id, entity, x: xAt(time), lit: reveal.current === id, targets: targetsOf(entity.storyIds, opened.id) }];
   });
   const focus = focusHover ?? (trail && firsts.has(trail) && reveal.said.has(trail) ? trail : null);
   const focusStories = focus ? new Set(life.entities.find((e) => e.id === focus)?.storyIds ?? []) : null;
@@ -569,28 +606,20 @@ function Horizontal(props: Shared) {
     }),
     2,
     10,
-  ).filter((n) => reveal.said.has(n.id));
+  ).filter((n) => n.line >= 0 && reveal.said.has(n.id));
 
-  const circa = (year: number) => (opened && isCertain(opened) ? String(year) : t.time.circa(String(year)));
   const laneAll = opened
     ? pack(
         opened.events.flatMap((e, i) => {
-          if (e.kind === "offset") {
-            const text = `${circa(e.year)} · “${e.evidence}”`;
+          if (e.kind === "offset" && e.anchored && e.year !== null) {
+            const text = `${eventLabel(e)} · “${e.evidence}”`;
             const w = estimate(text);
             return [{ i, text, w, x: clamp(center(e.year) - w / 2, 0, width - w) }];
           }
-          if (e.kind === "duration" && e.to) {
-            const text = `“${e.evidence}” · ${circa(e.year)}–${e.to}`;
+          if (e.kind === "duration") {
+            const text = `${eventLabel(e)} · “${e.evidence}”`;
             const w = estimate(text);
-            return [
-              {
-                i,
-                text,
-                w,
-                x: clamp((center(e.year) + center(e.to)) / 2 - w / 2, 0, width - w),
-              },
-            ];
+            return [{ i, text, w, x: clamp(openX - w / 2, 0, width - w) }];
           }
           return [];
         }),
@@ -598,20 +627,22 @@ function Horizontal(props: Shared) {
         14,
       )
     : [];
-  const lane = laneAll.filter((item) => reveal.events.has(item.i));
-  const laneLines = laneAll.length ? Math.max(...laneAll.map((item) => item.line)) + 1 : 0;
+  const lane = laneAll.filter((item) => item.line >= 0 && reveal.events.has(item.i));
+  const laneLines = laneAll.length ? Math.max(0, ...laneAll.map((item) => item.line)) + 1 : 0;
   const below = laneLines ? laneLines * LANE_H + 8 : 0;
   const stageY = axisY + 46 + below;
   const height = stageY + 46;
 
-  const ageIndex = opened ? opened.events.findIndex((e) => e.kind === "age") : -1;
+  const ageIndex = opened ? opened.events.findIndex((e) => e.kind === "age" && e.year !== null) : -1;
   const ageEvent = opened && ageIndex >= 0 && reveal.events.has(ageIndex) ? opened.events[ageIndex] : null;
+  const ageYear = ageEvent?.year ?? null;
   const ageLit = ageIndex >= 0 && reveal.litEvents.has(ageIndex);
-  const ageStage = ageEvent && life.birthYear ? (stages.find((s) => ageEvent.year >= s.from && ageEvent.year < s.to) ?? null) : null;
-  const ageText = ageEvent ? t.life.age(ageEvent.age!) : "";
-  const ageX = ageEvent
-    ? Math.max(center(ageEvent.year) - estimate(ageText) / 2, ageStage ? x(ageStage.from) + 6 + estimate(t.lifeStage[ageStage.stage]) + 8 : 0)
-    : 0;
+  const ageStage = ageYear !== null && life.birthYear ? (stages.find((s) => ageYear >= s.from && ageYear < s.to) ?? null) : null;
+  const ageText = ageEvent ? eventLabel(ageEvent) : "";
+  const ageX =
+    ageYear !== null
+      ? Math.max(center(ageYear) - estimate(ageText) / 2, ageStage ? x(ageStage.from) + 6 + estimate(t.lifeStage[ageStage.stage]) + 8 : 0)
+      : 0;
 
   const trailSet = trailEntity ? new Set(trailEntity.storyIds) : null;
   const chain = trailSet && !open ? placed.filter((p) => trailSet.has(p.story.id)).sort((a, b) => a.x - b.x) : [];
@@ -624,14 +655,23 @@ function Horizontal(props: Shared) {
       if (focusStories) return !focusStories.has(s.id);
       return !linked.has(s.id);
     }
+    if (period) return s.year === null || s.year < period.from || s.year > period.to;
     if (trailSet) return !trailSet.has(s.id);
     return false;
   };
+  const periodStories = period
+    ? life.stories.filter((s) => s.year !== null && s.year >= period.from && s.year <= period.to).sort((a, b) => a.year! - b.year!)
+    : [];
 
   const threadPath = (ox: number, tx: number, ty: number) => {
     const oy = waveBottom + 12;
     const dy = ty - oy;
     return `M ${ox} ${oy} C ${ox} ${oy + dy * 0.62}, ${tx} ${ty - dy * 0.55}, ${tx} ${ty}`;
+  };
+  const visibleTargets = (th: { id: string; lit: boolean; targets: Target[] }) => {
+    if (th.lit || focus === th.id || !opened) return th.targets;
+    const nearest = [...th.targets].sort((a, b) => Math.abs(a.year - opened.year!) - Math.abs(b.year - opened.year!) || Math.abs(a.x - anchorX) - Math.abs(b.x - anchorX))[0];
+    return nearest ? [nearest] : [];
   };
   const threadStyle = (th: { id: string; lit: boolean }) => {
     if (focus && th.id !== focus) return { cls: "stroke-ink", opacity: 0.05, width: 1 };
@@ -682,7 +722,7 @@ function Horizontal(props: Shared) {
             const isOpen = opened?.id === s.id;
             return (
               <g key={s.id} opacity={dim ? recede : 1} className="transition-opacity duration-500">
-                {!certain && s.from !== null && s.to !== null && (
+                {s.from !== null && s.to !== null && s.from !== s.to && (
                   <rect
                     x={x(s.from)}
                     y={axisY - 3}
@@ -720,7 +760,7 @@ function Horizontal(props: Shared) {
                 strokeDasharray={isCertain(opened) ? undefined : "3 3"}
               />
               {opened.mentions.slice(0, reveal.heard).map((m, i) => {
-                const lit = reveal.lit.has(m.entityId) && lastHeard.get(m.entityId) === i;
+                const lit = reveal.current === m.entityId && lastHeard.get(m.entityId) === i;
                 const faded = focus && m.entityId !== focus;
                 return (
                   <circle
@@ -734,12 +774,12 @@ function Horizontal(props: Shared) {
                 );
               })}
               {threads.flatMap((th) =>
-                th.targets.map((p) => {
+                visibleTargets(th).map((target) => {
                   const style = threadStyle(th);
                   return (
                     <path
-                      key={`${th.id}-${p.story.id}`}
-                      d={threadPath(th.x, p.x + p.w / 2, topOf(p.row) + 3)}
+                      key={`${th.id}-${target.key}`}
+                      d={threadPath(th.x, target.x, target.y)}
                       pathLength={1}
                       className={`animate-draw fill-none transition-[stroke,stroke-opacity] duration-500 ${style.cls}`}
                       strokeOpacity={style.opacity}
@@ -752,18 +792,7 @@ function Horizontal(props: Shared) {
                 if (!reveal.events.has(i)) return null;
                 const lit = reveal.litEvents.has(i);
                 const tone = lit ? "stroke-voice" : "stroke-ink";
-                if (e.kind === "duration" && e.to) {
-                  const a = center(e.year);
-                  const b = center(e.to);
-                  return (
-                    <g key={i} className="animate-appear" strokeOpacity={lit ? 1 : 0.55}>
-                      <line x1={a} x2={b} y1={axisY + 6} y2={axisY + 6} className={`transition-[stroke] duration-500 ${tone}`} strokeWidth={1.5} />
-                      <line x1={a} x2={a} y1={axisY + 2} y2={axisY + 10} className={tone} strokeWidth={1.5} />
-                      <line x1={b} x2={b} y1={axisY + 2} y2={axisY + 10} className={tone} strokeWidth={1.5} />
-                    </g>
-                  );
-                }
-                if (e.kind === "offset") {
+                if (e.kind === "offset" && e.anchored && e.year !== null) {
                   const b = center(e.year);
                   return (
                     <g key={i} className="animate-appear">
@@ -838,6 +867,26 @@ function Horizontal(props: Shared) {
           );
         })}
 
+        {clusters.map((c) => {
+          const marked = c.ids.some((id) => linked.has(id) || (!open && trailSet?.has(id)));
+          const dim = open ? !c.ids.some((id) => linked.has(id)) : period ? c.to < period.from || c.from > period.to : trailSet ? !marked : false;
+          return (
+            <button
+              key={c.left}
+              type="button"
+              onClick={() => {
+                setOpenId(null);
+                setPeriod({ from: c.from, to: c.to });
+              }}
+              aria-label={t.life.morePeriod(c.ids.length, c.from, c.to)}
+              className="absolute z-10 inline-flex h-6 -translate-x-1/2 items-center gap-1 rounded-full px-2 text-[0.8125rem] text-ink-2 tabular-nums transition-[opacity,background-color] duration-500 hover:bg-ink/[0.05] hover:text-ink"
+              style={{ left: c.x, top: clusterTop, opacity: dim ? recede + 0.1 : 1 }}
+            >
+              {marked && <span aria-hidden="true" className="size-1.5 rounded-full bg-voice" />}+{c.ids.length}
+            </button>
+          );
+        })}
+
         {names.map((n) => (
           <span
             key={n.id}
@@ -845,7 +894,7 @@ function Horizontal(props: Shared) {
             onMouseEnter={() => setFocusHover(n.id)}
             onMouseLeave={() => setFocusHover(null)}
             className={`animate-appear absolute z-20 cursor-default text-[0.8125rem] leading-4 whitespace-nowrap transition-colors duration-500 ${
-              reveal.lit.has(n.id) ? "text-voice" : focus === n.id ? "text-ink" : focus ? "text-ink-3" : "text-ink-2"
+              reveal.current === n.id ? "text-voice" : focus === n.id ? "text-ink" : focus ? "text-ink-3" : "text-ink-2"
             }`}
             style={{ left: n.x, top: NAMES_H - 19 - n.line * LANE_H }}
             lang={language ?? undefined}
@@ -983,6 +1032,17 @@ function Horizontal(props: Shared) {
             ) : (
               <FragmentOpen story={open} activeEntity={trail} onEntity={setTrail} onClose={() => setOpenId(null)} />
             )
+          ) : period ? (
+            <PeriodSummary
+              from={period.from}
+              to={period.to}
+              stories={periodStories}
+              onOpen={(id) => {
+                setPeriod(null);
+                setOpenId(id);
+              }}
+              onClear={() => setPeriod(null)}
+            />
           ) : trailEntity ? (
             <TrailSummary entity={trailEntity} stories={trailStories} onOpen={setOpenId} onClear={() => setTrail(null)} language={language} />
           ) : (

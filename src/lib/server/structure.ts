@@ -117,3 +117,35 @@ export function planStories(drafts: StoryDraft[], segments: Segment[]): PlannedS
   );
   return planned;
 }
+
+export function uncovered(planned: { segStart: number; segEnd: number }[], segments: Segment[]): { from: number; to: number }[] {
+  const covered = new Set<number>();
+  for (const p of planned) for (let i = p.segStart; i <= p.segEnd; i++) covered.add(i);
+  const stretches: { from: number; to: number }[] = [];
+  let start: number | null = null;
+  for (let i = 0; i < segments.length; i++) {
+    if (!covered.has(i)) start ??= i;
+    else if (start !== null) {
+      stretches.push({ from: start, to: i - 1 });
+      start = null;
+    }
+  }
+  if (start !== null) stretches.push({ from: start, to: segments.length - 1 });
+  return stretches;
+}
+
+export function attachLeftovers(planned: PlannedStory[], segments: Segment[]): PlannedStory[] {
+  const sorted = [...planned].sort((a, b) => a.segStart - b.segStart);
+  for (const gap of uncovered(sorted, segments)) {
+    const before = [...sorted].reverse().find((p) => p.segEnd < gap.from);
+    const after = sorted.find((p) => p.segStart > gap.to);
+    if (before) {
+      before.segEnd = gap.to;
+      before.end = segments[gap.to].end;
+    } else if (after) {
+      after.segStart = gap.from;
+      after.start = segments[gap.from].start;
+    }
+  }
+  return sorted;
+}

@@ -1,8 +1,9 @@
 import "server-only";
 import type { FactKind, LifeStage, Provenance, Segment } from "@/lib/types";
 import type { StoryAnnotation } from "./interpreter/types";
-import { findAge, statesYear } from "./numbers";
+import { findNarratorAge, isApproximate, statesYear } from "./numbers";
 import { containsPhrase, locateInSegment, normalize, tokens } from "./text";
+import { hasProperWord, kinship, leadingWords, mentionsOwnKin, ownedKin, properWords } from "./words";
 
 export type VerifiedFact = {
   kind: FactKind;
@@ -20,9 +21,11 @@ export type VerifiedFact = {
   entity?: { name: string; relation: string | null; aliases: string[] };
 };
 
-type Evidence = { seg: number; start: number; end: number; evidence: string };
+export type Rejection = { kind: FactKind; value: string; mention: string | null; reason: string };
 
-const leadingWords = new Set(["o", "a", "os", "as", "seu", "sr", "sra", "dona", "dom", "the", "el", "la", "meu", "minha"]);
+export type Verified = { facts: VerifiedFact[]; rejected: Rejection[] };
+
+type Evidence = { seg: number; start: number; end: number; evidence: string };
 
 export function properAlias(mention: string): string | null {
   const words = mention.trim().split(/\s+/);
@@ -36,11 +39,12 @@ function rangeOrder(segments: Segment[], from: number, to: number, claimed: numb
   return inRange.sort((a, b) => Math.abs(a.idx - claimed) - Math.abs(b.idx - claimed));
 }
 
-function findEvidence(segments: Segment[], from: number, to: number, claimed: number, phrases: string[]): Evidence | null {
+function findEvidence(segments: Segment[], from: number, to: number, claimed: number, phrases: string[], accept?: (segment: Segment) => boolean): Evidence | null {
   const order = rangeOrder(segments, from, to, claimed);
   for (const phrase of phrases) {
     if (!normalize(phrase)) continue;
     for (const segment of order) {
+      if (accept && !accept(segment)) continue;
       const hit = locateInSegment(segment, phrase);
       if (hit) return { seg: segment.idx, ...hit };
     }
@@ -48,14 +52,10 @@ function findEvidence(segments: Segment[], from: number, to: number, claimed: nu
   return null;
 }
 
-const kinship = new Set(
-  (
-    "mae mamae pai papai avo avos vovo vo irma irmao irmas irmaos tia tio tias tios filha filho filhas filhos neta neto netas netos " +
-    "marido esposa esposo mulher sogra sogro cunhada cunhado prima primo madrinha padrinho afilhada afilhado bisavo bisavó " +
-    "mother mom father dad grandmother grandma grandfather grandpa sister brother aunt uncle daughter son granddaughter grandson husband wife cousin " +
-    "madre padre abuela abuelo hermana hermano tia tio hija hijo nieta nieto esposo esposa"
-  ).split(" "),
-);
+function bareKinship(name: string): boolean {
+  const words = tokens(name).filter((w) => !leadingWords.has(w));
+  return words.length === 1 && kinship.has(words[0]);
+}
 
 function isIndividual(name: string, mention: string): boolean {
   const words = (mention.trim() || name).split(/\s+/).filter((w) => !leadingWords.has(normalize(w)));
@@ -81,6 +81,12 @@ function evidencePhrases(name: string, mention: string, relation: string | null)
   if (relation?.trim()) phrases.push(relation.trim());
   phrases.push(mention);
   return phrases.filter((p, i, all) => normalize(p) && all.findIndex((q) => normalize(q) === normalize(p)) === i);
+}
+
+function ownsWord(segment: Segment, word: string): boolean {
+  const key = tokens(word)[0];
+  const words = tokens(segment.text);
+  return words.some((w, i) => w === key && ownedKin(words, i));
 }
 
 function calculatedNote(evidence: string, birthYear: number | null): string {
@@ -114,15 +120,26 @@ export function verify(
   range: { from: number; to: number },
   narrator: string,
   birthYear: number | null,
-): VerifiedFact[] {
+): Verified {
   const facts: VerifiedFact[] = [];
+  const rejected: Rejection[] = [];
   const byIdx = new Map(segments.map((s) => [s.idx, s]));
   const narratorKey = normalize(narrator);
   const seenEntities = new Set<string>();
+  const inStory = segments.filter((s) => s.idx >= range.from && s.idx <= range.to);
+  const storyText = inStory.map((s) => s.text).join(" ");
+  const reject = (kind: FactKind, value: string, mention: string | null, reason: string) => rejected.push({ kind, value, mention: mention?.trim() || null, reason });
 
-  const expand = (kind: "person" | "place", value: string, phrases: string[], primary: Evidence, base: Omit<VerifiedFact, "primary" | "seg" | "evidence" | "start" | "end" | "provenance">) => {
-    for (const segment of segments) {
-      if (segment.idx < range.from || segment.idx > range.to || segment.idx === primary.seg) continue;
+  const expand = (
+    kind: "person" | "place",
+    value: string,
+    phrases: string[],
+    primary: Evidence,
+    base: Omit<VerifiedFact, "primary" | "seg" | "evidence" | "start" | "end" | "provenance">,
+    accept?: (segment: Segment) => boolean,
+  ) => {
+    for (const segment of inStory) {
+      if (segment.idx === primary.seg || (accept && !accept(segment))) continue;
       for (const phrase of phrases) {
         const hit = locateInSegment(segment, phrase);
         if (!hit) continue;
@@ -140,19 +157,42 @@ export function verify(
   };
 
   for (const person of annotation.people) {
-    const name = displayName(person.name);
+    const raw = displayName(person.name);
+    const name = bareKinship(raw) ? raw.charAt(0).toLocaleUpperCase() + raw.slice(1) : raw;
     const key = normalize(name);
     if (!key || key === narratorKey || narratorKey.split(" ").includes(key) || seenEntities.has(`person:${key}`)) continue;
-    if (!isIndividual(name, person.mention || name)) continue;
-    const evidence = findEvidence(segments, range.from, range.to, person.segment, evidencePhrases(name, person.mention, person.relation));
-    if (!evidence) continue;
+    if (!isIndividual(name, person.mention || name)) {
+      reject("person", name, person.mention, "A group or a common word, not one person.");
+      continue;
+    }
+    const kin = bareKinship(name);
+    if (kin && !mentionsOwnKin(storyText, name)) {
+      const present = tokens(storyText).includes(tokens(name).filter((w) => !leadingWords.has(w))[0]);
+      reject(
+        "person",
+        name,
+        person.mention,
+        present ? "A relative of someone else: the words never say “my”." : `The word “${name}” isn't in the words of this story, so the identity would be a translation or a guess.`,
+      );
+      continue;
+    }
+    const accept = kin ? (segment: Segment) => ownsWord(segment, name) : undefined;
+    const evidence = findEvidence(segments, range.from, range.to, person.segment, evidencePhrases(name, person.mention, person.relation), accept);
+    if (!evidence) {
+      reject("person", name, person.mention, "Not found in the words of this story.");
+      continue;
+    }
     seenEntities.add(`person:${key}`);
     const literal = containsPhrase(byIdx.get(evidence.seg)?.text ?? "", name);
     const provenance: Provenance = literal ? "said" : person.explicit ? "extracted" : "inferred";
     const alias = properAlias(person.mention);
     const aliases = alias && normalize(alias) !== key ? [alias] : [];
-    const storyText = segments.filter((seg) => seg.idx >= range.from && seg.idx <= range.to).map((seg) => seg.text).join(" ");
-    const relation = person.relation.trim() && containsPhrase(storyText, person.relation.trim()) ? person.relation.trim() : null;
+    const said = person.relation.trim();
+    let relation: string | null = said && containsPhrase(storyText, said) ? said : null;
+    if (relation && bareKinship(relation) && !mentionsOwnKin(storyText, relation)) {
+      reject("person", `${name} (${relation})`, person.mention, "The relation is someone else's: the words never say “my”.");
+      relation = null;
+    }
     const base = {
       kind: "person" as const,
       value: name,
@@ -163,18 +203,31 @@ export function verify(
       entity: { name, relation, aliases },
     };
     facts.push({ ...base, provenance, primary: true, ...evidence });
-    const phrases = [name, ...aliases, ...(tokens(person.mention).length <= 4 ? [person.mention] : [])].filter(
+    const phrases = [name, ...aliases, ...(!kin && tokens(person.mention).length <= 4 ? [person.mention] : [])].filter(
       (p, i, all) => normalize(p) && all.findIndex((q) => normalize(q) === normalize(p)) === i,
     );
-    expand("person", name, phrases, evidence, base);
+    expand("person", name, phrases, evidence, base, accept);
   }
 
   for (const place of annotation.places) {
     const name = displayName(place.name);
     const key = normalize(name);
     if (!key || seenEntities.has(`place:${key}`)) continue;
+    if (!hasProperWord(name)) {
+      reject("place", name, place.mention, "A common noun, not the name of a place, so it can't be the same place in another story.");
+      continue;
+    }
     const evidence = findEvidence(segments, range.from, range.to, place.segment, evidencePhrases(name, place.mention, null));
-    if (!evidence) continue;
+    if (!evidence) {
+      reject("place", name, place.mention, "Not found in the words of this story.");
+      continue;
+    }
+    const named = properWords(name);
+    const heard = new Set(tokens(evidence.evidence));
+    if (named.length && !named.some((w) => heard.has(w))) {
+      reject("place", name, evidence.evidence, `The words only say “${evidence.evidence}”; that it is ${name} would be a guess.`);
+      continue;
+    }
     seenEntities.add(`place:${key}`);
     const literal = containsPhrase(byIdx.get(evidence.seg)?.text ?? "", name);
     const provenance: Provenance = literal ? "said" : place.explicit ? "extracted" : "inferred";
@@ -203,42 +256,54 @@ export function verify(
     const value = yearLabel(validFrom, validTo, time.label);
     if (!value || seenTimes.has(value)) continue;
     const evidence = time.mention.trim() ? findEvidence(segments, range.from, range.to, time.segment, [time.mention]) : null;
+    if (!evidence) {
+      reject("time", value, time.mention, "No words in this story support this year.");
+      continue;
+    }
+    const text = byIdx.get(evidence.seg)?.text ?? "";
+    const stated = statesYear(evidence.evidence, validFrom) || statesYear(text, validFrom);
     let provenance: Provenance;
     let note: string | null = null;
-    if (evidence) {
-      const text = byIdx.get(evidence.seg)?.text ?? "";
-      const stated = time.explicit && (statesYear(evidence.evidence, validFrom) || statesYear(text, validFrom));
-      provenance = !stated ? "inferred" : yearsInText(text, validFrom, validTo) ? "said" : "extracted";
-      if (provenance === "inferred") {
-        note = time.explicit || !time.reason.trim() ? calculatedNote(evidence.evidence, birthYear) : time.reason.trim();
+    let yearFrom = validFrom;
+    let yearTo = validTo;
+    let label = value;
+    if (stated) {
+      provenance = yearsInText(text, validFrom, validTo) ? "said" : "extracted";
+      if (validFrom === validTo && isApproximate(text, validFrom)) {
+        yearFrom = validFrom - 2;
+        yearTo = validFrom + 2;
+        label = `c. ${validFrom}`;
+        note = `Said as an approximate year, around ${validFrom}.`;
       }
-    } else if (!time.explicit && time.reason.trim()) {
-      provenance = "inferred";
-      note = time.reason.trim();
     } else {
-      continue;
+      const age = birthYear ? findNarratorAge(text) : null;
+      if (!age || Math.abs(birthYear! + age.age - validFrom) > 1) {
+        reject("time", value, evidence.evidence, "The year isn't said, and no age of the narrator in these words gives it.");
+        continue;
+      }
+      provenance = "inferred";
+      note = calculatedNote(age.phrase, birthYear);
     }
     seenTimes.add(value);
     facts.push({
       kind: "time",
-      value,
+      value: label,
       detail: null,
-      yearFrom: validFrom,
-      yearTo: validTo,
+      yearFrom,
+      yearTo,
       provenance,
       primary: true,
-      seg: evidence?.seg ?? null,
-      evidence: evidence?.evidence ?? null,
-      start: evidence?.start ?? null,
-      end: evidence?.end ?? null,
+      seg: evidence.seg,
+      evidence: evidence.evidence,
+      start: evidence.start,
+      end: evidence.end,
       note,
     });
   }
 
   if (birthYear && !facts.some((f) => f.kind === "time" && f.yearFrom)) {
-    for (const segment of segments) {
-      if (segment.idx < range.from || segment.idx > range.to) continue;
-      const found = findAge(segment.text);
+    for (const segment of inStory) {
+      const found = findNarratorAge(segment.text);
       if (!found) continue;
       const year = birthYear + found.age;
       if (year > currentYear) break;
@@ -278,7 +343,7 @@ export function verify(
       end: null,
       note: `About ${age} years old in ${anchor.yearFrom}, counted from the year of birth.`,
     });
-    return facts;
+    return { facts, rejected };
   }
 
   const stage = annotation.lifeStage;
@@ -301,5 +366,6 @@ export function verify(
     });
   }
 
-  return facts;
+  return { facts, rejected };
 }
+

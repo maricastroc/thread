@@ -17,7 +17,7 @@ import type {
 import { db, transaction } from "./db";
 import { newId } from "./ids";
 import type { KnownEntity } from "./interpreter/types";
-import type { VerifiedFact } from "./provenance";
+import type { Rejection, VerifiedFact } from "./provenance";
 import { normalize } from "./text";
 import { whenFromFacts } from "./when";
 
@@ -157,6 +157,87 @@ export function deleteRecordingRow(id: string): void {
   db().prepare("DELETE FROM recordings WHERE id = ?").run(id);
 }
 
+export function deleteOrphanEntities(): number {
+  const result = db()
+    .prepare("DELETE FROM entities WHERE id NOT IN (SELECT entity_id FROM facts WHERE entity_id IS NOT NULL)")
+    .run();
+  return Number(result.changes);
+}
+
+export type MarkInput = {
+  storyId: string;
+  recordingId: string;
+  kind: "mention" | "age" | "offset" | "duration";
+  status: "kept" | "refused";
+  reason: string | null;
+  entityId: string | null;
+  value: number | null;
+  yearFrom: number | null;
+  yearTo: number | null;
+  anchored: boolean;
+  provenance: Provenance | null;
+  seg: number | null;
+  evidence: string | null;
+  start: number | null;
+  end: number | null;
+  note: string | null;
+};
+
+export function replaceMarks(marks: MarkInput[]): void {
+  transaction(() => {
+    const database = db();
+    database.prepare("DELETE FROM marks").run();
+    const insert = database.prepare(
+      `INSERT INTO marks (story_id, recording_id, kind, status, reason, entity_id, value, year_from, year_to, anchored, provenance, seg, evidence, start_sec, end_sec, note)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    );
+    for (const m of marks) {
+      insert.run(m.storyId, m.recordingId, m.kind, m.status, m.reason, m.entityId, m.value, m.yearFrom, m.yearTo, m.anchored ? 1 : 0, m.provenance, m.seg, m.evidence, m.start, m.end, m.note);
+    }
+  });
+}
+
+export function keptMarks(): MarkInput[] {
+  return (db().prepare("SELECT * FROM marks WHERE status = 'kept' ORDER BY story_id, start_sec").all() as Row[]).map((r) => ({
+    storyId: String(r.story_id),
+    recordingId: String(r.recording_id),
+    kind: String(r.kind) as MarkInput["kind"],
+    status: "kept" as const,
+    reason: null,
+    entityId: str(r.entity_id),
+    value: num(r.value),
+    yearFrom: num(r.year_from),
+    yearTo: num(r.year_to),
+    anchored: Number(r.anchored) === 1,
+    provenance: (str(r.provenance) as Provenance | null) ?? null,
+    seg: num(r.seg),
+    evidence: str(r.evidence),
+    start: num(r.start_sec),
+    end: num(r.end_sec),
+    note: str(r.note),
+  }));
+}
+
+export function getMeta(key: string): string | null {
+  const row = db().prepare("SELECT value FROM meta WHERE key = ?").get(key) as Row | undefined;
+  return row ? String(row.value) : null;
+}
+
+export function setMeta(key: string, value: string): void {
+  db().prepare("INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(key, value);
+}
+
+export function allStoryRanges(): { id: string; recordingId: string; segStart: number; segEnd: number; start: number; end: number }[] {
+  return (db().prepare("SELECT id, recording_id, seg_start, seg_end, start_sec, end_sec FROM stories ORDER BY recording_id, ord").all() as Row[]).map((r) => ({
+    id: String(r.id),
+    recordingId: String(r.recording_id),
+    segStart: Number(r.seg_start),
+    segEnd: Number(r.seg_end),
+    start: Number(r.start_sec),
+    end: Number(r.end_sec),
+  }));
+}
+
 export function getPeaks(id: string): Uint8Array | null {
   const row = db().prepare("SELECT peaks FROM recordings WHERE id = ?").get(id) as Row | undefined;
   return row?.peaks instanceof Uint8Array ? row.peaks : null;
@@ -273,12 +354,15 @@ export function saveAnnotation(input: {
   storyId: string;
   recordingId: string;
   facts: VerifiedFact[];
+  rejected: Rejection[];
   themes: Theme[];
   questions: string[];
   model: string;
 }): void {
   transaction(() => {
     const database = db();
+    const refuse = database.prepare("INSERT INTO rejections (story_id, recording_id, kind, value, mention, reason, model) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    for (const r of input.rejected) refuse.run(input.storyId, input.recordingId, r.kind, r.value, r.mention, r.reason, input.model);
     const insert = database.prepare(
       `INSERT INTO facts (story_id, recording_id, kind, entity_id, value, detail, year_from, year_to, provenance, is_primary, seg, evidence, start_sec, end_sec, note, model)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,

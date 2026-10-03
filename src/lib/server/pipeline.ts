@@ -7,11 +7,13 @@ import { CommandError } from "./bin";
 import { config } from "./config";
 import { db, recordingDir } from "./db";
 import { bumpSearchVersion, indexRecording } from "./indexer";
+import { rederiveArchive } from "./derive";
 import { createInterpreter } from "./interpreter/gemma";
 import { ModelServiceError, unload } from "./ollama";
 import { verify, type VerifiedFact } from "./provenance";
 import {
   clearInterpretation,
+  deleteOrphanEntities,
   deleteRecordingRow,
   getRecording,
   getSegments,
@@ -26,7 +28,7 @@ import {
   type PreviousStory,
   type RecordingError,
 } from "./repo";
-import { planStories, type PlannedStory } from "./structure";
+import { attachLeftovers, planStories, uncovered, type PlannedStory } from "./structure";
 import { buildPrompt, transcribe } from "./whisper";
 
 export type LiveLine = { start: number; end: number; text: string };
@@ -79,6 +81,8 @@ export async function removeRecording(id: string): Promise<boolean> {
   if (!recording || state.current === id) return false;
   state.queue = state.queue.filter((queued) => queued !== id);
   deleteRecordingRow(id);
+  deleteOrphanEntities();
+  rederiveArchive();
   bumpSearchVersion();
   const removedDir = path.join(config.dataDir, "removed");
   await fs.promises.mkdir(removedDir, { recursive: true });
@@ -194,7 +198,27 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
       language: recording.language,
       segments,
     });
-    const planned = matchPrevious(planStories(drafts, segments), previous);
+    let plan = planStories(drafts, segments);
+    const missing = uncovered(plan, segments).filter((r) => r.to > r.from && segments[r.to].end - segments[r.from].start >= RETRY_SECONDS);
+    if (missing.length) {
+      const extra = [];
+      for (const r of missing) {
+        const found = await interpreter.findStories({
+          narrator: vault.narrator,
+          recordedAt: recording.recordedAt,
+          prompt: null,
+          language: recording.language,
+          segments: segments.slice(r.from, r.to + 1),
+        });
+        extra.push(
+          ...found
+            .map((d) => ({ ...d, firstSegment: Math.max(r.from, d.firstSegment), lastSegment: Math.min(r.to, d.lastSegment) }))
+            .filter((d) => d.firstSegment <= d.lastSegment),
+        );
+      }
+      plan = planStories([...drafts, ...extra], segments);
+    }
+    const planned = matchPrevious(attachLeftovers(plan, segments), previous);
     const ids = planned.map((story, ord) => insertStory({ recordingId: id, ord, ...story }));
     const earlier: { title: string; when: string | null }[] = [];
     let previousAnchor: VerifiedFact | null = null;
@@ -212,25 +236,25 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
         known: knownEntities(),
         earlier: earlier.slice(-4),
       });
-      const facts = inheritPeriod(
-        verify(annotation, segments, { from: story.segStart, to: story.segEnd }, vault.narrator, vault.birthYear),
-        previousAnchor,
-        vault.birthYear,
-      );
+      const verified = verify(annotation, segments, { from: story.segStart, to: story.segEnd }, vault.narrator, vault.birthYear);
+      const facts = inheritPeriod(verified.facts, previousAnchor, vault.birthYear);
       const title = restoreNames(story.title, facts);
       if (title !== story.title) updateStoryTitle(ids[i], title);
       const anchor = facts.find((f) => f.kind === "time" && f.yearFrom);
       earlier.push({ title, when: anchor ? anchor.value : null });
-      previousAnchor = anchor && !anchor.note?.startsWith(INHERITED) ? anchor : null;
+      previousAnchor = anchor ?? null;
       saveAnnotation({
         storyId: ids[i],
         recordingId: id,
         facts,
+        rejected: verified.rejected,
         themes: annotation.themes,
         questions: annotation.questions,
         model: interpreter.model,
       });
     }
+    deleteOrphanEntities();
+    rederiveArchive();
     updateRecording(id, { detail: null, progress: 1 });
   },
 
@@ -264,6 +288,7 @@ function matchPrevious(planned: PlannedStory[], previous: PreviousStory[]) {
 }
 
 const INHERITED = "Told right after";
+const RETRY_SECONDS = 12;
 
 function inheritPeriod(facts: VerifiedFact[], previous: VerifiedFact | null, birthYear: number | null): VerifiedFact[] {
   if (!previous?.yearFrom || facts.some((f) => f.kind === "time" && f.yearFrom)) return facts;

@@ -8,9 +8,10 @@ export type LifeEvent = {
   kind: "age" | "offset" | "duration";
   time: number;
   evidence: string;
-  year: number;
-  to?: number;
-  age?: number;
+  value: number;
+  year: number | null;
+  anchored: boolean;
+  note: string | null;
 };
 
 export type LifeStory = {

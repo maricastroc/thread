@@ -125,24 +125,68 @@ CREATE TRIGGER IF NOT EXISTS chunks_after_delete AFTER DELETE ON chunks BEGIN
   INSERT INTO chunks_fts (chunks_fts, rowid, text) VALUES ('delete', old.id, old.text);
 END;
 
+CREATE TABLE IF NOT EXISTS rejections (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  story_id TEXT NOT NULL REFERENCES stories(id) ON DELETE CASCADE,
+  recording_id TEXT NOT NULL REFERENCES recordings(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,
+  value TEXT NOT NULL,
+  mention TEXT,
+  reason TEXT NOT NULL,
+  model TEXT
+);
+
+CREATE TABLE IF NOT EXISTS marks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  story_id TEXT NOT NULL REFERENCES stories(id) ON DELETE CASCADE,
+  recording_id TEXT NOT NULL REFERENCES recordings(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,
+  status TEXT NOT NULL,
+  reason TEXT,
+  entity_id TEXT REFERENCES entities(id) ON DELETE CASCADE,
+  value REAL,
+  year_from INTEGER,
+  year_to INTEGER,
+  anchored INTEGER NOT NULL DEFAULT 0,
+  provenance TEXT,
+  seg INTEGER,
+  evidence TEXT,
+  start_sec REAL,
+  end_sec REAL,
+  note TEXT
+);
+
+CREATE TABLE IF NOT EXISTS meta (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS marks_story ON marks (story_id);
 CREATE INDEX IF NOT EXISTS facts_story ON facts (story_id);
 CREATE INDEX IF NOT EXISTS facts_entity ON facts (entity_id);
 CREATE INDEX IF NOT EXISTS stories_recording ON stories (recording_id, ord);
 CREATE INDEX IF NOT EXISTS chunks_recording ON chunks (recording_id);
 `;
 
-type Holder = { db?: DatabaseSync };
+type Holder = { db?: DatabaseSync; schema?: string };
 const holder = globalThis as unknown as { __cofreDb?: Holder };
 holder.__cofreDb ??= {};
 
 export function db(): DatabaseSync {
   const h = holder.__cofreDb!;
-  if (h.db) return h.db;
+  if (h.db) {
+    if (h.schema !== SCHEMA) {
+      h.db.exec(SCHEMA);
+      h.schema = SCHEMA;
+    }
+    return h.db;
+  }
   fs.mkdirSync(config.dataDir, { recursive: true });
   const database = new DatabaseSync(path.join(config.dataDir, "cofre.db"));
   database.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");
   database.exec(SCHEMA);
   h.db = database;
+  h.schema = SCHEMA;
   return database;
 }
 

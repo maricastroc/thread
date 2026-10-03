@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { isSameTrack, useAudio, useAudioState, type Track } from "@/components/audio/AudioProvider";
 import { Dock } from "@/components/audio/Dock";
 import { Scrubber } from "@/components/audio/Scrubber";
@@ -8,7 +9,7 @@ import { TimeReadout } from "@/components/audio/TimeReadout";
 import { ArrowIcon, PauseIcon, PlayIcon } from "@/components/icons";
 import { formatClock } from "@/lib/format";
 import { t } from "@/lib/i18n";
-import type { Life, LifeEntity, LifeStory } from "@/lib/life";
+import type { Life, LifeEntity, LifeEvent, LifeStory } from "@/lib/life";
 
 export function trackOf(story: LifeStory): Track {
   return {
@@ -37,6 +38,12 @@ export function ageLabel(story: LifeStory): string | null {
   return isCertain(story) ? t.life.age(story.age) : t.life.aboutAge(story.age);
 }
 
+export function eventLabel(event: LifeEvent): string {
+  if (event.kind === "age") return t.life.age(event.value);
+  if (event.kind === "duration") return t.life.years(event.value);
+  return event.year !== null ? t.time.circa(String(event.year)) : t.life.years(event.value);
+}
+
 export function certaintyWord(story: LifeStory): string {
   if (story.certainty === "none") return t.life.certainty.none;
   if (story.provenance === "said") return t.life.certainty.said;
@@ -55,11 +62,11 @@ export type Reveal = {
   playing: boolean;
   ended: boolean;
   said: Set<string>;
-  lit: Set<string>;
   events: Set<number>;
   litEvents: Set<number>;
   quote: boolean;
   heard: number;
+  current: string | null;
 };
 
 function unique(values: string[]) {
@@ -71,16 +78,17 @@ export function useReveal(story: LifeStory | null): Reveal {
     if (!story || !isSameTrack(s.track, trackOf(story))) return "";
     const time = s.ended ? Number.POSITIVE_INFINITY : s.time;
     const said = unique(story.mentions.filter((m) => time >= m.time - 0.3).map((m) => m.entityId));
-    const lit = s.playing ? unique(story.mentions.filter((m) => s.time >= m.time - 0.3 && s.time <= m.time + LIT_WINDOW).map((m) => m.entityId)) : [];
     const events = story.events.map((e, i) => (time >= e.time - 0.3 ? i : -1)).filter((i) => i >= 0);
     const litEvents = s.playing ? story.events.map((e, i) => (s.time >= e.time - 0.3 && s.time <= e.time + LIT_WINDOW ? i : -1)).filter((i) => i >= 0) : [];
     const quote = story.quote && s.playing && s.time >= story.quote.start - 0.2 && s.time <= story.quote.end ? 1 : 0;
     const started = s.playing || s.ended || s.time > story.start + 0.3 ? 1 : 0;
     const heard = story.mentions.filter((m) => time >= m.time - 0.3).length;
-    return [said.join(","), lit.join(","), events.join(","), litEvents.join(","), quote, s.ended ? 1 : 0, s.playing ? 1 : 0, started, heard].join("|");
+    const latest = s.playing ? story.mentions.filter((m) => s.time >= m.time - 0.3 && s.time <= m.time + LIT_WINDOW).at(-1)?.entityId ?? "" : "";
+    return [said.join(","), events.join(","), litEvents.join(","), quote, s.ended ? 1 : 0, s.playing ? 1 : 0, started, heard, latest].join("|");
   });
-  if (!key) return { active: false, playing: false, ended: false, said: new Set(), lit: new Set(), events: new Set(), litEvents: new Set(), quote: false, heard: 0 };
-  const [said, lit, events, litEvents, quote, ended, playing, started, heard] = key.split("|");
+  if (!key)
+    return { active: false, playing: false, ended: false, said: new Set(), events: new Set(), litEvents: new Set(), quote: false, heard: 0, current: null };
+  const [said, events, litEvents, quote, ended, playing, started, heard, latest] = key.split("|");
   const set = (value: string) => new Set(value.split(",").filter(Boolean));
   const numbers = (value: string) => new Set(value.split(",").filter(Boolean).map(Number));
   return {
@@ -88,11 +96,11 @@ export function useReveal(story: LifeStory | null): Reveal {
     playing: playing === "1",
     ended: ended === "1",
     said: set(said),
-    lit: set(lit),
     events: numbers(events),
     litEvents: numbers(litEvents),
     quote: quote === "1",
     heard: Number(heard),
+    current: latest || null,
   };
 }
 
@@ -150,7 +158,6 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, 
   const traces = [...story.people.map((p) => ({ ...p, kind: "person" as const })), ...story.places.map((p) => ({ ...p, kind: "place" as const }))].sort(
     (a, b) => firstAt(a.id) - firstAt(b.id),
   );
-  const circa = (year: number) => (isCertain(story) ? String(year) : t.time.circa(String(year)));
   const lang = story.language ?? undefined;
   const Heading = headingLevel;
   const active = traces.find((trace) => trace.id === activeEntity) ?? null;
@@ -209,7 +216,7 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, 
           <p className="t-small text-ink-2">{t.life.traces}</p>
           <ul className="mt-1 flex flex-wrap gap-x-5">
             {traces.map((trace) => {
-              const isLit = reveal.lit.has(trace.id);
+              const isLit = reveal.current === trace.id;
               const isActive = activeEntity === trace.id;
               const first = story.mentions.find((m) => m.entityId === trace.id);
               return (
@@ -251,9 +258,7 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, 
                     aria-hidden="true"
                     className={`size-[7px] rotate-45 transition-colors duration-300 ${reveal.litEvents.has(i) ? "bg-voice" : reveal.events.has(i) ? "bg-ink" : "bg-rule-2"}`}
                   />
-                  <span className="text-[1rem] whitespace-nowrap tabular-nums">
-                    {e.kind === "duration" ? `${circa(e.year)}–${e.to}` : e.kind === "age" ? t.life.age(e.age!) : circa(e.year)}
-                  </span>
+                  <span className="text-[1rem] whitespace-nowrap tabular-nums">{eventLabel(e)}</span>
                   <button
                     type="button"
                     onClick={() => play(track, Math.max(story.start, e.time - 1))}
@@ -299,8 +304,12 @@ export function TrailBar({
   limit?: number;
   kinds?: ("person" | "place")[];
 }) {
+  const [expanded, setExpanded] = useState<("person" | "place")[]>([]);
   const group = (kind: "person" | "place") => {
-    const list = entities.filter((e) => e.kind === kind).slice(0, limit);
+    const all = entities.filter((e) => e.kind === kind);
+    const open = expanded.includes(kind);
+    const list = open ? all : all.filter((e, i) => i < limit || e.id === activeEntity);
+    const hidden = all.length - list.length;
     if (!list.length) return null;
     return (
       <div key={kind} className="flex flex-wrap items-baseline gap-x-4">
@@ -320,6 +329,16 @@ export function TrailBar({
             <span className="t-time ml-1 text-ink-3">{e.storyIds.length}</span>
           </button>
         ))}
+        {(hidden > 0 || open) && all.length > limit && (
+          <button
+            type="button"
+            onClick={() => setExpanded(open ? expanded.filter((k) => k !== kind) : [...expanded, kind])}
+            aria-expanded={open}
+            className="inline-flex min-h-11 items-center text-[0.9375rem] text-ink-2 underline decoration-rule-2 underline-offset-[0.22em] hover:text-ink"
+          >
+            {open ? t.life.fewer : t.life.more(hidden)}
+          </button>
+        )}
       </div>
     );
   };

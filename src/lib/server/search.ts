@@ -4,6 +4,7 @@ import { db } from "./db";
 import { embedQuery, searchVersion } from "./indexer";
 import { getSegments, listStories } from "./repo";
 import { normalize, tokens } from "./text";
+import { kinship } from "./words";
 
 type CachedChunk = {
   id: number;
@@ -26,9 +27,9 @@ const stopwords = new Set(
     "a o as os um uma uns umas de da do das dos em na no nas nos num numa por pelo pela para pra pro com sem que quando como onde qual quais quem " +
     "ela ele elas eles sua seu suas seus dela dele sobre foi era eram ser ter tinha tinham isso essa esse esta este aquela aquele aquilo mais muito " +
     "ja tambem e ou mas se me te lhe nos voces voce eu minha meu historia historias contou contava conta contar falou falava fala falar lembra lembrava " +
-    "vo vovo " +
     "the an of in on at to for with about when how where what who she he her his they their them did does was were is are be been story stories tell told " +
-    "talk talked talking say said from that this it its there any some remember remembered grandma grandpa"
+    "talk talked talking say said from that this it its there any some remember remembered " +
+    "el la los las un una de del en por para con que cuando como donde quien su sus fue era historia conto"
   ).split(" "),
 );
 
@@ -76,7 +77,7 @@ function dot(a: Float32Array, b: Float32Array): number {
 }
 
 export function searchTerms(query: string): string[] {
-  return [...new Set(tokens(query).filter((t) => t.length >= 3 && !stopwords.has(t)))];
+  return [...new Set(tokens(query).filter((t) => t.length >= 3 && !stopwords.has(t) && !kinship.has(t)))];
 }
 
 function coverage(norm: string, terms: string[]): number {
