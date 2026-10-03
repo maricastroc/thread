@@ -2,14 +2,15 @@
 
 import { useId, useSyncExternalStore } from "react";
 import { t } from "@/lib/i18n";
-import { PAPER, THEME_EVENT, THEME_KEY, type Theme } from "@/lib/theme";
+import { PAPER, THEME_EVENT, THEME_KEY, parseTheme, type Theme } from "@/lib/theme";
 
 const choices: Theme[] = ["system", "light", "dark"];
 
 function read(): Theme {
+  const cookie = document.cookie.split("; ").find((part) => part.startsWith(`${THEME_KEY}=`));
+  if (cookie) return parseTheme(cookie.slice(THEME_KEY.length + 1));
   try {
-    const value = localStorage.getItem(THEME_KEY);
-    return value === "light" || value === "dark" ? value : "system";
+    return parseTheme(localStorage.getItem(THEME_KEY));
   } catch {
     return "system";
   }
@@ -19,13 +20,17 @@ function apply(theme: Theme) {
   const root = document.documentElement;
   if (theme === "system") delete root.dataset.theme;
   else root.dataset.theme = theme;
+  const system = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
-    const scheme = theme === "system" ? (meta.media.includes("dark") ? "dark" : "light") : theme;
+    const scheme = theme !== "system" ? theme : meta.media ? (meta.media.includes("dark") ? "dark" : "light") : system;
     meta.content = PAPER[scheme];
   });
 }
 
 function subscribe(onChange: () => void) {
+  const saved = read();
+  persist(saved);
+  apply(saved);
   const sync = () => {
     apply(read());
     onChange();
@@ -38,18 +43,23 @@ function subscribe(onChange: () => void) {
   };
 }
 
-function choose(theme: Theme) {
+function persist(theme: Theme) {
+  document.cookie = theme === "system" ? `${THEME_KEY}=; path=/; max-age=0; samesite=lax` : `${THEME_KEY}=${theme}; path=/; max-age=31536000; samesite=lax`;
   try {
     if (theme === "system") localStorage.removeItem(THEME_KEY);
     else localStorage.setItem(THEME_KEY, theme);
   } catch {}
+}
+
+function choose(theme: Theme) {
+  persist(theme);
   apply(theme);
   window.dispatchEvent(new Event(THEME_EVENT));
 }
 
-export function ThemeChoice() {
+export function ThemeChoice({ initial }: { initial: Theme }) {
   const id = useId();
-  const current = useSyncExternalStore(subscribe, read, () => "system" as Theme);
+  const current = useSyncExternalStore(subscribe, read, () => initial);
   return (
     <div role="radiogroup" aria-labelledby={id} className="t-small flex items-center gap-1 text-ink-2">
       <span id={id} className="mr-1">

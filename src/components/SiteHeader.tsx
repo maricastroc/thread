@@ -6,6 +6,7 @@ import { SearchField } from "@/components/SearchField";
 import { RecordDot } from "@/components/icons";
 import { ThemeChoice } from "@/components/ThemeChoice";
 import { t } from "@/lib/i18n";
+import { storedTheme } from "@/lib/server/theme";
 
 export function RecordLink({ className = "", label = t.nav.record }: { className?: string; label?: string }) {
   return (
@@ -76,7 +77,8 @@ export function SiteHeader({ subject, search = true }: { subject: string | null;
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const theme = await storedTheme();
   return (
     <footer className="mx-auto mt-24 max-w-6xl px-4 pb-6 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-1 border-t border-rule pt-3">
@@ -84,7 +86,7 @@ export function SiteFooter() {
           <span aria-hidden="true" className="inline-block size-1.5 rounded-full bg-ink-3" />
           {t.privacy}
         </p>
-        <ThemeChoice />
+        <ThemeChoice initial={theme} />
       </div>
     </footer>
   );
