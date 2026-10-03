@@ -115,6 +115,8 @@ The processing screen is designed around this. You see the waveform fill as the 
 
 ## Limitations (honest list)
 
+- **One person per archive, and the archive assumes that person is the one speaking.** Thread keeps the life of one person, the archive's subject, and a recording may come from anyone. But the interpreter and the first-person rules still treat the speaker as the subject: "eu tinha 10 anos" becomes the subject's age and "minha mãe" the subject's mother. If a granddaughter records "minha avó Lúcia sempre contava…", her own age and her own mother would be attributed to Lúcia. The coupling lives in the prompt (`interpreter/prompts.ts`), in the first-person rules (`numbers.ts`, `words.ts`) and where they meet the subject's year of birth (`derive.ts`, `provenance.ts`); the pipeline hands the subject to the interpreter as the narrator in one place (`pipeline.ts`). The safe next step is to mark who is speaking in each recording and refuse every first-person inference when it isn't the subject.
+
 - Long sessions are slow to organize: annotation runs story by story at ~30 s each on E4B, so a 30-minute session with 35 stories takes ~19 minutes. Transcription stays fast (~9× real time). Next step: annotate stories in parallel (Ollama `OLLAMA_NUM_PARALLEL`), or use E2B for long sessions.
 - On a 16 GB laptop, having Gemma (4.3 GB resident) loaded while Whisper runs pushed the machine into swap. The pipeline now unloads Gemma before transcribing and reloads it for the organizing step.
 

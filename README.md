@@ -1,8 +1,17 @@
 # Thread
 
-A place to keep someone's stories, in their own voice.
+A life archive for one person, built from recordings.
 
-Thread records an older relative telling stories and turns the recordings into a family archive you can browse and search. It follows one rule: **the AI never replaces the memory.** The recording is the artifact. Search never answers with generated text; it takes you to the moment in the recording and plays the person's own voice from there.
+Thread keeps one person's stories. You record or import conversations, and Thread builds that person's life from what was said: the stories, the people and places in them, and where each one sits in their life. It follows one rule: **the AI never replaces the memory.** The recording is the artifact. Search never answers with generated text; it takes you to the moment in the recording and plays the voice from there.
+
+An archive has four layers, and each one leads back to the one before:
+
+- **Recordings** are the evidence: every file added to the archive, kept exactly as it was received, even when nothing could be extracted from it.
+- **Stories** are the interpretation: the separate memories found in a recording. A recording can hold several, one, or none.
+- **The life** is the representation: the stories placed on the person's lifeline, connected through the people and places they share.
+- **People and places** are the entities those stories mention, each one tied to the words that support it.
+
+This version keeps one person per installation. Several archives side by side would be a layer above this one.
 
 Everything runs on your machine. The recordings, transcripts and search index never leave it.
 
