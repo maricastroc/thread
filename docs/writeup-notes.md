@@ -8,7 +8,7 @@ The AI never replaces the memory. The recording is the artifact; the AI is the i
 
 How that shows up in the product:
 
-- Search returns **moments**, never answers. The result sentence is a template ("Found three moments where Lúcia talked about this."), not model output.
+- Search returns **moments**, never answers. The result sentence is a template ("Found three moments where Kiara talked about this."), not model output.
 - Every result has "Listen from 0:42", which plays her voice from that second.
 - The transcript is labelled as machine-written: "Written down by speech recognition. The recording is the original."
 - Titles are labelled "Title suggested by the archive", and the family can rename them. A renamed title is marked `family` and never overwritten by a reprocess.
@@ -108,7 +108,7 @@ To check that none of this depends on the demo, a second archive with a differen
 
 ## Bugs found by looking at real output
 
-- **Prompting Whisper with names merged segments.** Passing `--prompt "Lúcia, José, Quixadá…"` improves name spelling, but made whisper.cpp emit ~30-second segments, so a story boundary landed mid-sentence. Fix: re-segment into sentences from the word timestamps (sentence punctuation + pauses > 1.2 s). Segmentation no longer depends on Whisper's chunking.
+- **Prompting Whisper with names merged segments.** Passing `--prompt "Kiara, José, Quixadá…"` improves name spelling, but made whisper.cpp emit ~30-second segments, so a story boundary landed mid-sentence. Fix: re-segment into sentences from the word timestamps (sentence punctuation + pauses > 1.2 s). Segmentation no longer depends on Whisper's chunking.
 - **VAD shifted the word timestamps.** With `--vad`, whisper.cpp maps segment times back to the original audio, but token times in `-ojf` stay on the VAD-compressed timeline. Words drifted up to 10 s by the end of a 2-minute recording. Fix: linearly remap each segment's tokens onto its mapped range.
 - **Accented words came out broken.** Token text in the JSON can split UTF-8 characters across tokens ("á" = two tokens). Reading the file as latin1 and re-assembling each word's bytes keeps "Quixadá" intact.
 
@@ -127,7 +127,7 @@ The processing screen is designed around this. You see the waveform fill as the 
 
 ## Limitations (honest list)
 
-- **One person per archive, and the archive assumes that person is the one speaking.** Thread keeps the life of one person, the archive's subject, and a recording may come from anyone. But the interpreter and the first-person rules still treat the speaker as the subject: "eu tinha 10 anos" becomes the subject's age and "minha mãe" the subject's mother. If a granddaughter records "minha avó Lúcia sempre contava…", her own age and her own mother would be attributed to Lúcia. The coupling lives in the prompt (`interpreter/prompts.ts`), in the first-person rules (`numbers.ts`, `words.ts`) and where they meet the subject's year of birth (`derive.ts`, `provenance.ts`); the pipeline hands the subject to the interpreter as the narrator in one place (`pipeline.ts`). The safe next step is to mark who is speaking in each recording and refuse every first-person inference when it isn't the subject.
+- **One person per archive, and the archive assumes that person is the one speaking.** Thread keeps the life of one person, the archive's subject, and a recording may come from anyone. But the interpreter and the first-person rules still treat the speaker as the subject: "eu tinha 10 anos" becomes the subject's age and "minha mãe" the subject's mother. If a granddaughter records "minha avó Kiara sempre contava…", her own age and her own mother would be attributed to Kiara. The coupling lives in the prompt (`interpreter/prompts.ts`), in the first-person rules (`numbers.ts`, `words.ts`) and where they meet the subject's year of birth (`derive.ts`, `provenance.ts`); the pipeline hands the subject to the interpreter as the narrator in one place (`pipeline.ts`). The safe next step is to mark who is speaking in each recording and refuse every first-person inference when it isn't the subject.
 
 - Long sessions are slow to organize: annotation runs story by story at ~30 s each on E4B, so a 30-minute session with 35 stories takes ~19 minutes. Transcription stays fast (~9× real time). Next step: annotate stories in parallel (Ollama `OLLAMA_NUM_PARALLEL`), or use E2B for long sessions.
 - On a 16 GB laptop, having Gemma (4.3 GB resident) loaded while Whisper runs pushed the machine into swap. The pipeline now unloads Gemma before transcribing and reloads it for the organizing step.

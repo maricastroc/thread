@@ -10,7 +10,7 @@ if [ ! -d "$AUDIO" ] || [ -z "$(ls -A "$AUDIO" 2>/dev/null)" ]; then
 fi
 
 curl -sf -X POST "$HOST/api/vault" -H 'content-type: application/json' \
-  -d '{"subject":"Lúcia","birthYear":1948,"language":"pt"}' > /dev/null
+  -d '{"subject":"Kiara","birthYear":1948,"language":"pt"}' > /dev/null
 
 day=21
 for file in "$AUDIO"/*.m4a; do

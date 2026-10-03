@@ -169,7 +169,7 @@ Relacionar histórias não usa LLM: pessoas/lugares em comum + similaridade dos 
 - **História**: título, quando, citação na voz original, player com marcas, transcrição
   com o tempo na margem esquerda e as anotações na margem direita, ao lado das palavras de onde vieram.
 - **Explorar**: linha da vida por década/fase; "sem data" separado; pessoas e lugares como índice.
-- **Buscar**: "Encontrei três momentos em que Lúcia falou sobre isso." → trechos reais → ouvir daquele ponto.
+- **Buscar**: "Encontrei três momentos em que Kiara falou sobre isso." → trechos reais → ouvir daquele ponto.
   Sem resultado: "Ainda não há gravação sobre isso" → gravar essa pergunta na próxima conversa.
 
 ## 11. Direção visual

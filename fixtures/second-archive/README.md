@@ -1,6 +1,6 @@
 # Second archive: generalization fixture
 
-A second, fully isolated archive used to check that Thread's behaviour does not depend on the demo. Different narrator (Armando, born 1939), different places, three languages, and constructions that never appear in Lúcia's recordings. Nothing here may be used as a rule in the code: the fixture only exercises the general rules.
+A second, fully isolated archive used to check that Thread's behaviour does not depend on the demo. Different narrator (Armando, born 1939), different places, three languages, and constructions that never appear in the demo's recordings. Nothing here may be used as a rule in the code: the fixture only exercises the general rules.
 
 Run it against an isolated data directory:
 
