@@ -133,7 +133,7 @@ export function PlayLarge({ story }: { story: LifeStory }) {
       type="button"
       onClick={onClick}
       aria-label={`${playing ? t.story.pause : t.story.listen}: ${story.title}`}
-      className="inline-flex h-12 shrink-0 items-center gap-2.5 rounded-full bg-ink pr-5 pl-4 text-paper transition-[filter,transform] duration-150 hover:brightness-125 active:scale-[0.98]"
+      className="inline-flex h-12 shrink-0 items-center gap-2.5 rounded-full bg-ink pr-5 pl-4 text-paper transition-[background-color,transform] duration-150 hover:bg-[color-mix(in_oklab,var(--text),var(--canvas)_16%)] active:scale-[0.98]"
     >
       {playing ? <PauseIcon size={16} /> : <PlayIcon size={16} className="translate-x-[1px]" />}
       <span className="text-[0.9375rem] font-medium">{playing ? t.story.pause : t.story.listen}</span>
@@ -223,7 +223,7 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, 
                 <li key={trace.id} className="flex items-center gap-2">
                   <span
                     aria-hidden="true"
-                    className={`size-2 rounded-full transition-colors duration-300 ${isLit ? "bg-voice" : reveal.said.has(trace.id) ? "bg-ink" : "bg-rule-2"}`}
+                    className={`size-2 rounded-full transition-colors duration-300 ${isLit ? "bg-voice" : reveal.said.has(trace.id) ? "bg-revealed" : reveal.active ? "bg-unrevealed" : "border border-ink-3"}`}
                   />
                   <button
                     type="button"
@@ -256,7 +256,7 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, 
                 <li key={i} className="flex items-center gap-2">
                   <span
                     aria-hidden="true"
-                    className={`size-[7px] rotate-45 transition-colors duration-300 ${reveal.litEvents.has(i) ? "bg-voice" : reveal.events.has(i) ? "bg-ink" : "bg-rule-2"}`}
+                    className={`size-[7px] rotate-45 transition-colors duration-300 ${reveal.litEvents.has(i) ? "bg-voice" : reveal.events.has(i) ? "bg-revealed" : reveal.active ? "bg-unrevealed" : "border border-ink-3"}`}
                   />
                   <span className="text-[1rem] whitespace-nowrap tabular-nums">{eventLabel(e)}</span>
                   <button

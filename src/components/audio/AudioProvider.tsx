@@ -19,9 +19,28 @@ export type AudioState = {
   ended: boolean;
   error: boolean;
   docked: string | null;
+  heard: Record<string, string>;
 };
 
-const initial: AudioState = { track: null, playing: false, loading: false, time: 0, ended: false, error: false, docked: null };
+const initial: AudioState = { track: null, playing: false, loading: false, time: 0, ended: false, error: false, docked: null, heard: {} };
+
+export const HEARD_STEPS = 48;
+const HEARD_KEY = "thread-heard";
+
+function hear(state: AudioState, time: number): Partial<AudioState> | null {
+  const { track, heard } = state;
+  if (!track?.storyId) return null;
+  const span = Math.max(0.1, track.end - track.start);
+  const step = Math.min(HEARD_STEPS - 1, Math.max(0, Math.floor(((time - track.start) / span) * HEARD_STEPS)));
+  const marks = heard[track.storyId] ?? "0".repeat(HEARD_STEPS);
+  if (marks[step] === "1") return null;
+  return { heard: { ...heard, [track.storyId]: `${marks.slice(0, step)}1${marks.slice(step + 1)}` } };
+}
+
+export function heardAt(marks: string | undefined, fraction: number): boolean {
+  if (!marks) return false;
+  return marks[Math.min(HEARD_STEPS - 1, Math.max(0, Math.floor(fraction * HEARD_STEPS)))] === "1";
+}
 
 type Store = {
   get: () => AudioState;
@@ -74,10 +93,10 @@ export function AudioProvider({ subject, children }: { subject: string | null; c
       const time = audio.currentTime;
       if (time >= track.end - 0.04) {
         audio.pause();
-        store.set({ time: track.end, playing: false, ended: true });
+        store.set({ ...hear(store.get(), track.end), time: track.end, playing: false, ended: true });
         return;
       }
-      store.set({ time });
+      store.set({ ...(store.get().playing ? hear(store.get(), time) : null), time });
       frame.current = requestAnimationFrame(() => tick.current());
     };
   }, [store]);
@@ -169,7 +188,7 @@ export function AudioProvider({ subject, children }: { subject: string | null; c
       if (!track) return;
       if (audio.currentTime >= track.end - 0.04) {
         audio.pause();
-        store.set({ time: track.end, playing: false, ended: true });
+        store.set({ ...hear(store.get(), track.end), time: track.end, playing: false, ended: true });
         return;
       }
       if (Math.abs(store.get().time - audio.currentTime) > 0.2) store.set({ time: audio.currentTime });
@@ -196,6 +215,22 @@ export function AudioProvider({ subject, children }: { subject: string | null; c
       audio.removeEventListener("canplay", onPlaying);
       audio.removeEventListener("error", onError);
     };
+  }, [store]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(HEARD_KEY) ?? "{}") as Record<string, string>;
+      if (saved && typeof saved === "object") store.set({ heard: saved });
+    } catch {}
+    let last = store.get().heard;
+    return store.subscribe(() => {
+      const { heard } = store.get();
+      if (heard === last) return;
+      last = heard;
+      try {
+        sessionStorage.setItem(HEARD_KEY, JSON.stringify(heard));
+      } catch {}
+    });
   }, [store]);
 
   useEffect(() => {

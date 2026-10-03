@@ -98,15 +98,16 @@ export default async function Home(props: PageProps<"/">) {
   const stats = archiveStats();
   const life = loadLife(vault);
   const kept = new Set(life.stories.filter((s) => s.year !== null).map((s) => s.year!)).size;
-  const years = life.now - (life.birthYear ?? life.now) || 1;
+  const years = life.birthYear ? life.now - life.birthYear : null;
 
   return (
     <>
       <section className="mx-auto max-w-6xl px-4 pt-6 pb-6 sm:px-6 sm:pt-12 sm:pb-8">
         <h1 className="t-display">{vault.subject}</h1>
-        <p className="t-meta mt-5 max-w-[46rem]">
-          {t.life.summary(life.birthYear, stats.stories, formatDuration(stats.storySeconds, "long"), kept, years)}
-        </p>
+        {years !== null && kept > 0 && (
+          <p className="mt-4 max-w-[40rem] font-serif text-[clamp(1.3125rem,1.1rem+0.8vw,1.75rem)] leading-snug text-ink-2">{t.life.kept(kept, years)}</p>
+        )}
+        <p className="t-meta mt-2 max-w-[46rem]">{t.life.summary(life.birthYear, stats.stories, formatDuration(stats.storySeconds, "long"))}</p>
         <Pending recordings={recordings} />
       </section>
 

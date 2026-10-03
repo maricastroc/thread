@@ -13,6 +13,7 @@ export function MiniPlayer() {
   const { close } = useAudio();
   const track = useAudioState((s) => s.track);
   const docked = useAudioState((s) => s.docked);
+  const ended = useAudioState((s) => s.ended && !s.playing);
   const pathname = usePathname();
   const barRef = useRef<HTMLDivElement>(null);
 
@@ -24,6 +25,7 @@ export function MiniPlayer() {
 
   const hidden =
     !track ||
+    ended ||
     pathname.startsWith("/record") ||
     (docked !== null && (docked === track.storyId || docked === `recording:${track.recordingId}`));
 

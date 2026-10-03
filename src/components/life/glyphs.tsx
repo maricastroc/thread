@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { heardAt } from "@/components/audio/AudioProvider";
 import type { LifeStory } from "@/lib/life";
 
 function smooth(values: number[], radius = 1): number[] {
@@ -16,21 +17,27 @@ function smooth(values: number[], radius = 1): number[] {
   });
 }
 
-export function Bars({ story, width, height, progress = 0 }: { story: LifeStory; width: number; height: number; progress?: number }) {
+type BarsProps = { story: LifeStory; width: number; height: number; progress?: number; heard?: string; rest?: boolean };
+
+export function Bars({ story, width, height, progress = 0, heard, rest = false }: BarsProps) {
   const bar = 2;
   const gap = 1.5;
   const count = Math.max(6, Math.floor(width / (bar + gap)));
   const step = story.peaks.length / count;
-  const values = Array.from({ length: count }, (_, i) => {
+  const raw = Array.from({ length: count }, (_, i) => {
     let max = 0;
     for (let k = Math.floor(i * step); k < Math.floor((i + 1) * step) && k < story.peaks.length; k++) max = Math.max(max, story.peaks[k]);
     return max;
   });
+  const low = Math.min(...raw);
+  const high = Math.max(...raw);
+  const values = high - low < 0.05 ? raw : raw.map((v) => 0.18 + 0.82 * ((v - low) / (high - low)) ** 1.35);
   return (
     <svg width={width} height={height} viewBox={`0 0 ${count * (bar + gap)} ${height}`} preserveAspectRatio="none" aria-hidden="true" className="block">
       {values.map((p, i) => {
         const h = Math.max(2, p * height);
-        return <rect key={i} x={i * (bar + gap)} y={height - h} width={bar} height={h} rx={1} className={progress > 0 && i / count < progress ? "fill-voice" : "fill-current"} />;
+        const tone = progress > 0 && i / count < progress ? "fill-voice" : !rest ? "fill-current" : heardAt(heard, (i + 0.5) / count) ? "fill-wave-heard" : "fill-wave";
+        return <rect key={i} x={i * (bar + gap)} y={height - h} width={bar} height={h} rx={1} className={tone} />;
       })}
     </svg>
   );

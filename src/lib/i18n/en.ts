@@ -254,8 +254,8 @@ export const en = {
 
   life: {
     label: (name: string) => `${possessive(name)} life, with the moments where a voice was kept`,
-    summary: (born: number | null, stories: number, minutes: string, kept: number, years: number) =>
-      `${born ? `Born ${born}. ` : ""}${stories} ${plural(stories, "story", "stories")}, ${minutes} of voice. A voice has been kept for ${kept} of ${years} years.`,
+    summary: (born: number | null, stories: number, minutes: string) => `${born ? `Born ${born} · ` : ""}${stories} ${plural(stories, "story", "stories")} · ${minutes} of voice`,
+    kept: (kept: number, years: number) => `A voice kept for ${kept} of ${years} ${plural(years, "year", "years")}.`,
     born: "born",
     now: (year: number) => `now, ${year}`,
     gap: (years: number) => `${years} years, no voice yet`,
@@ -263,7 +263,8 @@ export const en = {
     gapQuestion: (from: number, to: number) => `What do you remember from the years ${from} to ${to}?`,
     askAbout: "Ask about it next time",
     hint: (name: string) =>
-      `Each mark is a story from ${possessive(name)} recordings, placed where it happened in their life. Its width is how long it lasts. Choose one to open it.`,
+      `Each mark is a story from ${possessive(name)} recordings, placed in the year it happened. Its shape is the voice; its length, how long it lasts. Choose one to listen.`,
+    heardHint: "What you have heard stays marked in ink.",
     unplaced: "Not yet placed in time",
     latest: "latest recording",
     through: "Through these stories",

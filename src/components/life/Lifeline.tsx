@@ -31,8 +31,8 @@ import {
   type Reveal,
 } from "./shared";
 
-const ROW_H = 26;
-const NEAR_H = 22;
+const ROW_H = 34;
+const NEAR_H = 30;
 const TOP_SPACE = 40;
 const NAMES_H = 40;
 const PLAYER_H = 56;
@@ -40,6 +40,7 @@ const THREAD_GAP = 40;
 const LANE_H = 17;
 const BUTTON = 52;
 const MAX_ROWS = 6;
+const IDLE_SCALE = 0.68;
 
 type Placed = { story: LifeStory; x: number; w: number; row: number };
 type Cluster = { ids: string[]; left: number; right: number; from: number; to: number; x: number };
@@ -70,22 +71,21 @@ function pack<T extends { x: number; w: number }>(items: T[], lines: number, gap
   });
 }
 
-function Fragment({ story, width, near, progress, latest }: { story: LifeStory; width: number; near: boolean; progress: number; latest: boolean }) {
+type FragmentProps = { story: LifeStory; width: number; near: boolean; progress: number; heard?: string; rest: boolean; latest: boolean };
+
+function Fragment({ story, width, near, progress, heard, rest, latest }: FragmentProps) {
   return (
     <span className="relative block" style={{ width, height: ROW_H - 4 }}>
       <span
-        className="absolute inset-x-0 bottom-[6px] block origin-bottom transition-[transform,opacity] duration-300 ease-[var(--ease-calm)]"
-        style={{
-          transform: `scaleY(${near ? 1 : 0.2})`,
-          opacity: near ? 1 : 0,
-        }}
+        className="absolute inset-x-0 bottom-[6px] block origin-bottom transition-transform duration-300 ease-[var(--ease-calm)]"
+        style={{ transform: `scaleY(${near ? 1 : IDLE_SCALE})` }}
       >
-        <Bars story={story} width={width} height={NEAR_H - 4} progress={progress} />
+        <Bars story={story} width={width} height={NEAR_H - 4} progress={progress} heard={heard} rest={rest && !near} />
       </span>
       <span className="absolute inset-x-0 bottom-0 block">
         <Rhythm story={story} width={width} height={4} progress={progress} />
       </span>
-      {latest && !near && <span aria-hidden="true" className="absolute bottom-[9px] left-0 size-1.5 rounded-full bg-voice" />}
+      {latest && <span aria-hidden="true" className="absolute -bottom-px -left-2 size-1.5 rounded-full bg-ink-3" />}
     </span>
   );
 }
@@ -271,13 +271,17 @@ function PeriodSummary({ from, to, stories, onOpen, onClear }: { from: number; t
 }
 
 function Invitations({ life, start, end }: { life: Life; start: number; end: number }) {
+  const heardAny = useAudioState((s) => life.stories.some((story) => s.heard[story.id]?.includes("1")));
   const gaps = gapsOf(life, start, end)
     .sort((a, b) => b.to - b.from - (a.to - a.from))
     .slice(0, 2)
     .sort((a, b) => a.from - b.from);
   return (
     <div className="grid gap-8 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <p className="max-w-[34rem] font-serif text-[1.25rem] leading-snug text-ink-2">{t.life.hint(life.subject)}</p>
+      <p className="max-w-[34rem] font-serif text-[1.25rem] leading-snug text-ink-2">
+        {t.life.hint(life.subject)}
+        {heardAny && ` ${t.life.heardHint}`}
+      </p>
       {gaps.length > 0 && (
         <ul className="space-y-1">
           {gaps.map((g) => (
@@ -315,7 +319,7 @@ function InlinePlayer({ story, width }: { story: LifeStory; width: number }) {
         type="button"
         onClick={onClick}
         aria-label={`${playing ? t.story.pause : t.story.listen}: ${story.title}`}
-        className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-ink text-paper transition-[filter,transform] hover:brightness-125 active:scale-95"
+        className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-ink text-paper transition-[background-color,transform] hover:bg-[color-mix(in_oklab,var(--text),var(--canvas)_16%)] active:scale-95"
       >
         {playing ? <PauseIcon size={14} /> : <PlayIcon size={14} className="translate-x-[1px]" />}
       </button>
@@ -431,10 +435,10 @@ function MemoryPanel({ life, story, reveal, trail, setTrail, onFocusEntity, onCl
             const isLit = reveal.current === m.entityId;
             const isActive = trail === m.entityId;
             return (
-              <li key={m.entityId} className={`flex items-center gap-2.5 transition-opacity duration-500 ${reveal.active && !isSaid ? "opacity-45" : ""}`}>
+              <li key={m.entityId} className={`flex items-center gap-2.5 transition-colors duration-500 ${reveal.active && !isSaid ? "text-ink-3" : "text-ink"}`}>
                 <span
                   aria-hidden="true"
-                  className={`size-2 shrink-0 rounded-full transition-colors duration-300 ${isLit ? "bg-voice" : isSaid ? "bg-ink" : "border border-ink-3"}`}
+                  className={`size-2 shrink-0 rounded-full transition-colors duration-300 ${isLit ? "bg-voice" : isSaid ? "bg-revealed" : reveal.active ? "bg-unrevealed" : "border border-ink-3"}`}
                 />
                 <button
                   type="button"
@@ -464,10 +468,10 @@ function MemoryPanel({ life, story, reveal, trail, setTrail, onFocusEntity, onCl
             const isRevealed = reveal.events.has(i);
             const isLit = reveal.litEvents.has(i);
             return (
-              <li key={`e${i}`} className={`flex items-center gap-2.5 transition-opacity duration-500 ${reveal.active && !isRevealed ? "opacity-45" : ""}`}>
+              <li key={`e${i}`} className={`flex items-center gap-2.5 transition-colors duration-500 ${reveal.active && !isRevealed ? "text-ink-3" : "text-ink"}`}>
                 <span
                   aria-hidden="true"
-                  className={`size-[7px] shrink-0 rotate-45 transition-colors duration-300 ${isLit ? "bg-voice" : isRevealed ? "bg-ink" : "border border-ink-3"}`}
+                  className={`size-[7px] shrink-0 rotate-45 transition-colors duration-300 ${isLit ? "bg-voice" : isRevealed ? "bg-revealed" : reveal.active ? "bg-unrevealed" : "border border-ink-3"}`}
                 />
                 <span className="text-[1rem] whitespace-nowrap tabular-nums">{eventLabel(e)}</span>
                 <span className="t-small min-w-0 text-ink-3 italic" lang={lang}>
@@ -493,11 +497,13 @@ function MemoryPanel({ life, story, reveal, trail, setTrail, onFocusEntity, onCl
 function Horizontal(props: Shared) {
   const { life, open, openId, setOpenId, hoverId, setHoverId, trail, trailEntity, setTrail, reveal, language } = props;
   const frame = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(1100);
   const [focusHover, setFocusHover] = useState<string | null>(null);
   const [period, setPeriod] = useState<{ from: number; to: number } | null>(null);
   const playingId = usePlayingStory();
   const progressOf = useProgress(open);
+  const heard = useAudioState((s) => s.heard);
   useEffect(() => {
     const el = frame.current;
     if (!el) return;
@@ -505,6 +511,19 @@ function Horizontal(props: Shared) {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!openId) return;
+    const timer = window.setTimeout(() => {
+      const box = panel.current?.getBoundingClientRect();
+      const top = frame.current?.getBoundingClientRect().top;
+      if (!box || top === undefined || box.width === 0) return;
+      const overflow = box.top + Math.min(box.height, 340) - window.innerHeight + 24;
+      const by = Math.min(overflow, top - 12);
+      if (by > 0) window.scrollBy({ top: by, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    }, 540);
+    return () => window.clearTimeout(timer);
+  }, [openId]);
 
   const { start, end } = lifeSpan(life);
   const x = (year: number) => ((year - start) / (end - start)) * width;
@@ -670,14 +689,14 @@ function Horizontal(props: Shared) {
   };
   const visibleTargets = (th: { id: string; lit: boolean; targets: Target[] }) => {
     if (th.lit || focus === th.id || !opened) return th.targets;
-    const nearest = [...th.targets].sort((a, b) => Math.abs(a.year - opened.year!) - Math.abs(b.year - opened.year!) || Math.abs(a.x - anchorX) - Math.abs(b.x - anchorX))[0];
-    return nearest ? [nearest] : [];
+    const nearest = [...th.targets].sort((a, b) => Math.abs(a.year - opened.year!) - Math.abs(b.year - opened.year!) || Math.abs(a.x - anchorX) - Math.abs(b.x - anchorX));
+    return nearest.slice(0, reveal.ended ? 3 : 1);
   };
   const threadStyle = (th: { id: string; lit: boolean }) => {
-    if (focus && th.id !== focus) return { cls: "stroke-ink", opacity: 0.05, width: 1 };
-    if (th.lit) return { cls: "stroke-voice", opacity: 0.95, width: 1.4 };
-    if (focus === th.id) return { cls: "stroke-ink", opacity: 0.75, width: 1.2 };
-    return { cls: "stroke-ink", opacity: reveal.ended ? 0.3 : 0.2, width: 1 };
+    if (focus && th.id !== focus) return { cls: "stroke-unrevealed", width: 1 };
+    if (th.lit) return { cls: "stroke-voice", width: 1.5 };
+    if (focus === th.id) return { cls: "stroke-ink", width: 1.2 };
+    return { cls: "stroke-revealed", width: 1 };
   };
   const lastHeard = new Map<string, number>();
   if (opened) opened.mentions.slice(0, reveal.heard).forEach((m, i) => lastHeard.set(m.entityId, i));
@@ -702,7 +721,7 @@ function Horizontal(props: Shared) {
               </g>
             );
           })}
-          <line x1={0} x2={width} y1={axisY} y2={axisY} className="stroke-ink" strokeOpacity={0.3} />
+          <line x1={0} x2={width} y1={axisY} y2={axisY} className="stroke-axis" />
           {gaps.map((g) => (
             <line key={g.from} x1={x(g.from)} x2={x(g.to + 1)} y1={axisY} y2={axisY} className="stroke-paper" strokeWidth={2} strokeDasharray="1 5" />
           ))}
@@ -710,7 +729,7 @@ function Horizontal(props: Shared) {
             <line key={y} x1={x(y) + 0.5} x2={x(y + 1) - 0.5} y1={axisY} y2={axisY} className="stroke-ink" strokeWidth={2.5} strokeLinecap="round" />
           ))}
           {decades.map((d) => (
-            <line key={d} x1={x(d)} x2={x(d)} y1={axisY - 4} y2={axisY + 4} className="stroke-ink" strokeOpacity={0.45} />
+            <line key={d} x1={x(d)} x2={x(d)} y1={axisY - 4} y2={axisY + 4} className="stroke-axis" />
           ))}
 
           {placed.map((p) => {
@@ -738,8 +757,7 @@ function Horizontal(props: Shared) {
                     x2={ax}
                     y1={topOf(p.row) + ROW_H - 4}
                     y2={axisY}
-                    className={playingId === s.id ? "stroke-voice" : "stroke-ink"}
-                    strokeOpacity={playingId === s.id ? 0.9 : 0.2}
+                    className={playingId === s.id ? "stroke-voice" : "stroke-rule-2"}
                     strokeDasharray={certain ? undefined : s.certainty === "approximate" ? "2 3" : "1 3"}
                   />
                 )}
@@ -768,8 +786,7 @@ function Horizontal(props: Shared) {
                     cx={xAt(m.time)}
                     cy={waveBottom + 10}
                     r={lit ? 2.75 : 2}
-                    className={`animate-appear ${lit ? "fill-voice" : "fill-ink"}`}
-                    fillOpacity={lit ? 1 : faded ? 0.15 : 0.55}
+                    className={`animate-appear ${lit ? "fill-voice" : faded ? "fill-unrevealed" : "fill-revealed"}`}
                   />
                 );
               })}
@@ -781,8 +798,7 @@ function Horizontal(props: Shared) {
                       key={`${th.id}-${target.key}`}
                       d={threadPath(th.x, target.x, target.y)}
                       pathLength={1}
-                      className={`animate-draw fill-none transition-[stroke,stroke-opacity] duration-500 ${style.cls}`}
-                      strokeOpacity={style.opacity}
+                      className={`animate-draw fill-none transition-[stroke] duration-500 ${style.cls}`}
                       strokeWidth={style.width}
                     />
                   );
@@ -791,7 +807,7 @@ function Horizontal(props: Shared) {
               {opened.events.map((e, i) => {
                 if (!reveal.events.has(i)) return null;
                 const lit = reveal.litEvents.has(i);
-                const tone = lit ? "stroke-voice" : "stroke-ink";
+                const tone = lit ? "stroke-voice" : "stroke-revealed";
                 if (e.kind === "offset" && e.anchored && e.year !== null) {
                   const b = center(e.year);
                   return (
@@ -799,7 +815,6 @@ function Horizontal(props: Shared) {
                       <path
                         d={`M ${openX} ${axisY - 2} Q ${(openX + b) / 2} ${axisY - 13} ${b} ${axisY - 2}`}
                         className={`fill-none ${tone}`}
-                        strokeOpacity={lit ? 1 : 0.55}
                         strokeDasharray="2 2"
                       />
                       <circle cx={b} cy={axisY} r={4} className={`fill-paper ${tone}`} strokeWidth={1.5} />
@@ -856,7 +871,15 @@ function Horizontal(props: Shared) {
                   opacity: dim ? recede + 0.02 : 1,
                 }}
               >
-                <Fragment story={s} width={p.w} near={near && !isOpen} progress={isOpen ? progressOf : 0} latest={s.recordingId === life.latestRecordingId} />
+                <Fragment
+                  story={s}
+                  width={p.w}
+                  near={near && !isOpen}
+                  progress={isOpen ? progressOf : 0}
+                  heard={heard[s.id]}
+                  rest={!isOpen && !lit}
+                  latest={!open && s.recordingId === life.latestRecordingId}
+                />
               </button>
               {isOpen && opened && (
                 <div className="animate-rise absolute z-20" style={{ left: playerLeft, top: NAMES_H }}>
@@ -935,7 +958,7 @@ function Horizontal(props: Shared) {
             return (
               <div
                 role="presentation"
-                className="pointer-events-none absolute z-30 w-max max-w-[17rem] -translate-x-1/2 -translate-y-full rounded-[3px] bg-paper/95 px-2 py-1.5 shadow-[0_0_0_1px_var(--rule)]"
+                className="pointer-events-none absolute z-30 w-max max-w-[17rem] -translate-x-1/2 -translate-y-full rounded-[3px] bg-paper-raised px-2.5 py-1.5 shadow-[0_0_0_1px_var(--line),0_8px_24px_-16px_rgb(0_0_0/0.35)]"
                 style={{
                   left: Math.min(width - 130, Math.max(130, p.x + p.w / 2)),
                   top: topOf(p.row) - 6,
@@ -1009,7 +1032,7 @@ function Horizontal(props: Shared) {
         <span className="t-small absolute flex items-center gap-1.5 text-ink-2" style={{ right: 0, top: stageY + 26 }}>
           {life.latestRecordingId && (
             <>
-              <span aria-hidden="true" className="size-1.5 rounded-full bg-voice" /> {t.life.latest} ·
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-ink-3" /> {t.life.latest} ·
             </>
           )}{" "}
           {t.life.now(end)}
@@ -1017,7 +1040,7 @@ function Horizontal(props: Shared) {
       </div>
 
       <div className="mx-auto max-w-6xl">
-        <div className="min-h-[12rem] border-t border-ink/50 pt-6">
+        <div ref={panel} className="min-h-[12rem] border-t border-axis pt-6">
           {open ? (
             opened ? (
               <MemoryPanel
@@ -1088,6 +1111,7 @@ function Vertical(props: Shared) {
   const { life, open, setOpenId, trail, trailEntity, setTrail, reveal, language } = props;
   const playingId = usePlayingStory();
   const progress = useProgress(open);
+  const heard = useAudioState((s) => s.heard);
   const { start, end } = lifeSpan(life);
   const dated = [...life.stories.filter((s) => s.year !== null)].sort((a, b) => a.year! - b.year! || a.recordedAt.localeCompare(b.recordedAt));
   const undated = life.stories.filter((s) => s.year === null);
@@ -1148,7 +1172,7 @@ function Vertical(props: Shared) {
             <span className="flex flex-wrap items-baseline gap-x-2 text-[0.875rem]">
               <span className={isCertain(story) ? "text-ink" : "text-ink-2 italic"}>{whenLabel(story)}</span>
               {age && <span className="text-ink-2">· {age}</span>}
-              {story.recordingId === life.latestRecordingId && <span aria-hidden="true" className="size-1.5 self-center rounded-full bg-voice" />}
+              {story.recordingId === life.latestRecordingId && <span aria-hidden="true" className="size-1.5 self-center rounded-full bg-ink-3" />}
             </span>
             <span
               className="mt-1 block font-serif text-[1.1875rem] leading-snug decoration-rule-2 underline-offset-[0.2em] group-hover:underline"
@@ -1164,8 +1188,11 @@ function Vertical(props: Shared) {
                 {link.names.join(" · ")}
               </span>
             )}
-            <span className="mt-2 block text-ink-2">
-              <Rhythm story={story} width={w} height={3} progress={playingId === story.id ? progress : 0} />
+            <span className="mt-2 block text-ink">
+              <Bars story={story} width={w} height={12} progress={playingId === story.id ? progress : 0} heard={heard[story.id]} rest />
+              <span className="mt-[3px] block">
+                <Rhythm story={story} width={w} height={3} progress={playingId === story.id ? progress : 0} />
+              </span>
             </span>
           </button>
         )}
@@ -1175,9 +1202,9 @@ function Vertical(props: Shared) {
 
   return (
     <div ref={list}>
-      <ol className="relative before:absolute before:top-3 before:bottom-3 before:left-[5px] before:w-px before:bg-ink/30">
+      <ol className="relative before:absolute before:top-3 before:bottom-3 before:left-[5px] before:w-px before:bg-axis">
         <li className="relative pb-2 pl-7">
-          <span aria-hidden="true" className="absolute top-[0.45rem] left-[2px] size-[7px] rounded-full bg-ink/40" />
+          <span aria-hidden="true" className="absolute top-[0.45rem] left-[2px] size-[7px] rounded-full bg-axis" />
           <span className="t-small text-ink-2">
             {t.life.born} {life.birthYear ?? ""}
           </span>
@@ -1189,7 +1216,7 @@ function Vertical(props: Shared) {
             <li key={`gap-${i}`} className="relative py-6 pl-7">
               <span
                 aria-hidden="true"
-                className="absolute top-0 bottom-0 left-[3px] w-[5px] bg-paper [background-image:linear-gradient(var(--ink)_1px,transparent_1px)] [background-size:5px_6px] bg-repeat-y opacity-25"
+                className="absolute top-0 bottom-0 left-[3px] w-[5px] bg-paper [background-image:linear-gradient(var(--line-strong)_1px,transparent_1px)] [background-size:5px_6px] bg-repeat-y"
               />
               <span className="t-small text-ink-3 italic">
                 {item.from}–{item.to} · {t.life.gap(item.years)}
@@ -1198,8 +1225,14 @@ function Vertical(props: Shared) {
           ),
         )}
         <li className="relative pt-2 pl-7">
-          <span aria-hidden="true" className="absolute top-[0.95rem] left-[2px] size-[7px] rounded-full bg-ink/40" />
+          <span aria-hidden="true" className="absolute top-[0.95rem] left-[2px] size-[7px] rounded-full bg-axis" />
           <span className="t-small text-ink-2">{t.life.now(end)}</span>
+          {life.latestRecordingId && (
+            <span className="t-small ml-3 inline-flex items-center gap-1.5 text-ink-2">
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-ink-3" />
+              {t.life.latest}
+            </span>
+          )}
         </li>
       </ol>
 
