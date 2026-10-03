@@ -90,6 +90,18 @@ The reveal layer is `aria-hidden`. The same information sits in the panel as a l
 
 **A benchmark that changed the hierarchy.** I compared this with Horizonte, a music player I built earlier where the album *is* the interface. What makes it land is that one object owns the screen, that zooming from collection to track is one continuous change of scale instead of a new view, and that every reaction is measured from the real audio, with a hard ceiling so it accents instead of dancing. Thread keeps its own quiet, editorial language, so none of the shaders, darkness or motion came over. The structural lessons did: the lifeline owns the screen, opening a memory is a change of scale on the line rather than a big player below it, and every visual reaction comes from something that was actually said.
 
+## One accent, two lights
+
+The last round before submission was about being understood in a few seconds, without adding features.
+
+- **The main action says the intention.** The header's Record became "Add a story": a short panel for the archive's person with "Record a story" and "Import a recording". Inside Recordings the literal words stay.
+- **The Life works without playing.** At rest every mark draws the shape of its own voice, and the hero says how much of the life has one: "A voice kept for 8 of 78 years."
+- **Listening leaves a mark.** The part of a story you heard turns to ink, like the played part of a player, and stays for the session. When a memory ends it draws its threads to everything it touched.
+- **Source and interpretation look related but different.** A recording shows its whole waveform with each story as a numbered span; a story shows a thin ruler with its place in the recording.
+- **People and places are threads.** Each one is a line on the same axis as the life, with a dot in every year it appears.
+- **Colour means one thing.** The coral/vermilion is only the voice that is sounding now. Errors got their own red and evidence a neutral marker. The tokens are named by role and defined once as light and dark pairs; the light theme is warm ivory paper. Measuring showed why shared opacities were not enough: the same line loses contrast on the light background, so each theme gets its own values.
+- **No flash.** The theme choice lives in a cookie, so the server renders the right theme before anything paints.
+
 ## Does it work for anyone? A second archive
 
 To check that none of this depends on the demo, a second archive with a different narrator (Armando, born 1939), three languages and deliberately different constructions went through the whole pipeline in an isolated data folder, before and after the generalization work. The expected result for each of 39 cases was written down before the first run. The code as it was got 19 right and one partly, 11 wrong (a father's age shown as the narrator's, "o pai da Helena" lighting up the narrator's father, a story placed in 1936, three years before the narrator was born), missed 3 and lost 5 because whole sentences fell outside every story. After the changes: 38 of 39, and the one miss is a refusal on the safe side. A third archive with 63 stories and 59 names checks density. Everything is in `docs/generalization/`.

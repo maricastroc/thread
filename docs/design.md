@@ -178,12 +178,28 @@ Editorial, contemporânea, silenciosa. Um plano só, sem cards; hierarquia por t
 
 - **Newsreader** (serifa com tamanhos ópticos) para a voz: títulos, transcrição, citações.
 - **Atkinson Hyperlegible Next** para a interface: desenhada pelo Braille Institute para leitores
-  com baixa visão. Escolha deliberada para quem grava. **Atkinson Hyperlegible Mono** para tempos.
-- Cor: tinta quase preta sobre branco quente neutro (não sépia). Um único acento, vermelhão,
-  reservado à voz: gravação, posição do áudio, palavra sendo dita.
-- A onda sonora é a assinatura visual de cada história — no lugar de fotos ou ícones.
+  com baixa visão. Escolha deliberada para quem grava. **Atkinson Hyperlegible Mono** para tempos
+  e para os dados de arquivo de uma gravação.
+- **Cor como significado.** Os tokens de `globals.css` têm nome de papel, não de tom, e cada um é
+  definido uma vez como par claro/escuro com `light-dark()`: `canvas`, `surface`, `text`,
+  `text-secondary`, `text-muted`, `line`, `line-strong`, `axis` (o eixo do tempo), `wave` (onda
+  inativa), `wave-heard` (o que já foi ouvido), `current` (a voz agora), `revealed` (rastro do que já
+  foi dito), `unrevealed` (quase ausente), `evidence` (marca-texto das palavras exatas), `focus` e `error`.
+- **Claro é papel marfim** (`#f7f3ea`): quente sem virar sépia. O escuro mantém a linguagem (`#141311`).
+  As linhas finas têm valor próprio em cada tema: as mesmas opacidades rendiam menos contraste no
+  claro (tinta a 20%: 1,5:1 no claro contra 1,7:1 no escuro; o eixo: 1,9:1 contra 2,5:1).
+- **O acento é a voz.** Vermelhão no claro (`#b8391a`, 5,2:1) e coral no escuro (`#ff7a52`, 7,2:1),
+  só para o que soa agora: palavra dita, nome falado, fio aceso, gravação. Botões são tinta, erros
+  têm vermelho próprio, evidência usa marca-texto neutro.
+- **A onda é a assinatura.** Na Life, cada história mostra a forma da própria voz. O trecho ouvido
+  fica em tinta, como a parte já tocada de um player; o que soa agora fica na cor da voz; o que
+  ainda não foi dito quase não aparece.
+- **Gravação é fonte, história é interpretação.** A gravação mostra a onda inteira com cada história
+  como trecho numerado; a história mostra uma régua com o lugar dela na gravação.
+- Tema: System / Light / Dark no rodapé, discreto. A escolha fica num cookie e o servidor já entrega
+  a página no tema certo, sem script e sem flash.
 - Movimento só para tempo, gravação, reprodução e mudança de estado; `prefers-reduced-motion` respeitado.
-- Unidades em `rem`, tamanho base do navegador respeitado, alvos ≥ 48 px (gravação ≥ 112 px).
+- Unidades em `rem`, tamanho base do navegador respeitado, alvos ≥ 44 px (gravação ≥ 112 px).
 
 ## 12. Riscos técnicos
 
