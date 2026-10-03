@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# cofre: local archive data and model weights
+/data
+/models/*.bin
+/demo/audio

@@ -1,26 +1,268 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --paper: #f7f6f2;
+  --paper-raised: #fbfaf7;
+  --ink: #1b1a17;
+  --ink-2: #55524b;
+  --ink-3: #6f6b62;
+  --rule: #e2dfd7;
+  --rule-2: #cfcbc1;
+  --voice: #b8391a;
+  --voice-soft: #f2ddd3;
+  --on-voice: #ffffff;
+  --wave: #c9c5bb;
+  --wave-played: #1b1a17;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: #141311;
+    --paper-raised: #1a1917;
+    --ink: #ecebe6;
+    --ink-2: #a8a49b;
+    --ink-3: #8b877e;
+    --rule: #2b2925;
+    --rule-2: #3d3a35;
+    --voice: #ff7a52;
+    --voice-soft: #3b231a;
+    --on-voice: #141311;
+    --wave: #4a4741;
+    --wave-played: #ecebe6;
+    color-scheme: dark;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-2: var(--rule-2);
+  --color-voice: var(--voice);
+  --color-voice-soft: var(--voice-soft);
+  --color-on-voice: var(--on-voice);
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+  --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-atkinson-mono), ui-monospace, monospace;
+  --ease-calm: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.5;
+    font-feature-settings: "kern";
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--voice-soft);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: default;
+  }
+
+  a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+  }
+
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+}
+
+@layer components {
+  .t-display {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(2.75rem, 1.4rem + 5.6vw, 5.75rem);
+    line-height: 0.98;
+    letter-spacing: -0.028em;
+  }
+
+  .t-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(2.125rem, 1.35rem + 3.2vw, 3.875rem);
+    line-height: 1.03;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+  }
+
+  .t-heading {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(1.5rem, 1.2rem + 1.1vw, 2rem);
+    line-height: 1.12;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+  }
+
+  .t-entry {
+    font-family: var(--font-serif);
+    font-weight: 450;
+    font-size: clamp(1.3125rem, 1.15rem + 0.6vw, 1.625rem);
+    line-height: 1.18;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .t-quote {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem);
+    line-height: 1.32;
+    letter-spacing: -0.008em;
+    text-wrap: pretty;
+  }
+
+  .t-reading {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(1.1875rem, 1.1rem + 0.35vw, 1.375rem);
+    line-height: 1.62;
+    text-wrap: pretty;
+    hanging-punctuation: first;
+  }
+
+  .t-meta {
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+
+  .t-small {
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+
+  .t-kicker {
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+
+  .t-time {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .link {
+    text-decoration-line: underline;
+    text-decoration-color: var(--rule-2);
+    transition: text-decoration-color 160ms var(--ease-calm), color 160ms var(--ease-calm);
+  }
+
+  .link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .rule-top {
+    border-top: 1px solid var(--rule);
+  }
+
+  .rule-bottom {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-breathe {
+  animation: breathe 2.4s var(--ease-calm) infinite;
+}
+
+.animate-rise {
+  animation: rise 420ms var(--ease-calm) both;
+}
+
+.animate-caret {
+  animation: caret 1.1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
