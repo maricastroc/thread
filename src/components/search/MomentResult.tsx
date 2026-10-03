@@ -17,7 +17,7 @@ function Highlighted({ text, words }: { text: string; words: string[] }) {
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <mark key={i} className="rounded-[2px] bg-voice-soft px-0.5 text-ink">
+          <mark key={i} className="rounded-[2px] bg-evidence px-0.5 text-ink">
             {part}
           </mark>
         ) : (

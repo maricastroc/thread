@@ -90,7 +90,7 @@ const Paragraph = memo(function Paragraph({
                 onClick={() => onSeek(word.t)}
                 title={word.u ? t.story.uncertain : undefined}
                 className={`cursor-pointer transition-colors duration-200 ${
-                  current ? "bg-voice-soft" : lit ? "bg-voice-soft" : "hover:bg-ink/[0.05]"
+                  current ? "bg-voice-soft" : lit ? "bg-evidence" : "hover:bg-ink/[0.05]"
                 } ${active && !spoken ? "text-ink-2" : ""} ${
                   mentioned ? "underline decoration-rule-2 decoration-1 underline-offset-[0.24em]" : ""
                 } ${word.u ? "underline decoration-ink-3 decoration-dashed decoration-1 underline-offset-[0.3em]" : ""}`}

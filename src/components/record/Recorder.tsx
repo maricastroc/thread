@@ -296,7 +296,7 @@ export function Recorder({ subject, prompts, initialQuestion }: Props) {
               <LevelMeter
                 analyser={analyser}
                 active={phase === "recording"}
-                className="h-16 w-full max-w-[22rem] text-voice [--meter:var(--voice)]"
+                className="h-16 w-full max-w-[22rem] text-voice"
               />
             </div>
           )}
@@ -318,7 +318,7 @@ export function Recorder({ subject, prompts, initialQuestion }: Props) {
               disabled={phase === "requesting"}
               className="group flex flex-col items-center gap-4 rounded-[2rem] p-2 disabled:opacity-70"
             >
-              <span className="flex size-[7.5rem] items-center justify-center rounded-full bg-voice shadow-[0_10px_30px_-12px_var(--voice)] transition-transform duration-150 group-hover:scale-[1.03] group-active:scale-[0.97] sm:size-[8.5rem]">
+              <span className="flex size-[7.5rem] items-center justify-center rounded-full bg-voice shadow-[0_10px_30px_-12px_var(--accent)] transition-transform duration-150 group-hover:scale-[1.03] group-active:scale-[0.97] sm:size-[8.5rem]">
                 <span className="size-10 rounded-full bg-on-voice" />
               </span>
               <span className="text-[1.5rem] font-medium">{t.record.start}</span>

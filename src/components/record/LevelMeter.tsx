@@ -53,7 +53,7 @@ export function LevelMeter({ analyser, active, className }: Props) {
       }
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       context.clearRect(0, 0, width, height);
-      const color = style.getPropertyValue("--meter") || style.color;
+      const color = style.color;
       const values = levels.current;
       if (reduce) {
         const level = values[values.length - 1] ?? 0;

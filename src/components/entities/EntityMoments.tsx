@@ -25,12 +25,12 @@ function Sentence({ text, evidence }: { text: string; evidence: string | null })
   const index = text.toLowerCase().indexOf(evidence.toLowerCase());
   if (index < 0) {
     const parts = text.split(new RegExp(`(${escape(evidence)})`, "i"));
-    return <>{parts.map((p, i) => (i % 2 ? <mark key={i} className="rounded-[2px] bg-voice-soft px-0.5 text-ink">{p}</mark> : <span key={i}>{p}</span>))}</>;
+    return <>{parts.map((p, i) => (i % 2 ? <mark key={i} className="rounded-[2px] bg-evidence px-0.5 text-ink">{p}</mark> : <span key={i}>{p}</span>))}</>;
   }
   return (
     <>
       {text.slice(0, index)}
-      <mark className="rounded-[2px] bg-voice-soft px-0.5 text-ink">{text.slice(index, index + evidence.length)}</mark>
+      <mark className="rounded-[2px] bg-evidence px-0.5 text-ink">{text.slice(index, index + evidence.length)}</mark>
       {text.slice(index + evidence.length)}
     </>
   );

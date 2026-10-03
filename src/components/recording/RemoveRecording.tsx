@@ -42,7 +42,7 @@ export function RemoveRecording({ id, message }: { id: string; message: string }
           onClick={remove}
           disabled={pending}
           autoFocus
-          className="inline-flex h-11 items-center rounded-full bg-voice px-5 text-on-voice disabled:opacity-60"
+          className="inline-flex h-11 items-center rounded-full border border-error px-5 text-error transition-colors hover:bg-error/[0.08] disabled:opacity-60"
         >
           {t.recording.remove}
         </button>

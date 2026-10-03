@@ -19,7 +19,7 @@ const initial: SetupState = { errors: {}, values: { name: "", year: "", language
 export function Setup() {
   const [state, action, pending] = useActionState(setupVault, initial);
   const field =
-    "w-full border-0 border-b border-rule-2 bg-transparent py-2.5 font-serif text-[1.75rem] leading-tight text-ink placeholder:text-ink-3 transition-colors hover:border-ink-3 focus:border-ink focus:outline-none aria-[invalid=true]:border-voice";
+    "w-full border-0 border-b border-rule-2 bg-transparent py-2.5 font-serif text-[1.75rem] leading-tight text-ink placeholder:text-ink-3 transition-colors hover:border-ink-3 focus:border-ink focus:shadow-[0_1px_0_0_var(--focus)] focus:outline-none aria-[invalid=true]:border-error";
 
   return (
     <section className="mx-auto max-w-[36rem] px-4 pt-10 pb-24 sm:px-6 sm:pt-20">
@@ -45,7 +45,7 @@ export function Setup() {
             className={field}
           />
           {state.errors.name && (
-            <p id="name-error" className="t-small mt-2 text-voice">
+            <p id="name-error" className="t-small mt-2 text-error">
               {state.errors.name}
             </p>
           )}
@@ -74,7 +74,7 @@ export function Setup() {
           </div>
         </div>
         {state.errors.year && (
-          <p id="year-error" className="t-small mt-2 text-voice">
+          <p id="year-error" className="t-small mt-2 text-error">
             {state.errors.year}
           </p>
         )}
@@ -83,28 +83,29 @@ export function Setup() {
           <label htmlFor="language" className="block text-[1rem] text-ink-2">
             {t.setup.languageLabel}
           </label>
-          <select
-            id="language"
-            name="language"
-            defaultValue={state.values.language}
-            className="mt-1 h-12 w-full cursor-pointer appearance-none border-0 border-b border-rule-2 bg-transparent bg-[length:12px] bg-[right_0.25rem_center] bg-no-repeat pr-8 text-[1.125rem] text-ink transition-colors hover:border-ink-3 focus:border-ink focus:outline-none"
-            style={{
-              backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='m1 1.5 5 5 5-5' stroke='%2355524b' stroke-width='1.5' fill='none'/%3E%3C/svg%3E\")",
-            }}
-          >
-            {languages.map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <div className="relative mt-1">
+            <select
+              id="language"
+              name="language"
+              defaultValue={state.values.language}
+              className="h-12 w-full cursor-pointer appearance-none border-0 border-b border-rule-2 bg-transparent pr-8 text-[1.125rem] text-ink transition-colors hover:border-ink-3 focus:border-ink focus:shadow-[0_1px_0_0_var(--focus)] focus:outline-none"
+            >
+              {languages.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <svg viewBox="0 0 12 8" width="12" height="8" aria-hidden="true" className="pointer-events-none absolute top-1/2 right-1 -translate-y-1/2 text-ink-2">
+              <path d="m1 1.5 5 5 5-5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            </svg>
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={pending}
-          className="mt-14 inline-flex h-14 items-center rounded-full bg-ink px-8 text-[1.0625rem] font-medium text-paper transition-[filter,transform] duration-150 hover:brightness-125 active:scale-[0.98] disabled:opacity-60"
+          className="mt-14 inline-flex h-14 items-center rounded-full bg-ink px-8 text-[1.0625rem] font-medium text-paper transition-[background-color,transform] duration-150 hover:bg-[color-mix(in_oklab,var(--text),var(--canvas)_16%)] active:scale-[0.98] disabled:opacity-60"
         >
           {t.setup.submit}
         </button>

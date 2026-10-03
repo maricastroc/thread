@@ -56,7 +56,7 @@ export default async function SearchPage(props: PageProps<"/search">) {
                 href={{ pathname: "/record", query: { q: query } }}
                 className="mt-4 inline-flex h-12 items-center gap-2.5 rounded-full border border-rule-2 px-5 text-[1rem] transition-colors hover:border-ink"
               >
-                <span aria-hidden="true" className="size-2 rounded-full bg-voice" />
+                <span aria-hidden="true" className="size-2 rounded-full bg-current" />
                 {t.search.askNextTime}
               </Link>
             </div>

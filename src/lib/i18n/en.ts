@@ -389,6 +389,13 @@ export const en = {
     undated: "Undated",
   },
 
+  theme: {
+    label: "Theme",
+    system: "System",
+    light: "Light",
+    dark: "Dark",
+  },
+
   player: {
     play: "Play",
     pause: "Pause",

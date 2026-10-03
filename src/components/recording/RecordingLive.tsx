@@ -44,13 +44,13 @@ function Wave({ peaks, fill, regions, duration }: { peaks: number[]; fill: numbe
             className="animate-rise fill-voice/[0.07]"
           />
         ))}
-        <g className="text-[var(--wave)]">
+        <g className="text-wave">
           {bars.map((p, i) => {
             const h = Math.max(2, p * (height - 8));
             return <rect key={i} x={i * (BAR + GAP)} y={(height - h) / 2} width={BAR} height={h} rx={1.5} fill="currentColor" />;
           })}
         </g>
-        <g clipPath="url(#written)" className="text-[var(--wave-played)]">
+        <g clipPath="url(#written)" className="text-wave-heard">
           {bars.map((p, i) => {
             const h = Math.max(2, p * (height - 8));
             return <rect key={i} x={i * (BAR + GAP)} y={(height - h) / 2} width={BAR} height={h} rx={1.5} fill="currentColor" />;
@@ -82,7 +82,7 @@ function StepMark({ state }: { state: "done" | "active" | "pending" | "failed" }
       </svg>
     );
   if (state === "active") return <span aria-hidden="true" className="animate-breathe mx-[3px] block size-[10px] rounded-full bg-voice" />;
-  if (state === "failed") return <span aria-hidden="true" className="mx-[3px] block size-[10px] rounded-full border-2 border-voice" />;
+  if (state === "failed") return <span aria-hidden="true" className="mx-[3px] block size-[10px] rounded-full border-2 border-error" />;
   return <span aria-hidden="true" className="mx-[3px] block size-[10px] rounded-full border border-rule-2" />;
 }
 

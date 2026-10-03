@@ -4,6 +4,7 @@ import { AudioProvider } from "@/components/audio/AudioProvider";
 import { MiniPlayer } from "@/components/audio/MiniPlayer";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
+import { PAPER, themeScript } from "@/lib/theme";
 import "./globals.css";
 
 const serif = Newsreader({
@@ -32,15 +33,18 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f6f2" },
-    { media: "(prefers-color-scheme: dark)", color: "#141311" },
+    { media: "(prefers-color-scheme: light)", color: PAPER.light },
+    { media: "(prefers-color-scheme: dark)", color: PAPER.dark },
   ],
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const vault = await loadVault();
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${serif.variable} ${sans.variable} ${mono.variable} antialiased`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-dvh">
         <a
           href="#main"

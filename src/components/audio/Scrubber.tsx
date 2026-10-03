@@ -114,19 +114,19 @@ export function Scrubber({ track, peaks, label, markers = [], regions = [], heig
             const w = ((r.end - r.start) / span) * width;
             return <rect key={i} x={x} y={0} width={Math.max(0, w - 3)} height={height} className="fill-ink/[0.035]" />;
           })}
-          <g className="text-[var(--wave)] transition-colors duration-200 group-hover:text-[color-mix(in_oklab,var(--wave),var(--ink)_18%)]">
+          <g className="text-wave transition-colors duration-200 group-hover:text-[color-mix(in_oklab,var(--wave),var(--text)_18%)]">
             {bars.map((p, i) => {
               const h = Math.max(2, p * (height - 6));
               return <rect key={i} x={i * (BAR + GAP)} y={(height - h) / 2} width={BAR} height={h} rx={1.5} fill="currentColor" />;
             })}
           </g>
-          <g clipPath={`url(#${clipId})`} className="text-[var(--wave-played)]">
+          <g clipPath={`url(#${clipId})`} className="text-wave-heard">
             {bars.map((p, i) => {
               const h = Math.max(2, p * (height - 6));
               return <rect key={i} x={i * (BAR + GAP)} y={(height - h) / 2} width={BAR} height={h} rx={1.5} fill="currentColor" />;
             })}
           </g>
-          <line ref={headRef} x1="0" x2="0" y1="0" y2={height} stroke="var(--voice)" strokeWidth={2} vectorEffect="non-scaling-stroke" style={{ opacity: 0 }} />
+          <line ref={headRef} x1="0" x2="0" y1="0" y2={height} stroke="var(--current)" strokeWidth={2} vectorEffect="non-scaling-stroke" style={{ opacity: 0 }} />
         </svg>
         {markers.length > 0 && (
           <div className="pointer-events-none relative mt-1.5 h-2" aria-hidden="true">

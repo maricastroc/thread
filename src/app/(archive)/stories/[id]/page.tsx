@@ -230,7 +230,7 @@ export default async function StoryPage(props: PageProps<"/stories/[id]">) {
                   href={{ pathname: "/record", query: { q: q.text } }}
                   className="inline-flex min-h-11 shrink-0 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink"
                 >
-                  <span aria-hidden="true" className="size-2 rounded-full bg-voice" />
+                  <span aria-hidden="true" className="size-2 rounded-full bg-current" />
                   {t.story.askThis}
                 </Link>
               </li>

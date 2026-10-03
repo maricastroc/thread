@@ -35,7 +35,7 @@ function Pending({ recordings }: { recordings: RecordingSummary[] }) {
       {failed.map((r) => (
         <li key={r.id}>
           <Link href={`/recordings/${r.id}`} className="group flex min-h-14 items-center gap-3 py-3">
-            <span aria-hidden="true" className="inline-block size-2 shrink-0 rounded-full border-[1.5px] border-voice" />
+            <span aria-hidden="true" className="inline-block size-2 shrink-0 rounded-full border-[1.5px] border-error" />
             <span className="flex-1">
               {t.home.needsAttention(1)} <span className="text-ink-2">· {formatDate(r.recordedAt)}</span>
             </span>

@@ -45,7 +45,7 @@ export function PlayButton({ track, from, size = "md", label, variant = "outline
 
   const look =
     variant === "solid"
-      ? "bg-ink text-paper hover:bg-[color-mix(in_oklab,var(--ink),var(--paper)_18%)]"
+      ? "bg-ink text-paper hover:bg-[color-mix(in_oklab,var(--text),var(--canvas)_18%)]"
       : variant === "quiet"
         ? "text-ink hover:bg-ink/[0.06]"
         : "border border-rule-2 text-ink hover:border-ink";

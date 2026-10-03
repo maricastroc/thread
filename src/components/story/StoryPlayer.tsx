@@ -35,7 +35,7 @@ export function StoryPlayer({ track, peaks, markers, className = "" }: Props) {
           type="button"
           onClick={onClick}
           aria-label={`${label}: ${track.title}`}
-          className="group inline-flex h-14 shrink-0 items-center gap-3 rounded-full bg-ink pr-6 pl-5 text-paper transition-[filter,transform] duration-150 hover:brightness-125 active:scale-[0.98]"
+          className="group inline-flex h-14 shrink-0 items-center gap-3 rounded-full bg-ink pr-6 pl-5 text-paper transition-[background-color,transform] duration-150 hover:bg-[color-mix(in_oklab,var(--text),var(--canvas)_16%)] active:scale-[0.98]"
         >
           {playing ? <PauseIcon size={18} /> : <PlayIcon size={18} className="translate-x-[1px]" />}
           <span className="text-[1rem] font-medium">{label}</span>

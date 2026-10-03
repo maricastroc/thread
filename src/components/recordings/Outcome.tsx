@@ -16,11 +16,11 @@ export function OutcomeLabel({ outcome, className = "" }: { outcome: OutcomeStat
     ) : outcome.kind === "working" ? (
       <span aria-hidden="true" className="animate-breathe size-2 rounded-full bg-voice" />
     ) : outcome.kind === "failed" ? (
-      <span aria-hidden="true" className="size-2 rounded-full border-[1.5px] border-voice" />
+      <span aria-hidden="true" className="size-2 rounded-full border-[1.5px] border-error" />
     ) : (
       <span aria-hidden="true" className="size-2 rounded-full border-[1.5px] border-ink-3" />
     );
-  const tone = outcome.kind === "stories" ? "text-ink" : outcome.kind === "failed" ? "text-voice" : "text-ink-2";
+  const tone = outcome.kind === "stories" ? "text-ink" : outcome.kind === "failed" ? "text-error" : "text-ink-2";
   return (
     <span className={`inline-flex items-center gap-2 text-[0.9375rem] whitespace-nowrap ${tone} ${className}`}>
       {mark}
