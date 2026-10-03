@@ -26,7 +26,7 @@ const mono = Atkinson_Hyperlegible_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Cofre", template: "%s · Cofre" },
+  title: { default: "Thread", template: "%s · Thread" },
   description: "Keep someone’s stories in their own voice.",
 };
 

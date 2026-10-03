@@ -1,4 +1,4 @@
-# Cofre de Histórias — plano e decisões
+# Thread (antes Cofre de Histórias) — plano e decisões
 
 > A IA nunca substitui a memória original. O artefato principal é a voz.
 > A IA é índice e estrutura; a pessoa continua sendo a autora.

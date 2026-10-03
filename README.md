@@ -1,8 +1,8 @@
-# Cofre
+# Thread
 
 A place to keep someone's stories, in their own voice.
 
-Cofre records an older relative telling stories and turns the recordings into a family archive you can browse and search. It follows one rule: **the AI never replaces the memory.** The recording is the artifact. Search never answers with generated text; it takes you to the moment in the recording and plays the person's own voice from there.
+Thread records an older relative telling stories and turns the recordings into a family archive you can browse and search. It follows one rule: **the AI never replaces the memory.** The recording is the artifact. Search never answers with generated text; it takes you to the moment in the recording and plays the person's own voice from there.
 
 Everything runs on your machine. The recordings, transcripts and search index never leave it.
 

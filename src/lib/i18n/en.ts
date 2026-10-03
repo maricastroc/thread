@@ -2,7 +2,7 @@ import type { LifeStage, Provenance, Theme, WorkStage } from "@/lib/types";
 import { numberWord, plural, possessive } from "@/lib/format";
 
 export const en = {
-  brand: "Cofre",
+  brand: "Thread",
   privacy: "Recordings stay on this computer.",
   skipToContent: "Skip to content",
 
@@ -37,7 +37,7 @@ export const en = {
   },
 
   setup: {
-    title: "Cofre",
+    title: "Thread",
     tagline: "A place to keep someone’s stories, in their own voice.",
     heading: "Whose stories are we keeping?",
     nameLabel: "Their name, the way the family says it",

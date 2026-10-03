@@ -205,7 +205,7 @@ export function AudioProvider({ narrator, children }: { narrator: string | null;
       if (!track) return;
       const current = navigator.mediaSession.metadata;
       if (current?.title === track.title) return;
-      navigator.mediaSession.metadata = new MediaMetadata({ title: track.title, artist: narrator ?? "", album: "Cofre" });
+      navigator.mediaSession.metadata = new MediaMetadata({ title: track.title, artist: narrator ?? "", album: "Thread" });
       navigator.mediaSession.setActionHandler("play", () => toggle());
       navigator.mediaSession.setActionHandler("pause", () => pause());
       navigator.mediaSession.setActionHandler("seekbackward", () => seek(store.get().time - 10));

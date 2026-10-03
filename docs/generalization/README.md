@@ -1,6 +1,6 @@
 # Generalization proof
 
-Does Cofre work for any person and any recording, or only for the demo? A second archive, fully isolated through `COFRE_DATA_DIR`, was run through the whole pipeline (audio → transcription → interpretation → provenance → persistence → timeline → playback) twice: on the code as it was (`baseline/`) and after the generalization work (`final/`). Same audio files, same narrator, same expectations, written before the first run in [`fixtures/second-archive/README.md`](../../fixtures/second-archive/README.md).
+Does Thread work for any person and any recording, or only for the demo? A second archive, fully isolated through `COFRE_DATA_DIR`, was run through the whole pipeline (audio → transcription → interpretation → provenance → persistence → timeline → playback) twice: on the code as it was (`baseline/`) and after the generalization work (`final/`). Same audio files, same narrator, same expectations, written before the first run in [`fixtures/second-archive/README.md`](../../fixtures/second-archive/README.md).
 
 Each run folder holds `report.md` (every story with its transcript, facts, evidence, timestamps, refusals and what playback shows), `archive.json`, `life.json` (exactly what the lifeline receives), `search.json` and screenshots.
 
