@@ -194,6 +194,10 @@ Editorial, contemporânea, silenciosa. Um plano só, sem cards; hierarquia por t
 - **A onda é a assinatura.** Na Life, cada história mostra a forma da própria voz. O trecho ouvido
   fica em tinta, como a parte já tocada de um player; o que soa agora fica na cor da voz; o que
   ainda não foi dito quase não aparece.
+- **Captura como linha de voz.** Antes de gravar, uma linha pontilhada ("No voice yet") marca onde a
+  voz vai ficar, com Record no começo dela. Gravando, a tomada inteira cresce na linha: o que já foi
+  dito vira tinta e só os últimos segundos ficam na cor da voz. Salva, a gravação vira a fonte no
+  topo e o que vem dela aparece embaixo, no mesmo eixo de tempo: palavras, histórias, índice.
 - **Gravação é fonte, história é interpretação.** A gravação mostra a onda inteira com cada história
   como trecho numerado; a história mostra uma régua com o lugar dela na gravação.
 - Tema: System / Light / Dark no rodapé, discreto. A escolha fica num cookie e o servidor já entrega
