@@ -14,7 +14,7 @@ const all = (sql, ...args) => db.prepare(sql).all(...args);
 const has = (table) => all("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?", table).length > 0;
 const clock = (s) => (s === null || s === undefined ? "–" : `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}.${String(Math.round((s % 1) * 10) % 10)}`);
 
-const vault = all("SELECT narrator, birth_year AS birthYear, language FROM vault")[0] ?? null;
+const vault = all("SELECT narrator AS subject, birth_year AS birthYear, language FROM vault")[0] ?? null;
 const recordings = all("SELECT id, original_name AS file, language, stage, duration FROM recordings ORDER BY recorded_at");
 const stories = all("SELECT id, recording_id AS recordingId, ord, title, start_sec AS start, end_sec AS end FROM stories ORDER BY recording_id, ord");
 const facts = all(
@@ -44,7 +44,7 @@ async function lifeFromPage() {
   const html = await (await fetch(host)).text();
   const chunks = [...html.matchAll(/self\.__next_f\.push\(\[1,"((?:[^"\\]|\\.)*)"\]\)/g)].map((m) => JSON.parse(`"${m[1]}"`));
   const payload = chunks.join("");
-  const key = payload.indexOf('"life":{"narrator":');
+  const key = Math.max(payload.indexOf('"life":{"subject":'), payload.indexOf('"life":{"narrator":'));
   if (key < 0) return null;
   const at = key + '"life":'.length;
   let depth = 0;
@@ -68,7 +68,7 @@ writeFileSync(path.join(outDir, "archive.json"), JSON.stringify({ vault, recordi
 writeFileSync(path.join(outDir, "life.json"), JSON.stringify(life, null, 2));
 
 const lines = [];
-lines.push(`# Archive report`, "", `Narrator: ${vault?.narrator} · born ${vault?.birthYear ?? "unknown"} · language ${vault?.language}`, "");
+lines.push(`# Archive report`, "", `Archive of ${vault?.subject} · born ${vault?.birthYear ?? "unknown"} · language ${vault?.language}`, "");
 lines.push(`Recordings: ${recordings.map((r) => `${r.file} (${r.language ?? "?"}, ${r.stage}, ${Math.round(r.duration ?? 0)} s)`).join(" · ")}`, "");
 lines.push("## Entities", "", "| kind | name | relation | aliases | stories |", "|---|---|---|---|---|");
 for (const e of entities) lines.push(`| ${e.kind} | ${e.name} | ${e.relation ?? ""} | ${JSON.parse(e.aliases || "[]").join(", ")} | ${e.stories} |`);

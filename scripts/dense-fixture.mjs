@@ -81,5 +81,5 @@ for (let r = 0; r < 6; r++) {
   manifest.push([name, "Grandma (Portuguese (Brazil))", `2026-07-${String(4 + r * 5).padStart(2, "0")}T10:00:00Z`, ""].join("\t"));
 }
 writeFileSync(path.join(out, "manifest.tsv"), manifest.join("\n") + "\n");
-writeFileSync(path.join(out, "vault.json"), JSON.stringify({ narrator: "Conceição", birthYear: birth, language: "pt" }) + "\n");
+writeFileSync(path.join(out, "vault.json"), JSON.stringify({ subject: "Conceição", birthYear: birth, language: "pt" }) + "\n");
 console.log(`wrote ${stories.length} stories in 6 recordings to ${out}`);
