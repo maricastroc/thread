@@ -8,9 +8,9 @@ import { StoryRow } from "@/components/StoryRow";
 import { formatDate, formatDuration } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
-import { loadLife } from "@/lib/server/life";
-import { archiveStats, listRecordings, listStories, themeCounts } from "@/lib/server/repo";
-import { buildTimeline } from "@/lib/server/timeline";
+import { listRecordings } from "@/lib/server/evidence";
+import { archiveStats, listStories, themeCounts } from "@/lib/server/interpretation";
+import { buildTimeline, loadLife } from "@/lib/server/representation";
 import type { RecordingSummary } from "@/lib/types";
 
 function Pending({ recordings }: { recordings: RecordingSummary[] }) {

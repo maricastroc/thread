@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { Recorder } from "@/components/record/Recorder";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
-import { listRecordings, openQuestions } from "@/lib/server/repo";
+import { listRecordings } from "@/lib/server/evidence";
+import { openQuestions } from "@/lib/server/interpretation";
 
 export const metadata: Metadata = { title: t.nav.record };
 

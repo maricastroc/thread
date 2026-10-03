@@ -1,17 +1,9 @@
 import "server-only";
 import type { Segment } from "@/lib/types";
 import { findAges, findDurations, findOffsets } from "./numbers";
-import {
-  allEntities,
-  allStoryRanges,
-  factsForStories,
-  getMeta,
-  getSegments,
-  getVault,
-  replaceMarks,
-  setMeta,
-  type MarkInput,
-} from "./repo";
+import { getMeta, getVault, setMeta } from "./archive";
+import { getSegments } from "./evidence";
+import { allEntities, allStoryRanges, factsForStories, replaceMarks, type MarkInput } from "./interpretation";
 import { locateInSegment, tokens } from "./text";
 import { hasProperWord, kinship, leadingWords, ownedKin } from "./words";
 

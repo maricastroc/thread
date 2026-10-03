@@ -1,6 +1,6 @@
 import type { WorkStage } from "@/lib/types";
 import { enqueue, ensureWorker } from "@/lib/server/pipeline";
-import { getRecording, updateRecording } from "@/lib/server/repo";
+import { getRecording, updateRecording } from "@/lib/server/evidence";
 
 const allowed: WorkStage[] = ["transcribing", "organizing", "indexing"];
 

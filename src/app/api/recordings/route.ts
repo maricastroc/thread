@@ -7,7 +7,9 @@ import type { NextRequest } from "next/server";
 import { recordingDir } from "@/lib/server/db";
 import { newId } from "@/lib/server/ids";
 import { enqueue, ensureWorker } from "@/lib/server/pipeline";
-import { createRecording, getVault, markQuestionAsked } from "@/lib/server/repo";
+import { getVault } from "@/lib/server/archive";
+import { createRecording } from "@/lib/server/evidence";
+import { markQuestionAsked } from "@/lib/server/interpretation";
 
 const extensions: Record<string, string> = {
   "audio/webm": "webm",

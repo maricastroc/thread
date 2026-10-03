@@ -1,6 +1,6 @@
 import path from "node:path";
 import { recordingDir } from "@/lib/server/db";
-import { getRecording } from "@/lib/server/repo";
+import { getRecording } from "@/lib/server/evidence";
 import { serveFile } from "@/lib/server/serve-file";
 
 const types: Record<string, string> = {

@@ -2,7 +2,8 @@ import "server-only";
 import type { Moment, StorySummary } from "@/lib/types";
 import { db } from "./db";
 import { embedQuery, searchVersion } from "./indexer";
-import { getSegments, listStories } from "./repo";
+import { getSegments } from "./evidence";
+import { listStories } from "./interpretation";
 import { normalize, tokens } from "./text";
 import { kinship } from "./words";
 

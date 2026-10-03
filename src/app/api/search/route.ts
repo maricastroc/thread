@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { getVault } from "@/lib/server/repo";
+import { getVault } from "@/lib/server/archive";
 import { search } from "@/lib/server/search";
 
 export async function GET(request: NextRequest) {

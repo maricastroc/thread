@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Lifeline } from "@/components/life/Lifeline";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
-import { loadLife } from "@/lib/server/life";
+import { loadLife } from "@/lib/server/representation";
 
 export const metadata: Metadata = { title: t.entities.places };
 

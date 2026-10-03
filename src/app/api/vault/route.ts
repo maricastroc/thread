@@ -1,4 +1,4 @@
-import { getVault, saveVault } from "@/lib/server/repo";
+import { getVault, saveVault } from "@/lib/server/archive";
 
 export async function GET() {
   return Response.json(getVault());

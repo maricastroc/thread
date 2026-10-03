@@ -12,10 +12,11 @@ import { formatDate, formatDuration } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
 import { slicePeaks } from "@/lib/server/peaks";
-import { factsForStories, getPeaks, getRecording, getSegments, storiesOfRecording } from "@/lib/server/repo";
+import { getPeaks, getRecording, getSegments } from "@/lib/server/evidence";
+import { factsForStories, storiesOfRecording } from "@/lib/server/interpretation";
 import { recordingStatus } from "@/lib/server/status";
 import { buildParagraphs } from "@/lib/server/story-view";
-import { peaksForStories } from "@/lib/server/timeline";
+import { peaksForStories } from "@/lib/server/representation";
 
 export async function generateMetadata(props: PageProps<"/recordings/[id]">): Promise<Metadata> {
   const { id } = await props.params;

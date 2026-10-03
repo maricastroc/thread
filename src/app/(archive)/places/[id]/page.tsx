@@ -4,8 +4,8 @@ import { EntityMoments } from "@/components/entities/EntityMoments";
 import { Lifeline } from "@/components/life/Lifeline";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
-import { loadLife } from "@/lib/server/life";
-import { getEntity } from "@/lib/server/repo";
+import { getEntity } from "@/lib/server/interpretation";
+import { loadLife } from "@/lib/server/representation";
 
 export async function generateMetadata(props: PageProps<"/places/[id]">): Promise<Metadata> {
   const { id } = await props.params;

@@ -5,8 +5,8 @@ import { ArrowIcon } from "@/components/icons";
 import { StoryRow } from "@/components/StoryRow";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
-import { listStories } from "@/lib/server/repo";
-import { peaksForStories } from "@/lib/server/timeline";
+import { listStories } from "@/lib/server/interpretation";
+import { peaksForStories } from "@/lib/server/representation";
 import { sortYear } from "@/lib/server/when";
 import { THEMES, type Theme } from "@/lib/types";
 

@@ -2,7 +2,8 @@
 
 import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getStoryRow, renameStory, saveVault } from "@/lib/server/repo";
+import { saveVault } from "@/lib/server/archive";
+import { getStoryRow, renameStory } from "@/lib/server/interpretation";
 import { t } from "@/lib/i18n";
 
 export type SetupState = { errors: { name?: string; year?: string }; values: { name: string; year: string; language: string } };

@@ -4,6 +4,11 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { config } from "./config";
 
+export type Row = Record<string, unknown>;
+
+export const str = (v: unknown) => (v === null || v === undefined ? null : String(v));
+export const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS vault (
   id INTEGER PRIMARY KEY CHECK (id = 1),

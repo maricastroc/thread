@@ -11,23 +11,9 @@ import { rederiveArchive } from "./derive";
 import { createInterpreter } from "./interpreter/gemma";
 import { ModelServiceError, unload } from "./ollama";
 import { verify, type VerifiedFact } from "./provenance";
-import {
-  clearInterpretation,
-  deleteOrphanEntities,
-  deleteRecordingRow,
-  getRecording,
-  getSegments,
-  getVault,
-  insertStory,
-  knownEntities,
-  pendingRecordingIds,
-  replaceSegments,
-  saveAnnotation,
-  updateRecording,
-  updateStoryTitle,
-  type PreviousStory,
-  type RecordingError,
-} from "./repo";
+import { getVault } from "./archive";
+import { deleteRecordingRow, getRecording, getSegments, pendingRecordingIds, replaceSegments, updateRecording, type RecordingError } from "./evidence";
+import { clearInterpretation, deleteOrphanEntities, insertStory, knownEntities, saveAnnotation, updateStoryTitle, type PreviousStory } from "./interpretation";
 import { attachLeftovers, planStories, uncovered, type PlannedStory } from "./structure";
 import { buildPrompt, transcribe } from "./whisper";
 

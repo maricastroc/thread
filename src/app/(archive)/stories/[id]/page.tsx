@@ -14,9 +14,10 @@ import { formatClock, formatDate, formatDuration } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
 import { slicePeaks } from "@/lib/server/peaks";
-import { getPeaks, getStory, relatedStories, storiesOfRecording } from "@/lib/server/repo";
+import { getPeaks } from "@/lib/server/evidence";
+import { getStory, relatedStories, storiesOfRecording } from "@/lib/server/interpretation";
 import { buildParagraphs, entityHref, toNote } from "@/lib/server/story-view";
-import { peaksForStories } from "@/lib/server/timeline";
+import { peaksForStories } from "@/lib/server/representation";
 import type { LifeStage, Theme } from "@/lib/types";
 
 export async function generateMetadata(props: PageProps<"/stories/[id]">): Promise<Metadata> {
