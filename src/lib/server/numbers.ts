@@ -90,7 +90,7 @@ const YEARS_ES = String.raw`a[ñn]os?`;
 const YEARS_EN = String.raw`years?`;
 const re = (source: string) => new RegExp(source, "giu");
 
-const narratorAgePatterns = [
+const firstPersonAgePatterns = [
   re(String.raw`\beu\s+(?:j[aá]\s+|ainda\s+|s[oó]\s+)?(?:tinha|tava\s+com|estava\s+com|devia\s+ter|deveria\s+ter|teria|fiz|completei|ia\s+fazer|ia\s+completar)\s+(?:uns\s+|umas\s+|quase\s+|mais\s+ou\s+menos\s+|s[oó]\s+|apenas\s+)?${N}\s+${YEARS_PT}\b`),
   re(String.raw`\b(?:com|aos)\s+${N}\s+${YEARS_PT}(?:\s+de\s+idade)?,?\s+eu\b`),
   re(String.raw`\byo\s+(?:ya\s+)?(?:ten[ií]a|tendr[ií]a|cumpl[ií]|hab[ií]a\s+cumplido|iba\s+a\s+cumplir)\s+(?:unos\s+|casi\s+|apenas\s+)?${N}\s+${YEARS_ES}\b`),
@@ -106,7 +106,7 @@ const otherAgePatterns = [
   re(String.raw`\b${N}[\s-]+${YEARS_EN}[\s-]+old\b`),
 ];
 
-export type AgeFind = { age: number; phrase: string; index: number; narrator: boolean };
+export type AgeFind = { age: number; phrase: string; index: number; firstPerson: boolean };
 
 function collect(patterns: RegExp[], text: string): { value: number; phrase: string; index: number }[] {
   const found: { value: number; phrase: string; index: number }[] = [];
@@ -125,19 +125,19 @@ const overlaps = (a: { index: number; phrase: string }, b: { index: number; phra
   a.index < b.index + b.phrase.length && b.index < a.index + a.phrase.length;
 
 export function findAges(text: string): AgeFind[] {
-  const narrator = collect(narratorAgePatterns, text).map((f) => ({ age: f.value, phrase: f.phrase, index: f.index, narrator: true }));
+  const first = collect(firstPersonAgePatterns, text).map((f) => ({ age: f.value, phrase: f.phrase, index: f.index, firstPerson: true }));
   const others = collect(otherAgePatterns, text)
-    .filter((f) => !narrator.some((n) => overlaps(n, f)))
-    .map((f) => ({ age: f.value, phrase: f.phrase, index: f.index, narrator: false }));
+    .filter((f) => !first.some((n) => overlaps(n, f)))
+    .map((f) => ({ age: f.value, phrase: f.phrase, index: f.index, firstPerson: false }));
   const result: AgeFind[] = [];
-  for (const found of [...narrator, ...others].sort((a, b) => a.index - b.index)) {
+  for (const found of [...first, ...others].sort((a, b) => a.index - b.index)) {
     if (!result.some((r) => overlaps(r, found))) result.push(found);
   }
   return result;
 }
 
-export function findNarratorAge(text: string): { age: number; phrase: string } | null {
-  const found = findAges(text).find((f) => f.narrator);
+export function findFirstPersonAge(text: string): { age: number; phrase: string } | null {
+  const found = findAges(text).find((f) => f.firstPerson);
   return found ? { age: found.age, phrase: found.phrase } : null;
 }
 

@@ -81,7 +81,7 @@ export default async function StoryPage(props: PageProps<"/stories/[id]">) {
     <article className="mx-auto max-w-6xl px-4 sm:px-6">
       <Dock id={story.id} />
       <nav aria-label="Breadcrumb" className="pt-2 sm:pt-4">
-        <Link href="/" className="group inline-flex min-h-11 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink">
+        <Link href="/stories" className="group inline-flex min-h-11 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink">
           <ArrowIcon direction="left" size={14} className="transition-transform group-hover:-translate-x-0.5" />
           {t.story.allStories}
         </Link>
@@ -105,20 +105,15 @@ export default async function StoryPage(props: PageProps<"/stories/[id]">) {
           <RenameTitle storyId={story.id} title={story.title} titleBy={story.titleBy} language={story.language} />
           <p className="t-meta mt-6">
             <Link href={{ pathname: "/", query: { story: story.id } }} className="link">
-              {t.story.inLife(vault.narrator)}
+              {t.story.inLife(vault.subject)}
             </Link>
             <span aria-hidden="true"> · </span>
-            {t.story.told(formatDate(story.recordedAt))}
+            <Link href={`/recordings/${story.recordingId}`} className="link">
+              {t.story.fromRecording(formatDate(story.recordedAt))}
+            </Link>
+            {siblings.length > 1 && <>, {t.story.part(part, siblings.length)}</>}
             <span aria-hidden="true"> · </span>
             {formatDuration(story.end - story.start)}
-            {siblings.length > 1 && (
-              <>
-                <span aria-hidden="true"> · </span>
-                <Link href={`/recordings/${story.recordingId}`} className="link">
-                  {t.story.part(part, siblings.length)}
-                </Link>
-              </>
-            )}
           </p>
           {story.quote && (
             <figure className="mt-10 max-w-[44rem]">

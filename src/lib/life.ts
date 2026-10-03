@@ -51,7 +51,7 @@ export type LifeEntity = {
 };
 
 export type Life = {
-  narrator: string;
+  subject: string;
   birthYear: number | null;
   now: number;
   latestRecordingId: string | null;

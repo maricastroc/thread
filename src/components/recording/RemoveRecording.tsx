@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { t } from "@/lib/i18n";
 
-export function RemoveRecording({ id }: { id: string }) {
+export function RemoveRecording({ id, message }: { id: string; message: string }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
@@ -14,7 +14,7 @@ export function RemoveRecording({ id }: { id: string }) {
     const response = await fetch(`/api/recordings/${id}`, { method: "DELETE" });
     setPending(false);
     if (response.ok) {
-      router.push("/");
+      router.push("/recordings");
       router.refresh();
     }
   };
@@ -34,7 +34,7 @@ export function RemoveRecording({ id }: { id: string }) {
   return (
     <div role="alertdialog" aria-labelledby={`remove-${id}`} className="max-w-[30rem] rounded-lg border border-rule-2 p-4">
       <p id={`remove-${id}`} className="text-[0.9375rem]">
-        {t.recording.removeConfirm}
+        {message}
       </p>
       <div className="mt-4 flex gap-3">
         <button

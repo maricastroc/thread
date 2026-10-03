@@ -22,7 +22,7 @@ export default async function RecordPage(props: PageProps<"/record">) {
 
   return (
     <main id="main" tabIndex={-1} className="outline-none">
-      <Recorder narrator={vault.narrator} prompts={prompts} initialQuestion={question} />
+      <Recorder subject={vault.subject} prompts={prompts} initialQuestion={question} />
     </main>
   );
 }

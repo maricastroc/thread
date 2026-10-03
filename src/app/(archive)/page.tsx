@@ -1,16 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ImportButton } from "@/components/ImportButton";
 import { ArrowIcon } from "@/components/icons";
 import { Lifeline } from "@/components/life/Lifeline";
 import { Setup } from "@/components/Setup";
 import { RecordLink } from "@/components/SiteHeader";
-import { StoryRow } from "@/components/StoryRow";
 import { formatDate, formatDuration } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
 import { listRecordings } from "@/lib/server/evidence";
-import { archiveStats, listStories, themeCounts } from "@/lib/server/interpretation";
-import { buildTimeline, loadLife } from "@/lib/server/representation";
+import { archiveStats, listStories } from "@/lib/server/interpretation";
+import { loadLife } from "@/lib/server/representation";
 import type { RecordingSummary } from "@/lib/types";
 
 function Pending({ recordings }: { recordings: RecordingSummary[] }) {
@@ -49,10 +49,10 @@ function Pending({ recordings }: { recordings: RecordingSummary[] }) {
   );
 }
 
-function EmptyArchive({ narrator, recordings }: { narrator: string; recordings: RecordingSummary[] }) {
+function EmptyArchive({ subject, recordings }: { subject: string; recordings: RecordingSummary[] }) {
   return (
     <section className="mx-auto max-w-6xl px-4 pt-8 pb-10 sm:px-6 sm:pt-20">
-      <h1 className="t-display max-w-[13ch] text-balance">{t.home.emptyTitle(narrator)}</h1>
+      <h1 className="t-display max-w-[13ch] text-balance">{t.home.emptyTitle(subject)}</h1>
       <p className="t-reading mt-8 max-w-[36rem] text-ink-2">{t.home.emptyBody}</p>
       <Pending recordings={recordings} />
       <div className="mt-12 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-10">
@@ -63,69 +63,19 @@ function EmptyArchive({ narrator, recordings }: { narrator: string; recordings: 
   );
 }
 
-function ViewSwitch({ view }: { view: "life" | "list" }) {
-  const item = (value: "life" | "list", label: string) => (
-    <Link
-      href={value === "life" ? "/" : "/?view=list"}
-      aria-current={view === value ? "page" : undefined}
-      className={`inline-flex min-h-11 items-center px-2 text-[0.9375rem] underline-offset-[0.3em] ${
-        view === value ? "text-ink underline decoration-ink" : "text-ink-2 decoration-rule-2 hover:text-ink hover:underline"
-      }`}
-    >
-      {label}
-    </Link>
-  );
+function NoStoriesYet({ subject, recordings }: { subject: string; recordings: RecordingSummary[] }) {
   return (
-    <nav aria-label={t.life.viewLabel} className="flex items-center gap-1">
-      {item("life", t.life.views.life)}
-      <span aria-hidden="true" className="text-ink-3">
-        ·
-      </span>
-      {item("list", t.life.views.list)}
-    </nav>
-  );
-}
-
-function ListView({ birthYear }: { birthYear: number | null }) {
-  const groups = buildTimeline(listStories(birthYear));
-  const themes = themeCounts();
-  return (
-    <section aria-labelledby="timeline-heading">
-      <h2 id="timeline-heading" className="visually-hidden">
-        {t.home.timeline}
-      </h2>
-      {groups.map((group) => (
-        <section key={group.key} aria-labelledby={`decade-${group.key}`} className="grid border-t border-rule pt-7 md:grid-cols-[11rem_1fr] md:gap-x-8">
-          <div className="md:sticky md:top-6 md:self-start">
-            <h3 id={`decade-${group.key}`} className="font-serif text-[2.25rem] leading-none tracking-[-0.02em] md:text-[2.75rem]">
-              {group.decade ? t.time.decade(group.decade) : t.home.undated}
-            </h3>
-            {!group.decade && <p className="t-small mt-2 max-w-[12rem] text-ink-2">{t.home.undatedNote}</p>}
-          </div>
-          <ol className="relative mt-2 pb-8 before:absolute before:top-9 before:bottom-14 before:left-[4px] before:w-px before:bg-rule md:mt-0">
-            {group.entries.map((entry) => (
-              <StoryRow key={entry.story.id} story={entry.story} peaks={entry.peaks} showWhen={group.decade !== null || !!entry.story.when} />
-            ))}
-          </ol>
-        </section>
-      ))}
-      {themes.length > 0 && (
-        <section aria-labelledby="themes-heading" className="grid border-t border-rule py-8 md:grid-cols-[11rem_1fr] md:gap-x-8">
-          <h3 id="themes-heading" className="t-kicker pt-1">
-            {t.story.themes}
-          </h3>
-          <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2 md:mt-0">
-            {themes.map(({ theme, count }) => (
-              <li key={theme}>
-                <Link href={`/themes/${theme}`} className="link font-serif text-[1.25rem]">
-                  {t.themes[theme]}
-                </Link>
-                <span className="t-time ml-1.5 text-ink-2">{count}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+    <section className="mx-auto max-w-6xl px-4 pt-8 pb-10 sm:px-6 sm:pt-20">
+      <h1 className="t-display max-w-[14ch] text-balance">{t.home.noStoriesTitle(subject)}</h1>
+      <p className="t-reading mt-8 max-w-[36rem] text-ink-2">{t.home.noStoriesBody(recordings.length)}</p>
+      <Pending recordings={recordings} />
+      <div className="mt-10 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-10">
+        <Link href="/recordings" className="inline-flex min-h-11 items-center gap-2 text-[1.0625rem] underline decoration-rule-2 underline-offset-[0.3em] hover:decoration-ink">
+          {t.home.seeRecordings} <ArrowIcon size={16} />
+        </Link>
+        <RecordLink label={t.home.recordAnother} />
+        <ImportButton hint={false} />
+      </div>
     </section>
   );
 }
@@ -134,12 +84,14 @@ export default async function Home(props: PageProps<"/">) {
   const vault = await loadVault();
   if (!vault) return <Setup />;
 
+  const params = await props.searchParams;
+  if (params.view === "list") redirect("/stories");
+
   const stories = listStories(vault.birthYear);
   const recordings = listRecordings();
-  if (!stories.length) return <EmptyArchive narrator={vault.narrator} recordings={recordings} />;
+  if (!recordings.length) return <EmptyArchive subject={vault.subject} recordings={recordings} />;
+  if (!stories.length) return <NoStoriesYet subject={vault.subject} recordings={recordings} />;
 
-  const params = await props.searchParams;
-  const view = params.view === "list" ? "list" : "life";
   const story = typeof params.story === "string" ? params.story : null;
   const trail = typeof params.trail === "string" ? params.trail : null;
   const stats = archiveStats();
@@ -150,10 +102,7 @@ export default async function Home(props: PageProps<"/">) {
   return (
     <>
       <section className="mx-auto max-w-6xl px-4 pt-6 pb-6 sm:px-6 sm:pt-12 sm:pb-8">
-        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
-          <h1 className="t-display">{vault.narrator}</h1>
-          <ViewSwitch view={view} />
-        </div>
+        <h1 className="t-display">{vault.subject}</h1>
         <p className="t-meta mt-5 max-w-[46rem]">
           {t.life.summary(life.birthYear, stats.stories, formatDuration(stats.storySeconds, "long"), kept, years)}
         </p>
@@ -161,7 +110,7 @@ export default async function Home(props: PageProps<"/">) {
       </section>
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        {view === "life" ? <Lifeline life={life} initialStory={story} initialTrail={trail} /> : <ListView birthYear={vault.birthYear} />}
+        <Lifeline life={life} initialStory={story} initialTrail={trail} />
         <div className="mt-12 flex flex-col items-start gap-6 border-t border-rule pt-10 sm:flex-row sm:items-center sm:gap-10">
           <RecordLink label={t.home.recordAnother} />
           <ImportButton hint={false} />

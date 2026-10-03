@@ -149,7 +149,7 @@ export function Lifeline({
   );
 
   return (
-    <section aria-label={t.life.label(life.narrator)}>
+    <section aria-label={t.life.label(life.subject)}>
       {trailBarFirst && bar}
       <div className="hidden md:block">
         <Horizontal {...shared} />
@@ -277,7 +277,7 @@ function Invitations({ life, start, end }: { life: Life; start: number; end: num
     .sort((a, b) => a.from - b.from);
   return (
     <div className="grid gap-8 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <p className="max-w-[34rem] font-serif text-[1.25rem] leading-snug text-ink-2">{t.life.hint(life.narrator)}</p>
+      <p className="max-w-[34rem] font-serif text-[1.25rem] leading-snug text-ink-2">{t.life.hint(life.subject)}</p>
       {gaps.length > 0 && (
         <ul className="space-y-1">
           {gaps.map((g) => (

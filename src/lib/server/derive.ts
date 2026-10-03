@@ -92,7 +92,7 @@ function timeMarks(story: { id: string; recordingId: string }, segments: Segment
   for (const segment of segments) {
     for (const age of findAges(segment.text)) {
       const at = locate(segment, age.phrase);
-      if (!age.narrator) {
+      if (!age.firstPerson) {
         marks.push({ ...base, ...at, kind: "age", status: "refused", reason: "Someone else's age, or the words don't say whose.", value: age.age, yearFrom: null, anchored: false, provenance: null, note: null });
         continue;
       }

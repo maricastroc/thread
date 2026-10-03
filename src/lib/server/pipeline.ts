@@ -148,7 +148,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
     const vault = getVault();
     const known = knownEntities();
     const prompt = buildPrompt([
-      vault?.narrator ?? "",
+      vault?.subject ?? "",
       ...known.people.flatMap((p) => [p.name, ...p.aliases]),
       ...known.places.flatMap((p) => [p.name, ...p.aliases]),
     ]);
@@ -178,7 +178,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
     const interpreter = createInterpreter();
     updateRecording(id, { models: { interpreter: interpreter.model } });
     const drafts = await interpreter.findStories({
-      narrator: vault.narrator,
+      narrator: vault.subject,
       recordedAt: recording.recordedAt,
       prompt: recording.prompt,
       language: recording.language,
@@ -190,7 +190,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
       const extra = [];
       for (const r of missing) {
         const found = await interpreter.findStories({
-          narrator: vault.narrator,
+          narrator: vault.subject,
           recordedAt: recording.recordedAt,
           prompt: null,
           language: recording.language,
@@ -213,7 +213,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
       const story = planned[i];
       const storySegments = segments.filter((s) => s.idx >= story.segStart && s.idx <= story.segEnd);
       const annotation = await interpreter.annotateStory({
-        narrator: vault.narrator,
+        narrator: vault.subject,
         birthYear: vault.birthYear,
         recordedAt: recording.recordedAt,
         language: recording.language,
@@ -222,7 +222,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
         known: knownEntities(),
         earlier: earlier.slice(-4),
       });
-      const verified = verify(annotation, segments, { from: story.segStart, to: story.segEnd }, vault.narrator, vault.birthYear);
+      const verified = verify(annotation, segments, { from: story.segStart, to: story.segEnd }, vault.subject, vault.birthYear);
       const facts = inheritPeriod(verified.facts, previousAnchor, vault.birthYear);
       const title = restoreNames(story.title, facts);
       if (title !== story.title) updateStoryTitle(ids[i], title);

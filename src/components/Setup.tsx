@@ -23,9 +23,10 @@ export function Setup() {
 
   return (
     <section className="mx-auto max-w-[36rem] px-4 pt-10 pb-24 sm:px-6 sm:pt-20">
-      <p className="t-meta max-w-[24rem]">{t.setup.tagline}</p>
-      <form action={action} className="mt-14" noValidate>
-        <h1 className="t-title">{t.setup.heading}</h1>
+      <form action={action} noValidate>
+        <p className="t-kicker">{t.setup.kicker}</p>
+        <h1 className="t-title mt-4">{t.setup.heading}</h1>
+        <p className="t-reading mt-6 max-w-[32rem] text-ink-2">{t.setup.lead}</p>
 
         <div className="mt-12">
           <label htmlFor="name" className="block text-[1rem] text-ink-2">

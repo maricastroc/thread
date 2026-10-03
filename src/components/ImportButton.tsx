@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 import { t } from "@/lib/i18n";
-import { uploadAudio } from "@/lib/upload";
+import { UploadError, uploadAudio } from "@/lib/upload";
 
 const accept = "audio/*,video/mp4,video/webm,.m4a,.mp3,.ogg,.opus,.oga,.wav,.webm,.aac,.amr,.flac,.3gp";
 const audioName = /\.(m4a|mp3|ogg|opus|oga|wav|webm|aac|amr|flac|3gp|mp4)$/i;
@@ -12,15 +12,15 @@ export function ImportButton({ className = "", hint = true }: { className?: stri
   const router = useRouter();
   const inputId = useId();
   const [progress, setProgress] = useState<number | null>(null);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    setError(false);
+    setError(null);
     if (!(file.type.startsWith("audio/") || file.type.startsWith("video/") || audioName.test(file.name))) {
-      setError(true);
+      setError(`${t.record.errors.unreadable.title}. ${t.record.errors.unreadable.body}`);
       return;
     }
     setProgress(0);
@@ -32,9 +32,10 @@ export function ImportButton({ className = "", hint = true }: { className?: stri
         onProgress: setProgress,
       });
       router.push(`/recordings/${id}`);
-    } catch {
+    } catch (failure) {
       setProgress(null);
-      setError(true);
+      const reason = failure instanceof UploadError && failure.status >= 400 && failure.status < 500 ? `${failure.message} ` : "";
+      setError(`${reason}${t.record.errors.unreadable.title}. ${t.record.errors.unreadable.body}`);
     }
   };
 
@@ -56,7 +57,7 @@ export function ImportButton({ className = "", hint = true }: { className?: stri
       </label>
       {hint && progress === null && !error && <p className="t-small text-ink-2">{t.home.importHint}</p>}
       <p role="status" className="t-small max-w-[28rem] text-voice">
-        {error ? `${t.record.errors.unreadable.title}. ${t.record.errors.unreadable.body}` : ""}
+        {error ?? ""}
       </p>
     </div>
   );

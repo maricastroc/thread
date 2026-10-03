@@ -5,7 +5,7 @@ import { db, num, type Row } from "./db";
 export function getVault(): Vault | null {
   const row = db().prepare("SELECT narrator, birth_year, language FROM vault WHERE id = 1").get() as Row | undefined;
   if (!row) return null;
-  return { narrator: String(row.narrator), birthYear: num(row.birth_year), language: String(row.language) };
+  return { subject: String(row.narrator), birthYear: num(row.birth_year), language: String(row.language) };
 }
 
 export function saveVault(vault: Vault): void {
@@ -14,7 +14,7 @@ export function saveVault(vault: Vault): void {
       `INSERT INTO vault (id, narrator, birth_year, language, created_at) VALUES (1, ?, ?, ?, ?)
        ON CONFLICT (id) DO UPDATE SET narrator = excluded.narrator, birth_year = excluded.birth_year, language = excluded.language`,
     )
-    .run(vault.narrator, vault.birthYear, vault.language, new Date().toISOString());
+    .run(vault.subject, vault.birthYear, vault.language, new Date().toISOString());
 }
 
 export function getMeta(key: string): string | null {

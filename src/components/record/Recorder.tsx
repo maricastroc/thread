@@ -35,12 +35,12 @@ function errorKind(error: unknown): ErrorKind {
 }
 
 type Props = {
-  narrator: string;
+  subject: string;
   prompts: Prompt[];
   initialQuestion: string | null;
 };
 
-export function Recorder({ narrator, prompts, initialQuestion }: Props) {
+export function Recorder({ subject, prompts, initialQuestion }: Props) {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<ErrorKind | null>(null);
@@ -210,7 +210,7 @@ export function Recorder({ narrator, prompts, initialQuestion }: Props) {
     const url = URL.createObjectURL(blob.current);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${narrator}-${startedAt.current.toISOString().slice(0, 10)}.${extensionFor(blob.current.type)}`;
+    a.download = `${subject}-${startedAt.current.toISOString().slice(0, 10)}.${extensionFor(blob.current.type)}`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   };
@@ -221,7 +221,7 @@ export function Recorder({ narrator, prompts, initialQuestion }: Props) {
   return (
     <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-8">
       <header className="flex h-14 items-center justify-between">
-        <p className="font-serif text-[1.25rem] tracking-[-0.01em] text-ink-2">{narrator}</p>
+        <p className="font-serif text-[1.25rem] tracking-[-0.01em] text-ink-2">{t.record.forArchive(subject)}</p>
         {!busy && (
           <Link href="/" className="-mr-3 inline-flex h-12 items-center rounded-full px-4 text-[1.0625rem] text-ink-2 hover:text-ink">
             {t.record.close}

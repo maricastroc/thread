@@ -8,10 +8,13 @@ export const en = {
 
   nav: {
     label: "Archive",
+    life: "Life",
     stories: "Stories",
     people: "People",
     places: "Places",
+    recordings: "Recordings",
     record: "Record",
+    archiveOf: (name: string) => `${possessive(name)} life archive`,
   },
 
   search: {
@@ -37,9 +40,9 @@ export const en = {
   },
 
   setup: {
-    title: "Thread",
-    tagline: "A place to keep someone’s stories, in their own voice.",
-    heading: "Whose stories are we keeping?",
+    kicker: "A new life archive",
+    heading: "Whose life is this archive for?",
+    lead: "Thread keeps one person’s stories. It builds their life from the recordings you add, and everything in it leads back to what was actually said.",
     nameLabel: "Their name, the way the family says it",
     namePlaceholder: "Rosa",
     birthYearLabel: "Year they were born",
@@ -47,21 +50,19 @@ export const en = {
     birthYearHint: "Helps place stories in time. It is never shown as something they said.",
     languageLabel: "Language of the recordings",
     languageAuto: "Detect automatically",
-    submit: "Begin",
+    submit: "Start the archive",
     nameRequired: "Write a name so the archive knows whose stories these are.",
     yearInvalid: "Use a four-digit year, like 1941.",
     privacy: "Everything stays on this computer: the recordings, what was said, and the index used to find it again.",
   },
 
   home: {
-    emptyTitle: (name: string) => `${possessive(name)} stories will live here.`,
+    emptyTitle: (name: string) => `${possessive(name)} life will take shape here.`,
     emptyBody:
-      "Record a story the way it is told: a place, a person, an ordinary afternoon. Each recording is kept exactly as it was spoken, and becomes something the family can search and listen to again.",
+      "Record or import a conversation about a place, a person, an ordinary afternoon. Every recording is kept exactly as it was received, and each story found in it takes its place in this life.",
     recordFirst: "Record the first story",
     importLabel: "Import a recording",
     importHint: "Voice notes or recordings from a phone",
-    stats: (stories: number, voice: string, name: string) =>
-      `${stories} ${plural(stories, "story", "stories")} · ${voice} of ${possessive(name)} voice`,
     since: (month: string) => `Recorded since ${month}`,
     timeline: "Life timeline",
     undated: "Undated",
@@ -69,13 +70,42 @@ export const en = {
     inProgress: (n: number) => (n === 1 ? "A recording is being prepared" : `${numberWord(n)} recordings are being prepared`),
     needsAttention: (n: number) => (n === 1 ? "A recording needs attention" : `${numberWord(n)} recordings need attention`),
     view: "View",
-    noStories: "This recording has no stories yet.",
     recordAnother: "Record another story",
-    recordings: "Recordings",
+    noStoriesTitle: (name: string) => `No stories in ${possessive(name)} life yet.`,
+    noStoriesBody: (n: number) =>
+      `${n === 1 ? "One recording is" : `${numberWord(n)[0].toUpperCase()}${numberWord(n).slice(1)} recordings are`} kept. A story appears here only when the archive finds one, with confidence, in what was said.`,
+    seeRecordings: "See the recordings",
+  },
+
+  stories: {
+    title: "Stories",
+    intro: (name: string) => `Every story found in ${possessive(name)} recordings, by decade. Each one leads back to the recording it came from.`,
+    count: (n: number) => `${n} ${plural(n, "story", "stories")}`,
+  },
+
+  recordings: {
+    title: "Recordings",
+    intro: (name: string) =>
+      `The original sources added to ${possessive(name)} archive, kept exactly as they were received. Stories and the life are built from them and always lead back to them.`,
+    summary: (n: number, duration: string, stories: number) =>
+      `${n} ${plural(n, "recording", "recordings")} · ${duration} · ${stories} ${plural(stories, "story", "stories")} found`,
+    empty: "Nothing has been recorded or imported yet.",
+    added: (date: string) => `added ${date}`,
+    recorded: "Recorded here",
+    imported: "Imported",
+    outcome: {
+      stories: (n: number) => `${n} ${plural(n, "story", "stories")}`,
+      noStories: "No stories found",
+      noSpeech: "No speech recognized",
+      working: "Being processed",
+      failed: "Needs attention",
+    },
+    open: (date: string) => `Recording of ${date}`,
   },
 
   record: {
     close: "Close",
+    forArchive: (name: string) => `For ${possessive(name)} archive`,
     ideaLabel: "Need an idea?",
     fromEarlier: "A question from an earlier story",
     allowMic: "Allow the microphone when the browser asks.",
@@ -160,11 +190,6 @@ export const en = {
     annotating: (n: number, total: number) => `Noting people, places and dates · story ${n} of ${total}`,
     storiesFound: (n: number) => (n === 1 ? "One story found" : `${numberWord(n)[0].toUpperCase()}${numberWord(n).slice(1)} stories found`),
     leave: "You can close this page. The work continues on this computer.",
-    ready: "Ready.",
-    readyBody: (n: number) => (n === 1 ? "This recording holds one story." : `This recording holds ${numberWord(n)} stories.`),
-    readyNone: "No separate stories were found, but the whole recording is kept and searchable.",
-    listenAll: "Listen to the whole recording",
-    backToArchive: "Back to all stories",
     failed: {
       preserving: "The audio couldn’t be read.",
       transcribing: "What was said couldn’t be written down this time.",
@@ -183,8 +208,8 @@ export const en = {
 
   story: {
     allStories: "All stories",
-    told: (date: string) => `Told on ${date}`,
-    part: (n: number, total: number) => `Part ${n} of ${total} of the recording`,
+    fromRecording: (date: string) => `From the recording of ${date}`,
+    part: (n: number, total: number) => `part ${n} of ${total}`,
     wholeRecording: "Whole recording",
     listen: "Listen",
     pause: "Pause",
@@ -238,7 +263,7 @@ export const en = {
     gapQuestion: (from: number, to: number) => `What do you remember from the years ${from} to ${to}?`,
     askAbout: "Ask about it next time",
     hint: (name: string) =>
-      `Each mark is a moment where ${possessive(name)} voice was kept. Its width is how long the story lasts. Choose one to open it.`,
+      `Each mark is a story from ${possessive(name)} recordings, placed where it happened in their life. Its width is how long it lasts. Choose one to open it.`,
     unplaced: "Not yet placed in time",
     latest: "latest recording",
     through: "Through these stories",
@@ -266,29 +291,41 @@ export const en = {
       inferred: "inferred",
       none: "not placed in time",
     },
-    views: { life: "Life", list: "List" },
-    viewLabel: "How to show the stories",
     noDate: "no date",
-    peopleIntro: (name: string) => `Everyone ${name} has mentioned, across the years they appear.`,
-    placesIntro: (name: string) => `Every place ${name} has mentioned, across the years it appears.`,
+    peopleIntro: (name: string) => `Everyone mentioned in ${possessive(name)} recordings, across the years they appear.`,
+    placesIntro: (name: string) => `Every place mentioned in ${possessive(name)} recordings, across the years it appears.`,
     span: (from: number | null, to: number | null, stories: number, moments: number) =>
       `${from && to ? (from === to ? `${from} · ` : `${from}–${to} · `) : ""}${stories} ${plural(stories, "story", "stories")} · ${moments} ${plural(moments, "moment", "moments")}`,
   },
 
   recording: {
     kicker: "Recording",
+    back: "All recordings",
     title: (date: string) => `Recording of ${date}`,
     imported: "Imported file",
     recorded: "Recorded here",
     download: "Download the original file",
-    stories: "Stories in this recording",
+    found: "What the archive found in it",
+    stories: "Stories found in this recording",
+    holds: (n: number) => (n === 1 ? "One story was found in this recording." : `${numberWord(n)[0].toUpperCase()}${numberWord(n).slice(1)} stories were found in this recording.`),
+    inLife: (name: string) => `Each story is also a moment in ${possessive(name)} life.`,
+    noStoriesTitle: "No separate story was found in this recording.",
+    noStoriesBody: (name: string) =>
+      `It is kept exactly as it was received, and nothing was added to ${possessive(name)} life. What was said is written below and can be searched.`,
+    noSpeechTitle: "No speech was recognized in this recording.",
+    noSpeechBody: (name: string) =>
+      `It is kept exactly as it was received, but there are no words to search, and nothing was added to ${possessive(name)} life. If it should contain speech, a clearer copy of the file may work better.`,
     transcript: "Everything that was said",
     between: "Between stories",
-    holds: (n: number) => (n === 1 ? "This recording holds one story." : `This recording holds ${numberWord(n)} stories.`),
-    none: "No separate stories were found in this recording. It is kept whole, and every word can be searched.",
+    next: "Add another recording",
     remove: "Remove this recording",
-    removeConfirm: "Remove this recording and its stories from the archive? The audio file is moved to the “removed” folder on this computer, not erased.",
-    removed: "Recording removed.",
+    removeConfirm: (name: string, stories: number, people: number, places: number) => {
+      const only = [people ? `${people} ${plural(people, "person", "people")}` : "", places ? `${places} ${plural(places, "place", "places")}` : ""].filter(Boolean).join(" and ");
+      const story = stories
+        ? `Its ${stories === 1 ? "story" : `${stories} stories`} will leave the archive and ${possessive(name)} life${only ? `, along with ${only} mentioned only here` : ""}.`
+        : `Nothing in ${possessive(name)} life comes from it.`;
+      return `Remove this recording? ${story} The audio files are moved to the “removed” folder on this computer, not erased.`;
+    },
   },
 
   provenance: {

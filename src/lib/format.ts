@@ -77,3 +77,16 @@ export function languageTag(code: string | null | undefined): string | undefined
   if (!code || code === "auto") return undefined;
   return code;
 }
+
+export function languageName(code: string | null | undefined): string | null {
+  if (!code || code === "auto") return null;
+  try {
+    return new Intl.DisplayNames([locale], { type: "language" }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
+export function sameDay(a: string, b: string): boolean {
+  return new Date(a).toDateString() === new Date(b).toDateString();
+}

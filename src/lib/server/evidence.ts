@@ -27,12 +27,14 @@ function toRecording(row: Row): RecordingSummary & { originalFile: string; error
     failedStage: (str(row.failed_stage) as WorkStage | null) ?? null,
     error: parseError(row.error),
     language: str(row.language),
+    createdAt: String(row.created_at),
+    originalName: str(row.original_name),
     originalFile: String(row.original_file),
   };
 }
 
 const recordingColumns =
-  "id, source, recorded_at, original_file, duration, prompt, stage, progress, detail, failed_stage, error, language";
+  "id, source, recorded_at, created_at, original_file, original_name, duration, prompt, stage, progress, detail, failed_stage, error, language";
 
 export function createRecording(input: {
   id: string;
@@ -158,4 +160,9 @@ export function getSegments(recordingId: string, from = 0, to = Number.MAX_SAFE_
       .prepare("SELECT * FROM segments WHERE recording_id = ? AND idx BETWEEN ? AND ? ORDER BY idx")
       .all(recordingId, from, to) as Row[]
   ).map(toSegment);
+}
+
+export function transcriptSizes(): Map<string, number> {
+  const rows = db().prepare("SELECT recording_id, COUNT(*) AS n FROM segments GROUP BY recording_id").all() as Row[];
+  return new Map(rows.map((r) => [String(r.recording_id), Number(r.n)]));
 }

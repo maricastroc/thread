@@ -48,7 +48,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         >
           {t.skipToContent}
         </a>
-        <AudioProvider narrator={vault?.narrator ?? null}>
+        <AudioProvider subject={vault?.subject ?? null}>
           {children}
           <MiniPlayer />
         </AudioProvider>

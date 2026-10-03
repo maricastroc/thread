@@ -16,7 +16,7 @@ export default async function PlacesPage(props: PageProps<"/places">) {
   return (
     <section className="mx-auto max-w-6xl px-4 pt-6 pb-10 sm:px-6 sm:pt-12">
       <h1 className="t-display">{t.entities.places}</h1>
-      <p className="t-meta mt-5 mb-8 max-w-[34rem]">{t.life.placesIntro(vault.narrator)}</p>
+      <p className="t-meta mt-5 mb-8 max-w-[34rem]">{t.life.placesIntro(vault.subject)}</p>
       {hasPlaces ? (
         <Lifeline
           life={life}

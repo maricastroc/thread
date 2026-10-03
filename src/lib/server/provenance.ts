@@ -1,7 +1,7 @@
 import "server-only";
 import type { FactKind, LifeStage, Provenance, Segment } from "@/lib/types";
 import type { StoryAnnotation } from "./interpreter/types";
-import { findNarratorAge, isApproximate, statesYear } from "./numbers";
+import { findFirstPersonAge, isApproximate, statesYear } from "./numbers";
 import { containsPhrase, locateInSegment, normalize, tokens } from "./text";
 import { hasProperWord, kinship, leadingWords, mentionsOwnKin, ownedKin, properWords } from "./words";
 
@@ -118,13 +118,13 @@ export function verify(
   annotation: StoryAnnotation,
   segments: Segment[],
   range: { from: number; to: number },
-  narrator: string,
+  subject: string,
   birthYear: number | null,
 ): Verified {
   const facts: VerifiedFact[] = [];
   const rejected: Rejection[] = [];
   const byIdx = new Map(segments.map((s) => [s.idx, s]));
-  const narratorKey = normalize(narrator);
+  const subjectKey = normalize(subject);
   const seenEntities = new Set<string>();
   const inStory = segments.filter((s) => s.idx >= range.from && s.idx <= range.to);
   const storyText = inStory.map((s) => s.text).join(" ");
@@ -160,7 +160,7 @@ export function verify(
     const raw = displayName(person.name);
     const name = bareKinship(raw) ? raw.charAt(0).toLocaleUpperCase() + raw.slice(1) : raw;
     const key = normalize(name);
-    if (!key || key === narratorKey || narratorKey.split(" ").includes(key) || seenEntities.has(`person:${key}`)) continue;
+    if (!key || key === subjectKey || subjectKey.split(" ").includes(key) || seenEntities.has(`person:${key}`)) continue;
     if (!isIndividual(name, person.mention || name)) {
       reject("person", name, person.mention, "A group or a common word, not one person.");
       continue;
@@ -276,9 +276,9 @@ export function verify(
         note = `Said as an approximate year, around ${validFrom}.`;
       }
     } else {
-      const age = birthYear ? findNarratorAge(text) : null;
+      const age = birthYear ? findFirstPersonAge(text) : null;
       if (!age || Math.abs(birthYear! + age.age - validFrom) > 1) {
-        reject("time", value, evidence.evidence, "The year isn't said, and no age of the narrator in these words gives it.");
+        reject("time", value, evidence.evidence, "The year isn't said, and no first-person age in these words gives it.");
         continue;
       }
       provenance = "inferred";
@@ -303,7 +303,7 @@ export function verify(
 
   if (birthYear && !facts.some((f) => f.kind === "time" && f.yearFrom)) {
     for (const segment of inStory) {
-      const found = findNarratorAge(segment.text);
+      const found = findFirstPersonAge(segment.text);
       if (!found) continue;
       const year = birthYear + found.age;
       if (year > currentYear) break;

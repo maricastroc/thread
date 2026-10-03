@@ -22,16 +22,16 @@ export default async function SearchPage(props: PageProps<"/search">) {
   const sentence = !outcome
     ? null
     : outcome.strength === "strong"
-      ? t.search.found(outcome.moments.length, vault.narrator)
+      ? t.search.found(outcome.moments.length, vault.subject)
       : outcome.strength === "weak"
-        ? t.search.weak(vault.narrator)
+        ? t.search.weak(vault.subject)
         : t.search.none;
 
   return (
     <section className="mx-auto max-w-6xl px-4 pt-6 pb-10 sm:px-6 sm:pt-12">
       <h1 className="visually-hidden">{query ? t.search.resultsFor(query) : t.search.title}</h1>
       <div className="max-w-3xl">
-        <SearchField narrator={vault.narrator} size="hero" defaultValue={query} autoFocus={!query} id="search-page" />
+        <SearchField subject={vault.subject} size="hero" defaultValue={query} autoFocus={!query} id="search-page" />
         {!query && <p className="t-meta mt-4">{t.search.empty}</p>}
       </div>
 

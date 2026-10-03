@@ -194,7 +194,7 @@ export function loadLife(vault: Vault): Life {
 
   const recordings = listRecordings().filter((r) => r.stage === "ready");
   return {
-    narrator: vault.narrator,
+    subject: vault.subject,
     birthYear: vault.birthYear,
     now,
     latestRecordingId: recordings[0]?.id ?? null,

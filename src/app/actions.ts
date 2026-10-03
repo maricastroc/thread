@@ -18,7 +18,7 @@ export async function setupVault(_previous: SetupState, form: FormData): Promise
   const year = yearText ? Number(yearText) : null;
   if (yearText && (!Number.isInteger(year) || year! < 1880 || year! > new Date().getFullYear())) errors.year = t.setup.yearInvalid;
   if (errors.name || errors.year) return { errors, values };
-  saveVault({ narrator: name, birthYear: year, language: /^(auto|[a-z]{2})$/.test(language) ? language : "auto" });
+  saveVault({ subject: name, birthYear: year, language: /^(auto|[a-z]{2})$/.test(language) ? language : "auto" });
   revalidatePath("/", "layout");
   redirect("/");
 }

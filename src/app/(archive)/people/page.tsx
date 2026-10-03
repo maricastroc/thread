@@ -16,7 +16,7 @@ export default async function PeoplePage(props: PageProps<"/people">) {
   return (
     <section className="mx-auto max-w-6xl px-4 pt-6 pb-10 sm:px-6 sm:pt-12">
       <h1 className="t-display">{t.entities.people}</h1>
-      <p className="t-meta mt-5 mb-8 max-w-[34rem]">{t.life.peopleIntro(vault.narrator)}</p>
+      <p className="t-meta mt-5 mb-8 max-w-[34rem]">{t.life.peopleIntro(vault.subject)}</p>
       {hasPeople ? (
         <Lifeline
           life={life}

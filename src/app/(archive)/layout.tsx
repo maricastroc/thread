@@ -5,7 +5,7 @@ export default async function ArchiveLayout({ children }: LayoutProps<"/">) {
   const vault = await loadVault();
   return (
     <>
-      <SiteHeader narrator={vault?.narrator ?? null} />
+      <SiteHeader subject={vault?.subject ?? null} />
       <main id="main" tabIndex={-1} className="outline-none">
         {children}
       </main>

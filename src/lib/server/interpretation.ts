@@ -499,3 +499,21 @@ export function themeCounts(): { theme: Theme; count: number }[] {
   for (const r of rows) for (const theme of JSON.parse(String(r.themes || "[]")) as Theme[]) counts.set(theme, (counts.get(theme) ?? 0) + 1);
   return [...counts.entries()].map(([theme, count]) => ({ theme, count })).sort((a, b) => b.count - a.count);
 }
+
+export function storyCountsByRecording(): Map<string, number> {
+  const rows = db().prepare("SELECT recording_id, COUNT(*) AS n FROM stories GROUP BY recording_id").all() as Row[];
+  return new Map(rows.map((r) => [String(r.recording_id), Number(r.n)]));
+}
+
+export function entitiesOnlyIn(recordingId: string): { people: number; places: number } {
+  const rows = db()
+    .prepare(
+      `SELECT e.kind AS kind, COUNT(*) AS n FROM entities e
+       WHERE EXISTS (SELECT 1 FROM facts f WHERE f.entity_id = e.id AND f.recording_id = ?)
+         AND NOT EXISTS (SELECT 1 FROM facts f WHERE f.entity_id = e.id AND f.recording_id != ?)
+       GROUP BY e.kind`,
+    )
+    .all(recordingId, recordingId) as Row[];
+  const count = (kind: string) => Number(rows.find((r) => r.kind === kind)?.n ?? 0);
+  return { people: count("person"), places: count("place") };
+}

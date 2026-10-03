@@ -17,33 +17,56 @@ export function RecordLink({ className = "", label = t.nav.record }: { className
   );
 }
 
-export function SiteHeader({ narrator, search = true }: { narrator: string | null; search?: boolean }) {
+function Sections() {
+  return (
+    <>
+      <NavLink href="/">{t.nav.life}</NavLink>
+      <NavLink href="/stories" also={["/themes"]}>
+        {t.nav.stories}
+      </NavLink>
+      <NavLink href="/people">{t.nav.people}</NavLink>
+      <NavLink href="/places">{t.nav.places}</NavLink>
+      <span aria-hidden="true" className="mx-1.5 h-4 w-px bg-rule-2" />
+      <NavLink href="/recordings">{t.nav.recordings}</NavLink>
+    </>
+  );
+}
+
+export function SiteHeader({ subject, search = true }: { subject: string | null; search?: boolean }) {
   return (
     <header className="relative z-30">
       <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 sm:min-h-20 sm:gap-x-6 sm:px-6">
-        <Link href="/" className="-ml-1 rounded px-1 font-serif text-[1.5rem] leading-none tracking-[-0.02em]">
-          {t.brand}
+        <Link
+          href="/"
+          aria-label={subject ? `${t.brand}, ${t.nav.archiveOf(subject)}` : t.brand}
+          className="-ml-1 flex min-w-0 items-baseline gap-2 rounded px-1"
+        >
+          <span className="font-serif text-[1.5rem] leading-none tracking-[-0.02em]">{t.brand}</span>
+          {subject && (
+            <>
+              <span aria-hidden="true" className="text-ink-3">
+                /
+              </span>
+              <span className="max-w-[11rem] truncate text-[1rem] text-ink-2">{subject}</span>
+            </>
+          )}
         </Link>
-        {narrator && (
-          <nav aria-label={t.nav.label} className="hidden items-center md:flex">
-            <NavLink href="/">{t.nav.stories}</NavLink>
-            <NavLink href="/people">{t.nav.people}</NavLink>
-            <NavLink href="/places">{t.nav.places}</NavLink>
+        {subject && (
+          <nav aria-label={t.nav.archiveOf(subject)} className="hidden items-center md:flex">
+            <Sections />
           </nav>
         )}
         <div className="flex-1" />
-        {narrator && search && (
+        {subject && search && (
           <HeaderSearch>
-            <SearchField narrator={narrator} id="header-search" />
+            <SearchField subject={subject} id="header-search" />
           </HeaderSearch>
         )}
-        {narrator && <RecordLink />}
+        {subject && <RecordLink />}
       </div>
-      {narrator && (
-        <nav aria-label={t.nav.label} className="mx-auto -mt-2 flex max-w-6xl flex-wrap items-center gap-x-1 px-2 pb-1 md:hidden">
-          <NavLink href="/">{t.nav.stories}</NavLink>
-          <NavLink href="/people">{t.nav.people}</NavLink>
-          <NavLink href="/places">{t.nav.places}</NavLink>
+      {subject && (
+        <nav aria-label={t.nav.archiveOf(subject)} className="mx-auto -mt-2 flex max-w-6xl flex-wrap items-center gap-x-1 px-2 pb-1 md:hidden">
+          <Sections />
           <NavLink href="/search">{t.search.title}</NavLink>
         </nav>
       )}

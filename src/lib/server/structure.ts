@@ -101,7 +101,7 @@ export function planStories(drafts: StoryDraft[], segments: Segment[]): PlannedS
     (d) => kept.length === 1 || segments[d.lastSegment].end - segments[d.firstSegment].start >= MIN_STORY_SECONDS,
   );
 
-  const planned = (sized.length ? sized : [{ firstSegment: 0, lastSegment: last, title: "", quoteSegment: null }]).map(
+  const planned = sized.map(
     (d) => {
       const quoteSeg = bestQuote(segments, d.firstSegment, d.lastSegment, d.quoteSegment);
       const title = cleanTitle(d.title) || fallbackTitle(segments[quoteSeg]);

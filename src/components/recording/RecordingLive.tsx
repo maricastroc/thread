@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { ArrowIcon } from "@/components/icons";
 import { formatClock, formatDuration, formatTimeOfDay, isToday, formatDate } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import type { LiveStory, RecordingSummary, WorkStage } from "@/lib/types";
@@ -84,7 +86,7 @@ function StepMark({ state }: { state: "done" | "active" | "pending" | "failed" }
   return <span aria-hidden="true" className="mx-[3px] block size-[10px] rounded-full border border-rule-2" />;
 }
 
-export function RecordingLive({ initial }: { initial: Status }) {
+export function RecordingLive({ initial, removeMessage }: { initial: Status; removeMessage: string }) {
   const router = useRouter();
   const [status, setStatus] = useState<Status>(initial);
   const [lines, setLines] = useState<Line[]>(initial.transcript.lines);
@@ -126,11 +128,10 @@ export function RecordingLive({ initial }: { initial: Status }) {
           setLines(next.transcript.lines);
         }
         setStatus(next);
-        if (next.stage === "ready") {
+        if (next.stage === "ready" || next.failedStage) {
           router.refresh();
           return;
         }
-        if (next.failedStage) return;
       } catch {}
       timer = window.setTimeout(poll, 900);
     };
@@ -173,8 +174,14 @@ export function RecordingLive({ initial }: { initial: Status }) {
   };
 
   return (
-    <section className="mx-auto max-w-3xl px-4 pt-8 pb-16 sm:px-6 sm:pt-14">
-      <h1 className="t-title">{t.processing.saved}</h1>
+    <section className="mx-auto max-w-3xl px-4 pt-2 pb-16 sm:px-6 sm:pt-4">
+      <nav aria-label="Breadcrumb">
+        <Link href="/recordings" className="group inline-flex min-h-11 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink">
+          <ArrowIcon direction="left" size={14} className="transition-transform group-hover:-translate-x-0.5" />
+          {t.recording.back}
+        </Link>
+      </nav>
+      <h1 className="t-title mt-6 sm:mt-10">{t.processing.saved}</h1>
       <p className="t-meta mt-4">{duration ? t.processing.savedMeta(formatDuration(duration), when) : when}</p>
       {status.prompt && (
         <p className="mt-6 max-w-[34rem] font-serif text-[1.1875rem] leading-snug text-ink-2 italic">
@@ -262,7 +269,7 @@ export function RecordingLive({ initial }: { initial: Status }) {
                     </button>
                     {status.failedStage === "preserving" && (
                       <div className="mt-2">
-                        <RemoveRecording id={status.id} />
+                        <RemoveRecording id={status.id} message={removeMessage} />
                       </div>
                     )}
                     {status.error && (

@@ -68,7 +68,7 @@ export type When = {
 };
 
 export type Vault = {
-  narrator: string;
+  subject: string;
   birthYear: number | null;
   language: string;
 };
@@ -85,6 +85,8 @@ export type RecordingSummary = {
   failedStage: WorkStage | null;
   error: { message: string; detail: string } | null;
   language: string | null;
+  createdAt: string;
+  originalName: string | null;
 };
 
 export type Quote = { seg: number; text: string; start: number; end: number };

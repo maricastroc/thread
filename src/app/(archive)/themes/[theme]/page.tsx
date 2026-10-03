@@ -33,7 +33,7 @@ export default async function ThemePage(props: PageProps<"/themes/[theme]">) {
   return (
     <section className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
       <nav aria-label="Breadcrumb" className="pt-2 sm:pt-4">
-        <Link href="/" className="group inline-flex min-h-11 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink">
+        <Link href="/stories" className="group inline-flex min-h-11 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink">
           <ArrowIcon direction="left" size={14} className="transition-transform group-hover:-translate-x-0.5" />
           {t.story.allStories}
         </Link>

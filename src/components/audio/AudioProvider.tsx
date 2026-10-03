@@ -59,7 +59,7 @@ const AudioContext = createContext<Controls | null>(null);
 
 export const audioSrc = (recordingId: string) => `/api/recordings/${recordingId}/audio`;
 
-export function AudioProvider({ narrator, children }: { narrator: string | null; children: React.ReactNode }) {
+export function AudioProvider({ subject, children }: { subject: string | null; children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const store = useMemo(() => createStore(), []);
   const frame = useRef<number | null>(null);
@@ -205,13 +205,13 @@ export function AudioProvider({ narrator, children }: { narrator: string | null;
       if (!track) return;
       const current = navigator.mediaSession.metadata;
       if (current?.title === track.title) return;
-      navigator.mediaSession.metadata = new MediaMetadata({ title: track.title, artist: narrator ?? "", album: "Thread" });
+      navigator.mediaSession.metadata = new MediaMetadata({ title: track.title, artist: subject ?? "", album: "Thread" });
       navigator.mediaSession.setActionHandler("play", () => toggle());
       navigator.mediaSession.setActionHandler("pause", () => pause());
       navigator.mediaSession.setActionHandler("seekbackward", () => seek(store.get().time - 10));
       navigator.mediaSession.setActionHandler("seekforward", () => seek(store.get().time + 10));
     });
-  }, [narrator, pause, seek, store, toggle]);
+  }, [subject, pause, seek, store, toggle]);
 
   const controls = useMemo(() => ({ store, play, toggle, pause, seek, close, dock }), [store, play, toggle, pause, seek, close, dock]);
 

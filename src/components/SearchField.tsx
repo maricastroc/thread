@@ -3,19 +3,19 @@ import { SearchIcon } from "@/components/icons";
 import { t } from "@/lib/i18n";
 
 type Props = {
-  narrator: string;
+  subject: string;
   defaultValue?: string;
   size?: "compact" | "hero";
   autoFocus?: boolean;
   id?: string;
 };
 
-export function SearchField({ narrator, defaultValue, size = "compact", autoFocus, id = "search" }: Props) {
+export function SearchField({ subject, defaultValue, size = "compact", autoFocus, id = "search" }: Props) {
   if (size === "hero") {
     return (
       <Form action="/search" role="search" className="group relative">
         <label htmlFor={id} className="visually-hidden">
-          {t.search.label(narrator)}
+          {t.search.label(subject)}
         </label>
         <input
           id={id}
@@ -25,7 +25,7 @@ export function SearchField({ narrator, defaultValue, size = "compact", autoFocu
           autoFocus={autoFocus}
           autoComplete="off"
           enterKeyHint="search"
-          placeholder={t.search.placeholder(narrator)}
+          placeholder={t.search.placeholder(subject)}
           className="peer w-full border-0 border-b border-rule-2 bg-transparent py-3 pr-14 font-serif text-[clamp(1.375rem,1.1rem+1.2vw,2rem)] leading-tight text-ink placeholder:text-ink-3 focus:border-ink focus:outline-none focus-visible:outline-none [&::-webkit-search-cancel-button]:hidden"
         />
         <button
@@ -45,7 +45,7 @@ export function SearchField({ narrator, defaultValue, size = "compact", autoFocu
   return (
     <Form action="/search" role="search" className="relative w-full max-w-[18rem]">
       <label htmlFor={id} className="visually-hidden">
-        {t.search.label(narrator)}
+        {t.search.label(subject)}
       </label>
       <SearchIcon size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink-2" />
       <input
@@ -55,7 +55,7 @@ export function SearchField({ narrator, defaultValue, size = "compact", autoFocu
         defaultValue={defaultValue}
         autoComplete="off"
         enterKeyHint="search"
-        placeholder={t.search.placeholder(narrator)}
+        placeholder={t.search.placeholder(subject)}
         className="h-10 w-full rounded-full border border-rule-2 bg-transparent pr-4 pl-9 text-[0.9375rem] text-ink placeholder:text-ink-3 transition-colors hover:border-ink-3 focus:border-ink focus:outline-none [&::-webkit-search-cancel-button]:hidden"
       />
     </Form>

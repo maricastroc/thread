@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export function NavLink({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) {
+export function NavLink({ href, children, also = [], className = "" }: { href: string; children: React.ReactNode; also?: string[]; className?: string }) {
   const pathname = usePathname();
-  const current = href === "/" ? pathname === "/" || pathname.startsWith("/stories") : pathname.startsWith(href);
+  const current = href === "/" ? pathname === "/" : [href, ...also].some((prefix) => pathname.startsWith(prefix));
   return (
     <Link
       href={href}
