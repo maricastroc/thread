@@ -106,6 +106,8 @@ export const en = {
   record: {
     close: "Close",
     forArchive: (name: string) => `For ${possessive(name)} archive`,
+    noVoice: "No voice yet",
+    keeping: (name: string) => `Keeping it in ${possessive(name)} archive`,
     ideaLabel: "Need an idea?",
     fromEarlier: "A question from an earlier story",
     allowMic: "Allow the microphone when the browser asks.",
