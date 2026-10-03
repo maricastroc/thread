@@ -4,6 +4,15 @@ export type Certainty = "exact" | "approximate" | "range" | "stage" | "none";
 
 export type LifeMention = { entityId: string; kind: "person" | "place"; time: number };
 
+export type LifeEvent = {
+  kind: "age" | "offset" | "duration";
+  time: number;
+  evidence: string;
+  year: number;
+  to?: number;
+  age?: number;
+};
+
 export type LifeStory = {
   id: string;
   recordingId: string;
@@ -28,6 +37,8 @@ export type LifeStory = {
   places: { id: string; name: string }[];
   themes: Theme[];
   mentions: LifeMention[];
+  events: LifeEvent[];
+  questions: string[];
 };
 
 export type LifeEntity = {

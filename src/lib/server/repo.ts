@@ -427,6 +427,26 @@ export function getStory(id: string, birthYear: number | null) {
   return { story, segments, facts, questions };
 }
 
+export function allEntities(): { id: string; kind: EntityKind; name: string; relation: string | null; aliases: string[] }[] {
+  return (db().prepare("SELECT id, kind, name, relation, aliases FROM entities").all() as Row[]).map((r) => ({
+    id: String(r.id),
+    kind: String(r.kind) as EntityKind,
+    name: String(r.name),
+    relation: str(r.relation),
+    aliases: JSON.parse(String(r.aliases || "[]")) as string[],
+  }));
+}
+
+export function questionsForStories(storyIds: string[]): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  if (!storyIds.length) return map;
+  const rows = db()
+    .prepare(`SELECT story_id, text FROM questions WHERE dismissed = 0 AND story_id IN (${storyIds.map(() => "?").join(",")}) ORDER BY id`)
+    .all(...storyIds) as Row[];
+  for (const r of rows) map.set(String(r.story_id), [...(map.get(String(r.story_id)) ?? []), String(r.text)]);
+  return map;
+}
+
 export function openQuestions(limit: number): string[] {
   return (
     db().prepare("SELECT text FROM questions WHERE dismissed = 0 ORDER BY id DESC LIMIT ?").all(limit) as Row[]

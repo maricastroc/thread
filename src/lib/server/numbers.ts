@@ -81,3 +81,35 @@ export function findAge(text: string): { age: number; phrase: string } | null {
   }
   return null;
 }
+
+const numberPhrase = String.raw`(\d{1,3}|[\p{L}]+(?:\s+(?:e|y|and)\s+[\p{L}]+)?)`;
+
+const offsetPatterns = [
+  new RegExp(String.raw`\b${numberPhrase}\s+anos?\s+depois\b`, "iu"),
+  new RegExp(String.raw`\b${numberPhrase}\s+años?\s+después\b`, "iu"),
+  new RegExp(String.raw`\b${numberPhrase}\s+years?\s+later\b`, "iu"),
+];
+
+const durationPatterns = [
+  new RegExp(String.raw`\b(?:por|durante)\s+${numberPhrase}\s+anos?\b`, "iu"),
+  new RegExp(String.raw`\b${numberPhrase}\s+anos?\s+(?:[\p{L}]+ndo)\b`, "iu"),
+  new RegExp(String.raw`\b(?:for)\s+${numberPhrase}\s+years?\b`, "iu"),
+];
+
+function matchNumber(patterns: RegExp[], text: string): { value: number; phrase: string } | null {
+  for (const pattern of patterns) {
+    const match = pattern.exec(text);
+    if (!match) continue;
+    const value = parseNumber(match[1]);
+    if (value !== null && value > 0 && value < 100) return { value, phrase: match[0] };
+  }
+  return null;
+}
+
+export function findOffset(text: string) {
+  return matchNumber(offsetPatterns, text);
+}
+
+export function findDuration(text: string) {
+  return matchNumber(durationPatterns, text);
+}
