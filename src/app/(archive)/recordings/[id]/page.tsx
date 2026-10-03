@@ -137,7 +137,7 @@ export default async function RecordingPage(props: PageProps<"/recordings/[id]">
     const playable = outcome.kind === "failed" && outcome.transcript;
     return (
       <>
-        <RecordingLive initial={initial} removeMessage={removeMessage} />
+        <RecordingLive initial={initial} removeMessage={removeMessage} subject={vault.subject} />
         {playable && (
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <Dock id={`recording:${id}`} />

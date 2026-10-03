@@ -22,58 +22,6 @@ const ORDER: WorkStage[] = ["preserving", "transcribing", "organizing", "indexin
 const BAR = 3;
 const GAP = 2;
 
-function Wave({ peaks, fill, regions, duration }: { peaks: number[]; fill: number; regions: LiveStory[]; duration: number }) {
-  const bars = peaks.length ? peaks : new Array(120).fill(0.06);
-  const width = bars.length * (BAR + GAP) - GAP;
-  const height = 72;
-  return (
-    <div className="relative">
-      <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="block h-[72px] w-full" aria-hidden="true">
-        <defs>
-          <clipPath id="written">
-            <rect x="0" y="0" height={height} width={fill * width} className="transition-[width] duration-700 ease-out" />
-          </clipPath>
-        </defs>
-        {regions.map((r) => (
-          <rect
-            key={r.id}
-            x={(r.start / duration) * width}
-            y={0}
-            width={Math.max(0, ((r.end - r.start) / duration) * width - 4)}
-            height={height}
-            className="animate-rise fill-voice/[0.07]"
-          />
-        ))}
-        <g className="text-wave">
-          {bars.map((p, i) => {
-            const h = Math.max(2, p * (height - 8));
-            return <rect key={i} x={i * (BAR + GAP)} y={(height - h) / 2} width={BAR} height={h} rx={1.5} fill="currentColor" />;
-          })}
-        </g>
-        <g clipPath="url(#written)" className="text-wave-heard">
-          {bars.map((p, i) => {
-            const h = Math.max(2, p * (height - 8));
-            return <rect key={i} x={i * (BAR + GAP)} y={(height - h) / 2} width={BAR} height={h} rx={1.5} fill="currentColor" />;
-          })}
-        </g>
-      </svg>
-      {regions.length > 0 && (
-        <div className="relative mt-2 h-5" aria-hidden="true">
-          {regions.map((r, i) => (
-            <span
-              key={r.id}
-              className="animate-rise absolute top-0 truncate text-[0.75rem] text-ink-2"
-              style={{ left: `${(r.start / duration) * 100}%`, maxWidth: `${((r.end - r.start) / duration) * 100}%`, animationDelay: `${i * 120}ms` }}
-            >
-              {i + 1}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function StepMark({ state }: { state: "done" | "active" | "pending" | "failed" }) {
   if (state === "done")
     return (
@@ -86,7 +34,7 @@ function StepMark({ state }: { state: "done" | "active" | "pending" | "failed" }
   return <span aria-hidden="true" className="mx-[3px] block size-[10px] rounded-full border border-rule-2" />;
 }
 
-export function RecordingLive({ initial, removeMessage }: { initial: Status; removeMessage: string }) {
+export function RecordingLive({ initial, removeMessage, subject }: { initial: Status; removeMessage: string; subject?: string }) {
   const router = useRouter();
   const [status, setStatus] = useState<Status>(initial);
   const [lines, setLines] = useState<Line[]>(initial.transcript.lines);
@@ -163,7 +111,7 @@ export function RecordingLive({ initial, removeMessage }: { initial: Status; rem
     }
   })();
   const when = isToday(status.recordedAt) ? t.processing.today(formatTimeOfDay(status.recordedAt)) : formatDate(status.recordedAt);
-  const preview = lines.slice(-3);
+  const latest = lines.at(-1) ?? null;
 
   const stepState = (i: number): "done" | "active" | "pending" | "failed" => {
     if (failedIndex === i) return "failed";
@@ -173,126 +121,173 @@ export function RecordingLive({ initial, removeMessage }: { initial: Status; rem
     return "pending";
   };
 
-  return (
-    <section className="mx-auto max-w-3xl px-4 pt-2 pb-16 sm:px-6 sm:pt-4">
+  const at = (seconds: number) => `${Math.min(100, Math.max(0, (seconds / (duration || 1)) * 100))}%`;
+  const storyMeta = (story: LiveStory) =>
+    [story.when?.provenance === "inferred" ? `[${story.when.label}]` : story.when?.label, ...story.people, ...story.places].filter(Boolean).join(" · ");
+
+  const failure = status.failedStage && (
+    <div role="alert" className="mt-4 max-w-[32rem]">
+      <p className="text-[1.0625rem]">{t.processing.failed[status.failedStage]}</p>
+      <p className="mt-1 text-[1.0625rem] text-ink-2">{status.failedStage === "preserving" ? t.processing.safeOriginal : t.processing.safe}</p>
+      <button type="button" onClick={retry} disabled={retrying} className="mt-4 inline-flex h-12 items-center rounded-full bg-ink px-6 text-paper disabled:opacity-60">
+        {retrying ? t.processing.retrying : t.processing.retry}
+      </button>
+      {status.failedStage === "preserving" && (
+        <div className="mt-2">
+          <RemoveRecording id={status.id} message={removeMessage} />
+        </div>
+      )}
+      {status.error && (
+        <details className="mt-4">
+          <summary className="t-small inline-flex min-h-11 cursor-pointer items-center text-ink-2 hover:text-ink">{t.processing.technical}</summary>
+          <pre className="t-small mt-2 max-h-60 overflow-auto rounded-md border border-rule bg-paper-raised p-3 font-mono whitespace-pre-wrap text-ink-2 [overflow-wrap:anywhere]">
+            {status.error.message}
+            {status.error.detail ? `\n\n${status.error.detail}` : ""}
+          </pre>
+        </details>
+      )}
+    </div>
+  );
+
+  const head = (
+    <>
       <nav aria-label="Breadcrumb">
         <Link href="/recordings" className="group inline-flex min-h-11 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink">
           <ArrowIcon direction="left" size={14} className="transition-transform group-hover:-translate-x-0.5" />
           {t.recording.back}
         </Link>
       </nav>
-      <p className="t-kicker mt-6 sm:mt-10">{t.recording.kicker}</p>
-      <h1 className="t-title mt-3">{t.processing.saved}</h1>
-      <p className="t-meta mt-4">{duration ? t.processing.savedMeta(formatDuration(duration), when) : when}</p>
-      {status.prompt && (
-        <p className="mt-6 max-w-[34rem] font-serif text-[1.1875rem] leading-snug text-ink-2 italic">
-          {t.record.asked}: {status.prompt}
-        </p>
-      )}
+      <header className="mt-6 sm:mt-10 lg:grid lg:grid-cols-[4.5rem_minmax(0,1fr)] lg:gap-x-10">
+        <div className="hidden lg:block" />
+        <div>
+          <p className="t-kicker">{subject ? `${t.recording.kicker} · ${t.processing.archiveOf(subject)}` : t.recording.kicker}</p>
+          <h1 className="t-title mt-3">{t.processing.saved}</h1>
+          <p className="t-meta mt-4">{duration ? t.processing.savedMeta(formatDuration(duration), when) : when}</p>
+          {status.prompt && (
+            <p className="mt-5 max-w-[40rem] font-serif text-[1.1875rem] leading-snug text-ink-2 italic">
+              {t.record.asked}: {status.prompt}
+            </p>
+          )}
+        </div>
+      </header>
+    </>
+  );
 
-      <div className="mt-10">
-        <Wave peaks={peaks ?? []} fill={fill} regions={status.stories} duration={duration || 1} />
-      </div>
+  const leave = status.stage !== "ready" && !status.failedStage && <p className="t-small mt-10 text-ink-2">{t.processing.leave}</p>;
 
-      <ol className="mt-10 space-y-6" aria-label={t.processing.steps.preserving.active}>
-        {ORDER.map((stage, i) => {
-          const state = stepState(i);
-          const label = state === "done" ? t.processing.steps[stage].done : t.processing.steps[stage].active;
-          return (
-            <li key={stage} className="grid grid-cols-[1.5rem_1fr] gap-x-3" aria-current={state === "active" ? "step" : undefined}>
-              <span className="flex h-7 items-center">
-                <StepMark state={state} />
-              </span>
-              <div className="min-w-0">
-                <p className={`text-[1.125rem] leading-7 ${state === "pending" ? "text-ink-2" : "text-ink"}`}>
-                  {label}
-                  {state === "active" && stage === "transcribing" && duration > 0 && writtenUntil > 0 && (
-                    <span className="t-time ml-3 text-ink-2">{t.processing.transcribingProgress(formatClock(writtenUntil), formatClock(duration))}</span>
-                  )}
-                  {state === "active" && status.waiting && <span className="t-small ml-3 text-ink-2">{t.processing.waiting}</span>}
-                </p>
+  const caption = (i: number, stage: WorkStage, extra?: React.ReactNode) => {
+    const state = stepState(i);
+    return (
+      <p className={`flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[1rem] ${state === "pending" ? "text-ink-2" : "text-ink"}`}>
+        <StepMark state={state} />
+        <span>{state === "done" ? t.processing.steps[stage].done : t.processing.steps[stage].active}</span>
+        {state === "active" && status.waiting && <span className="t-small text-ink-2">· {t.processing.waiting}</span>}
+        {state === "active" && extra}
+      </p>
+    );
+  };
 
-                {stage === "transcribing" && state === "active" && preview.length > 0 && (
-                  <div className="mt-3 border-l-2 border-rule pl-4" aria-live="off">
-                    {preview.map((line, k) => (
-                      <p
-                        key={`${source}-${line.idx}`}
-                        lang={status.language ?? undefined}
-                        className={`animate-rise font-serif text-[1.125rem] leading-relaxed ${k < preview.length - 1 ? "text-ink-2" : "text-ink"}`}
-                      >
-                        {line.text}
-                        {k === preview.length - 1 && <span aria-hidden="true" className="animate-caret ml-0.5 inline-block h-[1em] w-[2px] translate-y-[0.15em] bg-voice" />}
-                      </p>
-                    ))}
-                  </div>
-                )}
-
-                {stage === "organizing" && (state === "active" || state === "done" || state === "failed") && status.stories.length > 0 && (
-                  <div className="mt-3">
-                    {state === "active" && annotating && (
-                      <p className="t-small mb-3 text-ink-2">{t.processing.annotating(annotating.annotating, annotating.total)}</p>
-                    )}
-                    <ol className="space-y-3">
-                      {status.stories.map((story, k) => (
-                        <li key={story.id} className="animate-rise grid grid-cols-[1.5rem_1fr] gap-x-2" style={{ animationDelay: `${k * 90}ms` }}>
-                          <span className="t-time pt-1 text-ink-2">{k + 1}</span>
-                          <div>
-                            <p className="font-serif text-[1.25rem] leading-snug" lang={status.language ?? undefined}>
-                              {story.title}
-                            </p>
-                            {story.annotated && (story.people.length > 0 || story.places.length > 0 || story.when) && (
-                              <p className="t-small animate-rise mt-1 text-ink-2" lang={status.language ?? undefined}>
-                                {[story.when?.provenance === "inferred" ? `[${story.when.label}]` : story.when?.label, ...story.people, ...story.places]
-                                  .filter(Boolean)
-                                  .join(" · ")}
-                              </p>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-
-                {state === "failed" && status.failedStage && (
-                  <div role="alert" className="mt-3 max-w-[32rem]">
-                    <p className="text-[1.0625rem]">{t.processing.failed[status.failedStage]}</p>
-                    <p className="mt-1 text-[1.0625rem] text-ink-2">
-                      {status.failedStage === "preserving" ? t.processing.safeOriginal : t.processing.safe}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={retry}
-                      disabled={retrying}
-                      className="mt-4 inline-flex h-12 items-center rounded-full bg-ink px-6 text-paper disabled:opacity-60"
-                    >
-                      {retrying ? t.processing.retrying : t.processing.retry}
-                    </button>
-                    {status.failedStage === "preserving" && (
-                      <div className="mt-2">
-                        <RemoveRecording id={status.id} message={removeMessage} />
-                      </div>
-                    )}
-                    {status.error && (
-                      <details className="mt-4">
-                        <summary className="t-small inline-flex min-h-11 cursor-pointer items-center text-ink-2 hover:text-ink">
-                          {t.processing.technical}
-                        </summary>
-                        <pre className="t-small mt-2 max-h-60 overflow-auto rounded-md border border-rule bg-paper-raised p-3 font-mono whitespace-pre-wrap text-ink-2 [overflow-wrap:anywhere]">
-                          {status.error.message}
-                          {status.error.detail ? `\n\n${status.error.detail}` : ""}
-                        </pre>
-                      </details>
-                    )}
-                  </div>
-                )}
+  return (
+    <section className="mx-auto max-w-6xl px-4 pt-2 pb-16 sm:px-6 sm:pt-4">
+      {head}
+      <ol className="mt-10" aria-label={t.processing.label}>
+        <li aria-current={stepState(0) === "active" ? "step" : undefined}>
+          <div className="relative">
+            {peaks?.length ? (
+              <SourceWave peaks={peaks} regions={status.stories} duration={duration || 1} />
+            ) : (
+              <div className="relative h-24" aria-hidden="true">
+                <span className="absolute inset-x-0 top-1/2 border-t-2 border-dotted border-rule-2" />
               </div>
-            </li>
-          );
-        })}
-      </ol>
+            )}
+          </div>
+          <div className="mt-3 flex items-baseline justify-between gap-4">
+            {caption(0, "preserving")}
+            {duration > 0 && <span className="t-time text-ink-2">{formatClock(duration)}</span>}
+          </div>
+          {stepState(0) === "failed" && failure}
+        </li>
 
-      {status.stage !== "ready" && !status.failedStage && <p className="t-small mt-12 text-ink-2">{t.processing.leave}</p>}
+        <li className="mt-9" aria-current={stepState(1) === "active" ? "step" : undefined}>
+          {caption(1, "transcribing", duration > 0 && writtenUntil > 0 && <span className="t-time text-ink-2">{t.processing.transcribingProgress(formatClock(writtenUntil), formatClock(duration))}</span>)}
+          <div className="relative mt-3 h-5" aria-hidden="true">
+            <span className="absolute inset-x-0 top-1/2 border-t-2 border-dotted border-rule-2" />
+            <span className="absolute top-1/2 left-0 h-[2px] -translate-y-1/2 bg-ink transition-[width] duration-700" style={{ width: `${fill * 100}%` }} />
+            {lines.map((line) => (
+              <span key={`${source}-${line.idx}`} className="absolute top-1/2 h-3 w-px -translate-y-1/2 bg-ink" style={{ left: at(line.start) }} />
+            ))}
+            {stepState(1) === "active" && <span className="absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-voice" style={{ left: `${fill * 100}%` }} />}
+          </div>
+          {latest && (
+            <p lang={status.language ?? undefined} className={`mt-3 max-w-[46rem] font-serif text-[1.1875rem] leading-relaxed ${stepState(1) === "active" ? "text-ink" : "text-ink-2"}`} aria-live="off">
+              “{latest.text}”
+              {stepState(1) === "active" && <span aria-hidden="true" className="animate-caret ml-0.5 inline-block h-[1em] w-[2px] translate-y-[0.15em] bg-voice" />}
+            </p>
+          )}
+          {stepState(1) === "failed" && failure}
+        </li>
+
+        <li className="mt-9" aria-current={stepState(2) === "active" ? "step" : undefined}>
+          {caption(2, "organizing", annotating && <span className="t-small text-ink-2">· {t.processing.annotating(annotating.annotating, annotating.total)}</span>)}
+          <div className="relative mt-3 min-h-16" aria-live="off">
+            {status.stories.length === 0 && <span aria-hidden="true" className="absolute inset-x-0 top-2.5 border-t-2 border-dotted border-rule-2" />}
+            {status.stories.map((story, k) => (
+              <div key={story.id} className="animate-rise absolute top-0 min-w-0" style={{ left: at(story.start), width: `calc(${at(story.end - story.start)} - 4px)` }}>
+                <div className={`border-t-2 pt-2 transition-colors duration-500 ${story.annotated ? "border-ink" : "border-voice"}`}>
+                  <p className="truncate font-serif text-[1.25rem] leading-snug" lang={status.language ?? undefined}>
+                    <span className="t-time mr-2 text-ink-2">{k + 1}</span>
+                    {story.title}
+                  </p>
+                  {story.annotated && storyMeta(story) && (
+                    <p className="t-small animate-rise mt-0.5 truncate text-ink-2" lang={status.language ?? undefined}>
+                      {storyMeta(story)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          {stepState(2) === "failed" && failure}
+        </li>
+
+        <li className="mt-9" aria-current={stepState(3) === "active" ? "step" : undefined}>
+          {caption(3, "indexing")}
+          <div className="relative mt-3 h-5" aria-hidden="true">
+            {stepState(3) === "done" ? (
+              <span className="absolute inset-x-0 top-1/2 h-px bg-ink" />
+            ) : (
+              <span className="absolute inset-x-0 top-1/2 border-t-2 border-dotted border-rule-2" />
+            )}
+          </div>
+          {stepState(3) === "failed" && failure}
+        </li>
+      </ol>
+      {leave}
     </section>
+  );
+}
+
+function SourceWave({ peaks, regions, duration }: { peaks: number[]; regions: LiveStory[]; duration: number }) {
+  const width = peaks.length * (BAR + GAP) - GAP;
+  const height = 96;
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="block h-24 w-full" aria-hidden="true">
+      {regions.map((r) => (
+        <rect
+          key={r.id}
+          x={(r.start / duration) * width}
+          y={0}
+          width={Math.max(0, ((r.end - r.start) / duration) * width - 4)}
+          height={height}
+          className={`animate-rise transition-colors duration-500 ${r.annotated ? "fill-ink/[0.05]" : "fill-voice/[0.09]"}`}
+        />
+      ))}
+      <g className="text-wave-heard">
+        {peaks.map((p, i) => {
+          const h = Math.max(2, p * (height - 8));
+          return <rect key={i} x={i * (BAR + GAP)} y={(height - h) / 2} width={BAR} height={h} rx={1.5} fill="currentColor" />;
+        })}
+      </g>
+    </svg>
   );
 }

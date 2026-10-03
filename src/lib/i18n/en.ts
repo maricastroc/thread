@@ -180,6 +180,8 @@ export const en = {
 
   processing: {
     saved: "Saved.",
+    archiveOf: (name: string) => `${possessive(name)} archive`,
+    label: "From the recording to the archive",
     savedMeta: (duration: string, when: string) => `${duration} · ${when}`,
     today: (time: string) => `today, ${time}`,
     steps: {
