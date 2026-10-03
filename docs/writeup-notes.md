@@ -70,6 +70,24 @@ Each of these started as something the model "could do" and became deterministic
 - **Proper names in titles.** Gemma wrote "Mudança para fortaleza"; the code restores capitals from verified entity names.
 - **Related stories.** Shared people and places. No LLM call.
 - **Search sentence and confidence.** A template, plus thresholds over cosine similarity, the gap between the first and second result, and keyword coverage.
+- **Time said in words.** "42 anos tocando" becomes a span from the story's year to +42; "dois anos depois" becomes a point two years later. Same number parser as ages, two small pattern lists per language.
+- **Every mention, not just the first.** The model annotates a person once. The code then scans the word timestamps for every known name and alias, so the second "José" also lights up at the right second.
+
+## Listening reveals the structure
+
+Playing a memory used to light a few arcs for five seconds and forget them. Now the playback builds a picture that stays:
+
+- The memory opens **in place on the lifeline**: its vestige becomes a waveform at its own year, and the rest of the life recedes.
+- When a name is spoken, it appears above the waveform at that second, and threads drop from that exact point to every other moment of the life where the same person or place appears. Those moments come back from the background.
+- When time is spoken, it lands on the axis. "Eu tinha 18 anos" marks *age 18* and the stage *youth*. "42 anos tocando" draws a span from 1966 to 2008 that ends just before José's last memory (2010). "Dois anos depois" places the wedding at c. 1968.
+- Nothing fades. Whatever has been heard stays, quieter, and the current mention takes the voice colour for five seconds.
+- At the end the trace remains, and the memory says what it touched: "This memory reaches from 1954 to 2010, through 8 other moments", plus the open question it left ("What was the church where the wedding took place?").
+
+Everything is derived from timestamps that already exist. Nothing is generated during playback, and ten seconds with no new name or date show only the waveform moving. Positions of labels are packed from the whole story before playback starts, so nothing jumps when a new name appears.
+
+The reveal layer is `aria-hidden`. The same information sits in the panel as a list with "play from here" buttons, keyboard order goes fragment → play → waveform slider, Escape closes the memory, and with reduced motion every thread is drawn at once.
+
+**A benchmark that changed the hierarchy.** I compared this with Horizonte, a music player I built earlier where the album *is* the interface. What makes it land is that one object owns the screen, that zooming from collection to track is one continuous change of scale instead of a new view, and that every reaction is measured from the real audio, with a hard ceiling so it accents instead of dancing. Cofre keeps its own quiet, editorial language, so none of the shaders, darkness or motion came over. The structural lessons did: the lifeline owns the screen, opening a memory is a change of scale on the line rather than a big player below it, and every visual reaction comes from something that was actually said.
 
 ## Bugs found by looking at real output
 
