@@ -15,9 +15,10 @@ export function formatDuration(totalSeconds: number, style: "short" | "long" = "
   const m = Math.floor((s % 3600) / 60);
   const sec = s % 60;
   if (style === "long") {
+    const minutes = Math.round(s / 60);
     if (h > 0) return m > 0 ? `${h} h ${m} min` : `${h} ${h === 1 ? "hour" : "hours"}`;
-    if (m > 0) return `${m} ${m === 1 ? "minute" : "minutes"}`;
-    return `${sec} seconds`;
+    if (minutes > 0) return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+    return `${sec} ${sec === 1 ? "second" : "seconds"}`;
   }
   if (h > 0) return `${h} h ${m} min`;
   if (m > 0) return sec > 0 ? `${m} min ${sec} s` : `${m} min`;

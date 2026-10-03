@@ -55,7 +55,7 @@ export function StoryRow({
           </Link>
         </h3>
         {story.quote && (
-          <p className="mt-2 max-w-[40rem] font-serif text-[1.0625rem] leading-[1.45] text-ink-2 italic" lang={story.language ?? undefined}>
+          <p className="mt-2 line-clamp-3 max-w-[40rem] font-serif text-[1.0625rem] leading-[1.45] text-ink-2 italic" lang={story.language ?? undefined}>
             <span aria-hidden="true">“</span>
             {story.quote.text}
             <span aria-hidden="true">”</span>

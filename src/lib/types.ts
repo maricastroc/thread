@@ -119,6 +119,7 @@ export type Moment = {
   storyTitle: string | null;
   start: number;
   end: number;
+  storyStart: number;
   storyEnd: number;
   text: string;
   before: string | null;

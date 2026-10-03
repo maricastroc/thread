@@ -89,7 +89,7 @@ times: when the story happens, at most 3.
   If the narrator says a year, or a number that stands for a year (for example "setenta e oito"), explicit is true and year_from and year_to hold that year.
   If you calculate a year from an age or from other facts, explicit is false and reason explains the calculation in one short English sentence that names the evidence, for example "About eight years old, and born in 1948." ${birth}
   Use the same year in year_from and year_to for a single year, and 0 when a year is unknown. label: a short label in ${language}, such as "1978" or "Natal de 1985".
-life_stage: the narrator's stage of life during the story: ${LIFE_STAGES.join(", ")} or unknown.
+life_stage: the narrator's stage of life during the story: ${LIFE_STAGES.join(", ")} or unknown. Earlier stories from the same recording may tell you the period, but never copy people, places or years from them into this story.
 themes: one to three themes from the allowed list.
 questions: up to two short follow-up questions, in English, addressed to ${narrator} as "you", that the family could ask next time. A good question asks about a person, place or event that the story mentions but leaves unexplained, and could lead to a new story. Never ask about something the story already answers, and never ask about trivial details.
 
@@ -108,11 +108,15 @@ function knownLine(list: KnownEntity[]): string {
 }
 
 export function annotationUser(input: StoryInput, language: string): string {
+  const earlier = input.earlier.length
+    ? input.earlier.map((e) => (e.when ? `${e.title} (${e.when})` : e.title)).join("; ")
+    : "none";
   return [
     `Narrator: ${input.narrator}${input.birthYear ? ` (born ${input.birthYear})` : ""}`,
     `Recorded on: ${input.recordedAt.slice(0, 10)}`,
     `Language of the transcript: ${language}`,
     `Story title: ${input.title}`,
+    `Earlier stories in the same recording, for context about the period only: ${earlier}`,
     `Known people in the archive: ${knownLine(input.known.people)}`,
     `Known places in the archive: ${knownLine(input.known.places)}`,
     "",

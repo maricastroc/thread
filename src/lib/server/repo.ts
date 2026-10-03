@@ -411,6 +411,16 @@ export function getStory(id: string, birthYear: number | null) {
   return { story, segments, facts, questions };
 }
 
+export function openQuestions(limit: number): string[] {
+  return (
+    db().prepare("SELECT text FROM questions WHERE dismissed = 0 ORDER BY id DESC LIMIT ?").all(limit) as Row[]
+  ).map((r) => String(r.text));
+}
+
+export function markQuestionAsked(text: string): void {
+  db().prepare("UPDATE questions SET dismissed = 1 WHERE text = ?").run(text);
+}
+
 export function updateStoryTitle(id: string, title: string): void {
   db().prepare("UPDATE stories SET title = ? WHERE id = ? AND title_by = 'archive'").run(title, id);
 }

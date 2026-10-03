@@ -7,7 +7,7 @@ import type { NextRequest } from "next/server";
 import { recordingDir } from "@/lib/server/db";
 import { newId } from "@/lib/server/ids";
 import { enqueue, ensureWorker } from "@/lib/server/pipeline";
-import { createRecording, getVault } from "@/lib/server/repo";
+import { createRecording, getVault, markQuestionAsked } from "@/lib/server/repo";
 
 const extensions: Record<string, string> = {
   "audio/webm": "webm",
@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
   }
 
   createRecording({ id, source, recordedAt, originalFile: file, originalName: name, mime, prompt });
+  if (prompt) markQuestionAsked(prompt);
   ensureWorker();
   enqueue(id);
   return Response.json({ id }, { status: 201 });

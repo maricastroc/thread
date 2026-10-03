@@ -33,7 +33,7 @@ export function whenFromFacts(facts: Pick<Fact, "kind" | "value" | "yearFrom" | 
   }
   if (lifeStage) {
     const label = t.lifeStage[lifeStage];
-    if (birthYear) {
+    if (birthYear && (lifeStage === "childhood" || lifeStage === "youth")) {
       const [from, to] = stageYears(lifeStage, birthYear);
       return { label, yearFrom: from, yearTo: to, provenance: "inferred", lifeStage };
     }

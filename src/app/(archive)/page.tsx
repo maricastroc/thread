@@ -5,10 +5,10 @@ import { SearchField } from "@/components/SearchField";
 import { Setup } from "@/components/Setup";
 import { RecordLink } from "@/components/SiteHeader";
 import { StoryRow } from "@/components/StoryRow";
-import { formatDate, formatMonthYear, formatSpokenDuration } from "@/lib/format";
+import { formatDate, formatDuration, formatMonthYear } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
-import { archiveStats, listRecordings, listStories } from "@/lib/server/repo";
+import { archiveStats, listRecordings, listStories, themeCounts } from "@/lib/server/repo";
 import { buildTimeline } from "@/lib/server/timeline";
 import type { RecordingSummary } from "@/lib/types";
 
@@ -72,13 +72,14 @@ export default async function Home() {
 
   const stats = archiveStats();
   const groups = buildTimeline(stories);
+  const themes = themeCounts();
 
   return (
     <>
       <section className="mx-auto max-w-6xl px-4 pt-6 pb-14 sm:px-6 sm:pt-14 sm:pb-20">
         <h1 className="t-display">{vault.narrator}</h1>
         <p className="t-meta mt-5">
-          {t.home.stats(stats.stories, formatSpokenDuration(stats.storySeconds), vault.narrator)}
+          {t.home.stats(stats.stories, formatDuration(stats.storySeconds, "long"), vault.narrator)}
           {stats.firstRecordedAt && (
             <>
               <span aria-hidden="true"> · </span>
@@ -116,6 +117,23 @@ export default async function Home() {
             </ol>
           </section>
         ))}
+        {themes.length > 0 && (
+          <section aria-labelledby="themes-heading" className="grid border-t border-rule py-8 md:grid-cols-[11rem_1fr] md:gap-x-8">
+            <h2 id="themes-heading" className="t-kicker pt-1">
+              {t.story.themes}
+            </h2>
+            <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2 md:mt-0">
+              {themes.map(({ theme, count }) => (
+                <li key={theme}>
+                  <Link href={`/themes/${theme}`} className="link font-serif text-[1.25rem]">
+                    {t.themes[theme]}
+                  </Link>
+                  <span className="t-time ml-1.5 text-ink-2">{count}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         <div className="flex flex-col items-start gap-6 border-t border-rule pt-10 sm:flex-row sm:items-center sm:gap-10">
           <RecordLink label={t.home.recordAnother} />
           <ImportButton hint={false} />

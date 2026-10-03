@@ -18,6 +18,7 @@ export type StoryInput = {
   title: string;
   segments: Segment[];
   known: { people: KnownEntity[]; places: KnownEntity[] };
+  earlier: { title: string; when: string | null }[];
 };
 
 export type StoryDraft = {

@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cofre
 
-## Getting Started
+A place to keep someone's stories, in their own voice.
 
-First, run the development server:
+Cofre records an older relative telling stories and turns the recordings into a family archive you can browse and search. It follows one rule: **the AI never replaces the memory.** The recording is the artifact. Search never answers with generated text; it takes you to the moment in the recording and plays the person's own voice from there.
+
+Everything runs on your machine. The recordings, transcripts and search index never leave it.
+
+```
+record ──► preserve ──► discover ──► listen
+           ffmpeg        whisper.cpp   the original voice,
+           (original     Gemma 4       from the exact second
+            kept as-is)  EmbeddingGemma
+```
+
+## How it works
+
+| step | tool | what it does |
+|---|---|---|
+| Preserve | ffmpeg | keeps the original file untouched, makes a seekable copy for playback, draws the waveform |
+| Listen | whisper.cpp · `large-v3-turbo` | writes down what was said, with a timestamp for every word; Silero VAD stops hallucinations in long pauses |
+| Understand | **Gemma 4 E4B** via Ollama | finds where one story ends and the next begins, suggests a title, picks a quote by segment number, and notes people, places and dates with the exact words they came from |
+| Find | **EmbeddingGemma** via Ollama + SQLite FTS5 | indexes ~30-second moments so “when she talked about living near the beach” finds the right minute, even across languages |
+
+Gemma works as an archivist rather than a chatbot. It returns structured JSON (constrained by a JSON Schema), and every claim it makes is **checked against the transcript in code** before it is stored. The interface then labels it:
+
+- **said**: the words are in the recording.
+- **from the words**: taken from what was said, like `1978` from “setenta e oito”.
+- **[inferred]**: deduced by the archive, never presented as memory. Brackets follow the cataloguing convention for information supplied by the archivist.
+
+If Gemma cites words that aren't in the transcript, the claim is dropped. Each fact links to the segment, the second, and the audio. See [docs/design.md](docs/design.md) for the full design and [docs/writeup-notes.md](docs/writeup-notes.md) for the reasoning behind each decision.
+
+## Requirements
+
+- macOS or Linux, Node.js 22.13+
+- ffmpeg, whisper.cpp (`whisper-cli`), Ollama
+- About 8.5 GB of disk for the models; 16 GB of RAM is comfortable
+
+On macOS:
+
+```bash
+brew install ffmpeg whisper-cpp ollama
+```
+
+## Setup
+
+```bash
+npm install
+ollama serve
+```
+
+In another terminal:
+
+```bash
+npm run setup
+```
+
+`setup` checks the tools, downloads the Whisper and VAD models into `models/`, and pulls `gemma4:e4b` and `embeddinggemma` into Ollama.
+
+## Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000, write whose stories you are keeping, and record.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To try the archive without recording, generate three short synthetic stories with the macOS `say` voice and import them:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run demo
+```
 
-## Learn More
+## Recording from a phone
 
-To learn more about Next.js, take a look at the following resources:
+Browsers only allow the microphone on secure origins. `localhost` on the laptop counts as secure. A phone on the same Wi-Fi does not, unless you serve over HTTPS:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev:https
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This uses a locally trusted certificate (mkcert). For a phone, make a certificate for your laptop's network address with `mkcert 192.168.x.x`, pass it with `--experimental-https-key` and `--experimental-https-cert`, and install the mkcert root certificate on the phone. Voice notes and phone recordings can also be imported as files from any device.
 
-## Deploy on Vercel
+## Your data
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Everything lives in `data/`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `data/recordings/<id>/original.*`: the recording exactly as it was received
+- `data/recordings/<id>/audio.m4a`: the playback copy
+- `data/cofre.db`: transcripts, stories, facts with provenance, and the search index (SQLite)
+
+Back the archive up by copying the folder. A removed recording is moved to `data/removed/`, never erased.
+
+## Changing models
+
+The interpretation layer is a small interface, `StoryInterpreter` (`src/lib/server/interpreter/types.ts`), with two methods: `findStories` and `annotateStory`. Gemma is the implementation in use. Because the weights are open, switching models is configuration:
+
+```bash
+COFRE_INTERPRETER_MODEL=gemma4:12b npm run dev
+npm run reprocess
+```
+
+`reprocess` re-reads every recording with the current model. The audio and transcripts stay as they are; only the index is rebuilt. Provenance checks live outside the interpreter, so any model goes through the same checks. See `.env.example` for every setting.
+
+## Built with
+
+Next.js, TypeScript, Tailwind CSS, SQLite (built into Node), whisper.cpp, Ollama, Gemma 4, EmbeddingGemma. Fonts: Newsreader, and Atkinson Hyperlegible Next and Mono, designed by the Braille Institute for readers with low vision.

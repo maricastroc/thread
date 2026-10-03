@@ -34,7 +34,8 @@ const stopwords = new Set(
 
 const COS_STRONG = 0.42;
 const COS_WEAK = 0.3;
-const COS_SPREAD = 0.09;
+const COS_SPREAD = 0.06;
+const SEPARATION = 0.08;
 const MAX_RESULTS = 6;
 
 function loadChunks(): CachedChunk[] {
@@ -92,6 +93,7 @@ export type SearchOutcome = {
   strength: "strong" | "weak" | "none";
   moments: Moment[];
   semantic: boolean;
+  scores?: { title: string | null; cos: number; cover: number }[];
 };
 
 type Scored = { chunk: CachedChunk; rrf: number; cos: number; cover: number };
@@ -146,25 +148,35 @@ export async function search(query: string, birthYear: number | null): Promise<S
   for (const s of scores.values()) {
     const key = s.chunk.storyId ?? `${s.chunk.recordingId}:${s.chunk.segStart}`;
     const current = groups.get(key);
-    if (!current || s.rrf + s.cover * 0.01 > current.rrf + current.cover * 0.01) groups.set(key, s);
+    if (!current || s.cos + s.cover * 0.05 > current.cos + current.cover * 0.05) groups.set(key, s);
   }
 
-  const ranked = [...groups.values()].sort((a, b) => b.rrf + b.cover * 0.01 - (a.rrf + a.cover * 0.01));
-  const topCos = Math.max(0, ...ranked.map((r) => r.cos));
-  const lexicalStrong = ranked.some((r) => r.cover >= 0.5 && (terms.length <= 2 || r.cover >= 0.6));
+  const byCos = [...groups.values()].sort((a, b) => b.cos - a.cos);
+  const topCos = byCos[0]?.cos ?? 0;
+  const secondCos = byCos[1]?.cos ?? 0;
+  const lexicalStrong = byCos.some((r) => r.cover >= 0.5 && r.cos >= COS_WEAK && (terms.length <= 2 || r.cover >= 0.6));
+  const separated = topCos >= COS_WEAK && topCos - secondCos >= SEPARATION;
   const strength: SearchOutcome["strength"] =
-    topCos >= COS_STRONG || lexicalStrong ? "strong" : topCos >= COS_WEAK || ranked.some((r) => r.cover > 0) ? "weak" : "none";
+    topCos >= COS_STRONG || separated || lexicalStrong
+      ? "strong"
+      : topCos >= COS_WEAK - 0.03 || byCos.some((r) => r.cover > 0)
+        ? "weak"
+        : "none";
 
   if (strength === "none") return { strength, moments: [], semantic };
 
-  const floor = strength === "strong" ? Math.max(COS_WEAK, topCos - COS_SPREAD) : COS_WEAK - 0.06;
-  const kept = ranked
-    .filter((r) => r.cos >= floor || r.cover >= 0.5 || (!semantic && r.cover > 0))
+  const kept = byCos
+    .filter((r, i) => i === 0 || r.cos >= topCos - COS_SPREAD || (r.cover >= 0.5 && r.cos >= topCos - COS_SPREAD * 2) || (!semantic && r.cover > 0))
+    .sort((a, b) => b.cos + b.cover * 0.05 - (a.cos + a.cover * 0.05))
     .slice(0, strength === "strong" ? MAX_RESULTS : 3);
 
   const stories = new Map<string, StorySummary>(listStories(birthYear).map((s) => [s.id, s]));
   const moments = kept.map((r) => toMoment(r, stories, terms));
-  return { strength, moments, semantic };
+  const debug =
+    process.env.NODE_ENV === "development"
+      ? byCos.slice(0, 8).map((r) => ({ title: r.chunk.storyId ? stories.get(r.chunk.storyId)?.title ?? null : null, cos: Math.round(r.cos * 1000) / 1000, cover: r.cover }))
+      : undefined;
+  return { strength, moments, semantic, scores: debug };
 }
 
 function toMoment(scored: Scored, stories: Map<string, StorySummary>, terms: string[]): Moment {
@@ -202,6 +214,7 @@ function toMoment(scored: Scored, stories: Map<string, StorySummary>, terms: str
     storyTitle: story?.title ?? null,
     start: Math.max(0, focus.start - 0.4),
     end: chunk.end,
+    storyStart: story?.start ?? 0,
     storyEnd: story?.end ?? chunk.end,
     text: inChunk.map((s) => s.text).join(" "),
     before: before?.text ?? null,

@@ -1,7 +1,7 @@
 import "server-only";
 import type { FactKind, LifeStage, Provenance, Segment } from "@/lib/types";
 import type { StoryAnnotation } from "./interpreter/types";
-import { statesYear } from "./numbers";
+import { findAge, statesYear } from "./numbers";
 import { containsPhrase, locateInSegment, normalize, tokens } from "./text";
 
 export type VerifiedFact = {
@@ -206,6 +206,32 @@ export function verify(
       end: evidence?.end ?? null,
       note,
     });
+  }
+
+  if (birthYear && !facts.some((f) => f.kind === "time" && f.yearFrom)) {
+    for (const segment of segments) {
+      if (segment.idx < range.from || segment.idx > range.to) continue;
+      const found = findAge(segment.text);
+      if (!found) continue;
+      const year = birthYear + found.age;
+      if (year > currentYear) break;
+      const located = locateInSegment(segment, found.phrase);
+      facts.push({
+        kind: "time",
+        value: String(year),
+        detail: null,
+        yearFrom: year,
+        yearTo: year,
+        provenance: "inferred",
+        primary: true,
+        seg: segment.idx,
+        evidence: located?.evidence ?? found.phrase,
+        start: located?.start ?? segment.start,
+        end: located?.end ?? segment.end,
+        note: calculatedNote(located?.evidence ?? found.phrase, birthYear),
+      });
+      break;
+    }
   }
 
   const anchor = facts.find((f) => f.kind === "time" && f.provenance !== "inferred" && f.yearFrom);

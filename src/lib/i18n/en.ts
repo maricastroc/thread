@@ -77,6 +77,8 @@ export const en = {
   record: {
     close: "Close",
     ideaLabel: "Need an idea?",
+    fromEarlier: "A question from an earlier story",
+    allowMic: "Allow the microphone when the browser asks.",
     anotherQuestion: "Another question",
     hideQuestion: "No question",
     showQuestion: "Show a question",
@@ -223,6 +225,22 @@ export const en = {
     backToNow: "Back to the voice",
   },
 
+  recording: {
+    kicker: "Recording",
+    title: (date: string) => `Recording of ${date}`,
+    imported: "Imported file",
+    recorded: "Recorded here",
+    download: "Download the original file",
+    stories: "Stories in this recording",
+    transcript: "Everything that was said",
+    between: "Between stories",
+    holds: (n: number) => (n === 1 ? "This recording holds one story." : `This recording holds ${numberWord(n)} stories.`),
+    none: "No separate stories were found in this recording. It is kept whole, and every word can be searched.",
+    remove: "Remove this recording",
+    removeConfirm: "Remove this recording and its stories from the archive? The audio file is moved to the “removed” folder on this computer, not erased.",
+    removed: "Recording removed.",
+  },
+
   provenance: {
     said: "said",
     extracted: "from the words",
@@ -244,6 +262,9 @@ export const en = {
     stories: (n: number) => `${n} ${plural(n, "story", "stories")}`,
     moments: (n: number) => `${n} ${plural(n, "moment", "moments")}`,
     momentsOf: (name: string) => `Every moment ${name} comes up`,
+    alsoCalled: "Also called",
+    themesIntro: (name: string) => `Stories ${name} has told, filed by what they are about.`,
+    themeStories: (n: number) => `${n} ${plural(n, "story", "stories")}`,
     empty: "No one has been mentioned yet.",
     emptyPlaces: "No places have been mentioned yet.",
     themes: "Themes",

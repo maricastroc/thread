@@ -17,7 +17,7 @@ export function searchVersion(): number {
   return searchState.__cofreSearchVersion ?? 0;
 }
 
-function bumpSearchVersion(): void {
+export function bumpSearchVersion(): void {
   searchState.__cofreSearchVersion = searchVersion() + 1;
 }
 

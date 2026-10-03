@@ -32,14 +32,21 @@ function fallbackTitle(segment: Segment): string {
   return words.length > 7 ? `${words.slice(0, 7).join(" ")}…` : words.join(" ");
 }
 
+const QUOTE_MAX_WORDS = 30;
+
 function bestQuote(segments: Segment[], from: number, to: number, preferred: number | null): number {
-  if (preferred !== null && preferred >= from && preferred <= to && wordCount(segments[preferred].text) >= 4) return preferred;
-  let best = from;
+  if (preferred !== null && preferred >= from && preferred <= to) {
+    const words = wordCount(segments[preferred].text);
+    if (words >= 4 && words <= QUOTE_MAX_WORDS) return preferred;
+  }
+  let best = -1;
   for (let i = from; i <= to; i++) {
     const words = wordCount(segments[i].text);
-    if (words > wordCount(segments[best].text) && words <= 40) best = i;
+    if (words < 6 || words > QUOTE_MAX_WORDS) continue;
+    if (best < 0 || words > wordCount(segments[best].text)) best = i;
   }
-  return best;
+  if (best >= 0) return best;
+  return preferred !== null && preferred >= from && preferred <= to ? preferred : from;
 }
 
 export function planStories(drafts: StoryDraft[], segments: Segment[]): PlannedStory[] {
@@ -79,6 +86,15 @@ export function planStories(drafts: StoryDraft[], segments: Segment[]): PlannedS
     }
     previous.lastSegment = split - 1;
     current.firstSegment = split;
+  }
+
+  const first = kept[0];
+  if (first && first.firstSegment > 0) {
+    for (let s = first.firstSegment - 1; s >= Math.max(0, first.firstSegment - MAX_GAP_SEGMENTS); s--) {
+      const text = segments[s].text.trim();
+      if (!text.endsWith("?") || text.split(/\s+/).length < 5) break;
+      first.firstSegment = s;
+    }
   }
 
   const sized = kept.filter(

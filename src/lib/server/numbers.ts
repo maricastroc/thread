@@ -57,3 +57,27 @@ export function statesYear(evidence: string, year: number): boolean {
   }
   return false;
 }
+
+export function parseNumber(phrase: string): number | null {
+  const words = tokens(phrase);
+  const found = readNumbers(words);
+  return found.length ? found[0].value : null;
+}
+
+const agePatterns = [
+  /\b(?:eu\s+)?(?:tinha|devia\s+ter|tava\s+com|estava\s+com)\s+(?:uns|umas|quase|mais ou menos)?\s*((?:\d{1,2})|(?:[\p{L}]+(?:\s+e\s+[\p{L}]+)?))\s+anos\b/iu,
+  /\b(?:com|aos)\s+((?:\d{1,2})|(?:[\p{L}]+(?:\s+e\s+[\p{L}]+)?))\s+anos\b/iu,
+  /\b((?:\d{1,2})|(?:[\p{L}]+(?:\s+e\s+[\p{L}]+)?))\s+anos\s+de\s+idade\b/iu,
+  /\btenía\s+((?:\d{1,2})|(?:[\p{L}]+(?:\s+y\s+[\p{L}]+)?))\s+años\b/iu,
+  /\bI\s+was\s+(?:about\s+|around\s+)?((?:\d{1,2})|(?:[a-z]+(?:-[a-z]+)?))\s+years?\s+old\b/iu,
+];
+
+export function findAge(text: string): { age: number; phrase: string } | null {
+  for (const pattern of agePatterns) {
+    const match = pattern.exec(text);
+    if (!match) continue;
+    const age = parseNumber(match[1].replace(/-/g, " "));
+    if (age !== null && age > 0 && age < 110) return { age, phrase: match[0] };
+  }
+  return null;
+}

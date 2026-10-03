@@ -135,9 +135,11 @@ export function Transcript({ track, paragraphs, language, offset }: Props) {
     [paragraphs],
   );
 
+  const sectionEnd = paragraphs.length ? paragraphs[paragraphs.length - 1].end : 0;
   const position = useAudioState((s) => {
     if (!isSameTrack(s.track, track) || flat.length === 0) return -1;
     if (!s.playing && (s.ended || s.time <= track.start + 0.05)) return -1;
+    if (s.time > sectionEnd + 0.6 || s.time < flat[0].t - 0.6) return -1;
     let lo = 0;
     let hi = flat.length - 1;
     let found = -1;

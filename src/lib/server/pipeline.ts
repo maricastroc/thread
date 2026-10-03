@@ -1,16 +1,18 @@
 import "server-only";
+import fs from "node:fs";
 import path from "node:path";
 import type { WorkStage } from "@/lib/types";
 import { analyze, convert, files } from "./audio";
 import { CommandError } from "./bin";
 import { config } from "./config";
 import { db, recordingDir } from "./db";
-import { indexRecording } from "./indexer";
+import { bumpSearchVersion, indexRecording } from "./indexer";
 import { createInterpreter } from "./interpreter/gemma";
 import { ModelServiceError } from "./ollama";
 import { verify, type VerifiedFact } from "./provenance";
 import {
   clearInterpretation,
+  deleteRecordingRow,
   getRecording,
   getSegments,
   getVault,
@@ -69,6 +71,18 @@ export function liveLines(id: string): LiveLine[] {
 
 export function isWaiting(id: string): boolean {
   return state.queue.includes(id) && state.current !== id;
+}
+
+export async function removeRecording(id: string): Promise<boolean> {
+  const recording = getRecording(id);
+  if (!recording || state.current === id) return false;
+  state.queue = state.queue.filter((queued) => queued !== id);
+  deleteRecordingRow(id);
+  bumpSearchVersion();
+  const removedDir = path.join(config.dataDir, "removed");
+  await fs.promises.mkdir(removedDir, { recursive: true });
+  await fs.promises.rename(recordingDir(id), path.join(removedDir, `${id}-${Date.now()}`)).catch(() => undefined);
+  return true;
 }
 
 export function retry(id: string): boolean {
@@ -180,6 +194,8 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
     });
     const planned = planStories(drafts, segments);
     const ids = planned.map((story, ord) => insertStory({ recordingId: id, ord, ...story }));
+    const earlier: { title: string; when: string | null }[] = [];
+    let previousAnchor: VerifiedFact | null = null;
     for (let i = 0; i < planned.length; i++) {
       updateRecording(id, { detail: JSON.stringify({ annotating: i + 1, total: planned.length }), progress: i / planned.length });
       const story = planned[i];
@@ -192,10 +208,18 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
         title: story.title,
         segments: storySegments,
         known: knownEntities(),
+        earlier: earlier.slice(-4),
       });
-      const facts = verify(annotation, segments, { from: story.segStart, to: story.segEnd }, vault.narrator, vault.birthYear);
+      const facts = inheritPeriod(
+        verify(annotation, segments, { from: story.segStart, to: story.segEnd }, vault.narrator, vault.birthYear),
+        previousAnchor,
+        vault.birthYear,
+      );
       const title = restoreNames(story.title, facts);
       if (title !== story.title) updateStoryTitle(ids[i], title);
+      const anchor = facts.find((f) => f.kind === "time" && f.yearFrom);
+      earlier.push({ title, when: anchor ? anchor.value : null });
+      previousAnchor = anchor && !anchor.note?.startsWith(INHERITED) ? anchor : null;
       saveAnnotation({
         storyId: ids[i],
         recordingId: id,
@@ -215,6 +239,51 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
     updateRecording(id, { models: { embedder: config.embeddingModel } });
   },
 };
+
+const INHERITED = "Told right after";
+
+function inheritPeriod(facts: VerifiedFact[], previous: VerifiedFact | null, birthYear: number | null): VerifiedFact[] {
+  if (!previous?.yearFrom || facts.some((f) => f.kind === "time" && f.yearFrom)) return facts;
+  const stage = facts.find((f) => f.kind === "life_stage");
+  if (stage && stage.provenance !== "inferred") return facts;
+  const year = previous.yearFrom;
+  const label = previous.provenance === "inferred" ? `about ${year}` : String(year);
+  const result = facts.filter((f) => f.kind !== "life_stage");
+  result.push({
+    kind: "time",
+    value: String(year),
+    detail: null,
+    yearFrom: year,
+    yearTo: previous.yearTo ?? year,
+    provenance: "inferred",
+    primary: true,
+    seg: null,
+    evidence: null,
+    start: null,
+    end: null,
+    note: `${INHERITED} a story from ${label}, in the same recording.`,
+  });
+  if (birthYear && year >= birthYear) {
+    const age = year - birthYear;
+    result.push({
+      kind: "life_stage",
+      value: age <= 12 ? "childhood" : age <= 25 ? "youth" : age <= 59 ? "adulthood" : "later_life",
+      detail: null,
+      yearFrom: null,
+      yearTo: null,
+      provenance: "inferred",
+      primary: true,
+      seg: null,
+      evidence: null,
+      start: null,
+      end: null,
+      note: `About ${age} years old in ${year}, counted from the year of birth.`,
+    });
+  } else if (stage) {
+    result.push(stage);
+  }
+  return result;
+}
 
 function restoreNames(title: string, facts: VerifiedFact[]): string {
   let result = title;

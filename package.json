@@ -4,9 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:https": "next dev --experimental-https",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "setup": "bash scripts/setup.sh",
+    "demo": "bash scripts/import-demo.sh http://localhost:3000",
+    "reprocess": "bash scripts/reprocess.sh http://localhost:3000"
   },
   "dependencies": {
     "next": "16.3.8",
@@ -24,5 +29,8 @@
     "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=22.13"
   }
 }
