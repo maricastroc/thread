@@ -37,7 +37,7 @@ function Sections() {
 export function SiteHeader({ subject, search = true }: { subject: string | null; search?: boolean }) {
   return (
     <header className="relative z-30">
-      <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 sm:min-h-20 sm:gap-x-6 sm:px-6">
+      <div className="mx-auto flex min-h-16 max-w-6xl items-center gap-x-3 px-4 py-2 sm:min-h-20 sm:gap-x-6 sm:px-6">
         <Link
           href="/"
           aria-label={subject ? `${t.brand}, ${t.nav.archiveOf(subject)}` : t.brand}
@@ -54,7 +54,7 @@ export function SiteHeader({ subject, search = true }: { subject: string | null;
           )}
         </Link>
         {subject && (
-          <nav aria-label={t.nav.archiveOf(subject)} className="hidden items-center md:flex">
+          <nav aria-label={t.nav.archiveOf(subject)} className="hidden shrink-0 items-center lg:flex">
             <Sections />
           </nav>
         )}
@@ -64,10 +64,10 @@ export function SiteHeader({ subject, search = true }: { subject: string | null;
             <SearchField subject={subject} id="header-search" />
           </HeaderSearch>
         )}
-        {subject && <AddStory subject={subject} />}
+        {subject && <AddStory subject={subject} className="shrink-0" />}
       </div>
       {subject && (
-        <nav aria-label={t.nav.archiveOf(subject)} className="mx-auto -mt-2 flex max-w-6xl flex-wrap items-center gap-x-1 px-2 pb-1 md:hidden">
+        <nav aria-label={t.nav.archiveOf(subject)} className="mx-auto -mt-2 flex max-w-6xl flex-wrap items-center gap-x-1 px-2 pb-1 lg:hidden">
           <Sections />
           <NavLink href="/search">{t.search.title}</NavLink>
         </nav>
