@@ -52,7 +52,7 @@ export function Note({ note, language, lit, highlighted, onPlay, onHover, compac
           }`}
         />
       )}
-      <p className="text-[0.9375rem] leading-snug">
+      <p className="text-[0.9375rem] leading-snug [overflow-wrap:anywhere]">
         {note.href ? (
           <Link href={note.href} lang={contentLang} className="link font-medium">
             {inferred ? `[${title}]` : title}

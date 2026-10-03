@@ -8,7 +8,7 @@ import { config } from "./config";
 import { db, recordingDir } from "./db";
 import { bumpSearchVersion, indexRecording } from "./indexer";
 import { createInterpreter } from "./interpreter/gemma";
-import { ModelServiceError } from "./ollama";
+import { ModelServiceError, unload } from "./ollama";
 import { verify, type VerifiedFact } from "./provenance";
 import {
   clearInterpretation,
@@ -23,9 +23,10 @@ import {
   saveAnnotation,
   updateRecording,
   updateStoryTitle,
+  type PreviousStory,
   type RecordingError,
 } from "./repo";
-import { planStories } from "./structure";
+import { planStories, type PlannedStory } from "./structure";
 import { buildPrompt, transcribe } from "./whisper";
 
 export type LiveLine = { start: number; end: number; text: string };
@@ -162,6 +163,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
       ...known.places.flatMap((p) => [p.name, ...p.aliases]),
     ]);
     state.live.set(id, []);
+    await unload(config.interpreterModel);
     const transcript = await transcribe(recordingDir(id), {
       language: vault?.language ?? "auto",
       prompt,
@@ -181,7 +183,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
     const vault = getVault();
     const recording = getRecording(id)!;
     const segments = getSegments(id);
-    clearInterpretation(id);
+    const previous = clearInterpretation(id);
     if (!segments.length || !vault) return;
     const interpreter = createInterpreter();
     updateRecording(id, { models: { interpreter: interpreter.model } });
@@ -192,7 +194,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
       language: recording.language,
       segments,
     });
-    const planned = planStories(drafts, segments);
+    const planned = matchPrevious(planStories(drafts, segments), previous);
     const ids = planned.map((story, ord) => insertStory({ recordingId: id, ord, ...story }));
     const earlier: { title: string; when: string | null }[] = [];
     let previousAnchor: VerifiedFact | null = null;
@@ -239,6 +241,27 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
     updateRecording(id, { models: { embedder: config.embeddingModel } });
   },
 };
+
+function matchPrevious(planned: PlannedStory[], previous: PreviousStory[]) {
+  const used = new Set<string>();
+  return planned.map((story) => {
+    let best: PreviousStory | null = null;
+    let bestScore = 0;
+    for (const old of previous) {
+      if (used.has(old.id)) continue;
+      const overlap = Math.min(story.end, old.end) - Math.max(story.start, old.start);
+      const union = Math.max(story.end, old.end) - Math.min(story.start, old.start);
+      const score = union > 0 ? overlap / union : 0;
+      if (score > bestScore) {
+        best = old;
+        bestScore = score;
+      }
+    }
+    if (!best || bestScore < 0.5) return story;
+    used.add(best.id);
+    return best.titleBy === "family" ? { ...story, id: best.id, title: best.title, titleBy: "family" as const } : { ...story, id: best.id };
+  });
+}
 
 const INHERITED = "Told right after";
 

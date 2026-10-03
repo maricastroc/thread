@@ -1,6 +1,6 @@
 "use server";
 
-import { refresh } from "next/cache";
+import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getStoryRow, renameStory, saveVault } from "@/lib/server/repo";
 import { t } from "@/lib/i18n";
@@ -18,6 +18,7 @@ export async function setupVault(_previous: SetupState, form: FormData): Promise
   if (yearText && (!Number.isInteger(year) || year! < 1880 || year! > new Date().getFullYear())) errors.year = t.setup.yearInvalid;
   if (errors.name || errors.year) return { errors, values };
   saveVault({ narrator: name, birthYear: year, language: /^(auto|[a-z]{2})$/.test(language) ? language : "auto" });
+  revalidatePath("/", "layout");
   redirect("/");
 }
 

@@ -72,9 +72,9 @@ export default async function StoryPage(props: PageProps<"/stories/[id]">) {
     .filter((f) => f.start !== null && (f.kind === "person" || f.kind === "place"))
     .map((f) => ({ time: f.start!, label: f.value }));
   const lang = story.language ?? undefined;
-  const kicker = [whenText(story.when), story.when?.lifeStage && story.when.label !== t.lifeStage[story.when.lifeStage] ? t.lifeStage[story.when.lifeStage as LifeStage] : null]
-    .filter(Boolean)
-    .join(" · ");
+  const kickerWhen = whenText(story.when);
+  const kickerStage =
+    story.when?.lifeStage && story.when.label !== t.lifeStage[story.when.lifeStage] ? t.lifeStage[story.when.lifeStage as LifeStage] : null;
 
   return (
     <article className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -89,7 +89,18 @@ export default async function StoryPage(props: PageProps<"/stories/[id]">) {
       <header className="grid pt-6 pb-10 sm:pt-10 lg:grid-cols-[4.5rem_minmax(0,1fr)] lg:gap-x-10">
         <div className="hidden lg:block" />
         <div>
-          {kicker && <p className="t-kicker mb-5">{kicker}</p>}
+          {(kickerWhen || kickerStage) && (
+            <p className="t-kicker mb-5">
+              {kickerWhen && (
+                <span className={`normal-case tracking-normal ${story.when?.provenance === "inferred" ? "italic" : ""}`}>
+                  {kickerWhen}
+                  {story.when?.provenance === "inferred" && <span className="visually-hidden">, {t.provenance.long.inferred.toLowerCase()}</span>}
+                </span>
+              )}
+              {kickerWhen && kickerStage && <span aria-hidden="true"> · </span>}
+              {kickerStage}
+            </p>
+          )}
           <RenameTitle storyId={story.id} title={story.title} titleBy={story.titleBy} language={story.language} />
           <p className="t-meta mt-6">
             {t.story.told(formatDate(story.recordedAt))}
@@ -192,15 +203,15 @@ export default async function StoryPage(props: PageProps<"/stories/[id]">) {
               {t.story.legendTitle}
             </summary>
             <dl className="mt-3 space-y-3 text-[0.9375rem]">
-              <div className="grid grid-cols-[7rem_1fr] gap-4">
+              <div className="sm:grid sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-4">
                 <dt className="font-medium">{t.provenance.said}</dt>
                 <dd className="text-ink-2">{t.story.legend.said}</dd>
               </div>
-              <div className="grid grid-cols-[7rem_1fr] gap-4">
+              <div className="sm:grid sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-4">
                 <dt className="font-medium">{t.provenance.extracted}</dt>
                 <dd className="text-ink-2">{t.story.legend.extracted}</dd>
               </div>
-              <div className="grid grid-cols-[7rem_1fr] gap-4">
+              <div className="sm:grid sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-4">
                 <dt className="italic">[{t.provenance.inferred}]</dt>
                 <dd className="text-ink-2">{t.story.legend.inferred}</dd>
               </div>

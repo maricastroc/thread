@@ -16,11 +16,13 @@ const serif = Newsreader({
 const sans = Atkinson_Hyperlegible_Next({
   subsets: ["latin", "latin-ext"],
   variable: "--font-atkinson",
+  adjustFontFallback: false,
 });
 
 const mono = Atkinson_Hyperlegible_Mono({
   subsets: ["latin"],
   variable: "--font-atkinson-mono",
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {

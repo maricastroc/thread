@@ -83,7 +83,7 @@ export default async function Home() {
           {stats.firstRecordedAt && (
             <>
               <span aria-hidden="true"> · </span>
-              <span className="whitespace-nowrap">{t.home.since(formatMonthYear(stats.firstRecordedAt))}</span>
+              <span>{t.home.since(formatMonthYear(stats.firstRecordedAt))}</span>
             </>
           )}
         </p>

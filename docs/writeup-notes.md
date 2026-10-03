@@ -86,10 +86,14 @@ Each of these started as something the model "could do" and became deterministic
 | Gemma 4 E4B, finding + annotating stories | 33–86 s per recording (1–4 stories) |
 | EmbeddingGemma, indexing ~16 moments | 0.1 s warm (23 s on first load) |
 | Whole pipeline, 1 min 51 s recording | ~2 min |
+| Stress test: 30-minute session (400 sentences, 35 stories) | preserve 13 s · transcribe 3 min 17 s · organize 19 min · index 3 s |
 
 The processing screen is designed around this. You see the waveform fill as the words are written, then the stories appear one by one, and the page says the work continues on this computer.
 
 ## Limitations (honest list)
+
+- Long sessions are slow to organize: annotation runs story by story at ~30 s each on E4B, so a 30-minute session with 35 stories takes ~19 minutes. Transcription stays fast (~9× real time). Next step: annotate stories in parallel (Ollama `OLLAMA_NUM_PARALLEL`), or use E2B for long sessions.
+- On a 16 GB laptop, having Gemma (4.3 GB resident) loaded while Whisper runs pushed the machine into swap. The pipeline now unloads Gemma before transcribing and reloads it for the organizing step.
 
 - E4B is not deterministic across prompt changes: the same recording split into 1 or 4 stories depending on the question asked before it. The verification layer keeps facts honest, but segmentation still varies.
 - A misheard name propagates. Whisper heard "Quixadá" as "Iquixadá" in the synthetic demo voice, and since known names feed Whisper's prompt, an error can be reinforced. Next step: let the family correct a name once and feed the correction back.

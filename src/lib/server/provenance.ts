@@ -48,6 +48,31 @@ function findEvidence(segments: Segment[], from: number, to: number, claimed: nu
   return null;
 }
 
+const kinship = new Set(
+  (
+    "mae mamae pai papai avo avos vovo vo irma irmao irmas irmaos tia tio tias tios filha filho filhas filhos neta neto netas netos " +
+    "marido esposa esposo mulher sogra sogro cunhada cunhado prima primo madrinha padrinho afilhada afilhado bisavo bisavó " +
+    "mother mom father dad grandmother grandma grandfather grandpa sister brother aunt uncle daughter son granddaughter grandson husband wife cousin " +
+    "madre padre abuela abuelo hermana hermano tia tio hija hijo nieta nieto esposo esposa"
+  ).split(" "),
+);
+
+function isIndividual(name: string, mention: string): boolean {
+  const words = (mention.trim() || name).split(/\s+/).filter((w) => !leadingWords.has(normalize(w)));
+  if (words.some((w) => /^\p{Lu}/u.test(w))) return true;
+  return normalize(`${name} ${mention}`)
+    .split(" ")
+    .some((w) => kinship.has(w));
+}
+
+function displayName(raw: string): string {
+  const name = raw.replace(/\s+/g, " ").trim();
+  if (name.length > 3 && name === name.toUpperCase() && /\p{Lu}/u.test(name)) {
+    return name.toLowerCase().replace(/(^|\s)(\p{L})/gu, (_, space: string, letter: string) => space + letter.toUpperCase());
+  }
+  return name;
+}
+
 function evidencePhrases(name: string, mention: string, relation: string | null): string[] {
   const phrases = [name];
   if (tokens(mention).length <= 5) phrases.push(mention);
@@ -115,9 +140,10 @@ export function verify(
   };
 
   for (const person of annotation.people) {
-    const name = person.name.trim();
+    const name = displayName(person.name);
     const key = normalize(name);
     if (!key || key === narratorKey || narratorKey.split(" ").includes(key) || seenEntities.has(`person:${key}`)) continue;
+    if (!isIndividual(name, person.mention || name)) continue;
     const evidence = findEvidence(segments, range.from, range.to, person.segment, evidencePhrases(name, person.mention, person.relation));
     if (!evidence) continue;
     seenEntities.add(`person:${key}`);
@@ -125,7 +151,8 @@ export function verify(
     const provenance: Provenance = literal ? "said" : person.explicit ? "extracted" : "inferred";
     const alias = properAlias(person.mention);
     const aliases = alias && normalize(alias) !== key ? [alias] : [];
-    const relation = person.relation.trim() || null;
+    const storyText = segments.filter((seg) => seg.idx >= range.from && seg.idx <= range.to).map((seg) => seg.text).join(" ");
+    const relation = person.relation.trim() && containsPhrase(storyText, person.relation.trim()) ? person.relation.trim() : null;
     const base = {
       kind: "person" as const,
       value: name,
@@ -143,7 +170,7 @@ export function verify(
   }
 
   for (const place of annotation.places) {
-    const name = place.name.trim();
+    const name = displayName(place.name);
     const key = normalize(name);
     if (!key || seenEntities.has(`place:${key}`)) continue;
     const evidence = findEvidence(segments, range.from, range.to, place.segment, evidencePhrases(name, place.mention, null));

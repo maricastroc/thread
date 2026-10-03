@@ -59,7 +59,7 @@ export async function chatJson(options: {
     format: options.schema,
     stream: false,
     think: false,
-    keep_alive: "15m",
+    keep_alive: "5m",
     options: { temperature: 0, seed: 42, num_ctx: options.numCtx },
   };
   const response = await call<ChatResponse>("/api/chat", body);
@@ -81,6 +81,16 @@ export async function chatJson(options: {
 }
 
 export async function embed(model: string, input: string[]): Promise<number[][]> {
-  const response = await call<{ embeddings: number[][] }>("/api/embed", { model, input, keep_alive: "15m", truncate: true });
+  const response = await call<{ embeddings: number[][] }>("/api/embed", { model, input, keep_alive: "30m", truncate: true });
   return response.embeddings;
+}
+
+export async function unload(model: string): Promise<void> {
+  try {
+    await fetch(`${config.ollamaHost}/api/generate`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ model, keep_alive: 0 }),
+    });
+  } catch {}
 }

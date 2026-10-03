@@ -81,8 +81,8 @@ For every item:
 - mention: the exact words from that segment, copied character by character, in the original language. Never translate or paraphrase a mention.
 - explicit: true only when the narrator states the information in words; false when you deduce it.
 
-people: every person who takes part in or is mentioned in the story, except the narrator.
-  name: the name the family would know them by. If the person matches someone in the known list, reuse that exact name (for example "o Zé" becomes "José"). If the person has no name in the story, use the relationship word as the name, capitalized, in ${language} (for example "Mãe").
+people: every individual person who takes part in or is mentioned in the story, except the narrator. Not groups of people (such as "as freiras" or "os vizinhos").
+  name: the name the family would know them by. When the story says their name (for example "a Dona Mocinha"), use that name, even if a relationship word is also said; put the relationship in relation. If the person matches someone in the known list, reuse that exact name (for example "o Zé" becomes "José"). Only when the person has no name in the story, use the relationship word as the name, capitalized, in ${language} (for example "Mãe").
   relation: their relationship to the narrator, in ${language}, when the words state it (for example "marido", "irmã"); otherwise an empty string.
 places: named places such as cities, towns, neighborhoods, streets, beaches, rivers, churches, schools and workplaces. Skip unnamed generic places such as "a cozinha". name: a clean place name in ${language}; reuse a name from the known list when it is the same place.
 times: when the story happens, at most 3.

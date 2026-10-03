@@ -33,7 +33,29 @@ export default async function RecordingPage(props: PageProps<"/recordings/[id]">
 
   if (recording.stage !== "ready" || recording.failedStage) {
     const initial = recordingStatus(id, 0, true)!;
-    return <RecordingLive initial={initial} />;
+    const playable = recording.failedStage === "organizing" || recording.failedStage === "indexing";
+    if (!playable) return <RecordingLive initial={initial} />;
+    const lines = getSegments(id);
+    const span = recording.duration ?? 0;
+    const whole = { recordingId: id, storyId: null, title: t.recording.title(formatDate(recording.recordedAt)), start: 0, end: span, language: recording.language };
+    return (
+      <>
+        <RecordingLive initial={initial} />
+        {lines.length > 0 && (
+          <section aria-labelledby="fallback-transcript" className="mx-auto max-w-6xl px-4 sm:px-6">
+            <Dock id={`recording:${id}`} />
+            <StoryPlayer track={whole} peaks={slicePeaks(getPeaks(id), 0, span, 260)} markers={[]} className="sticky top-0 border-y border-rule" />
+            <div className="grid pt-8 lg:grid-cols-[4.5rem_minmax(0,38rem)] lg:gap-x-10">
+              <div className="hidden lg:block" />
+              <h2 id="fallback-transcript" className="t-kicker">
+                {t.recording.transcript}
+              </h2>
+            </div>
+            <Transcript track={whole} paragraphs={buildParagraphs(lines, [])} language={recording.language} offset={0} />
+          </section>
+        )}
+      </>
+    );
   }
 
   const duration = recording.duration ?? 0;

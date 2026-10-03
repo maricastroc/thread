@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { formatClock, formatDuration, formatTimeOfDay, isToday, formatDate } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import type { LiveStory, RecordingSummary, WorkStage } from "@/lib/types";
+import { RemoveRecording } from "./RemoveRecording";
 
 type Line = { idx: number; start: number; end: number; text: string };
 
@@ -170,7 +171,7 @@ export function RecordingLive({ initial }: { initial: Status }) {
   return (
     <section className="mx-auto max-w-3xl px-4 pt-8 pb-16 sm:px-6 sm:pt-14">
       <h1 className="t-title">{t.processing.saved}</h1>
-      <p className="t-meta mt-4">{t.processing.savedMeta(duration ? formatDuration(duration) : "…", when)}</p>
+      <p className="t-meta mt-4">{duration ? t.processing.savedMeta(formatDuration(duration), when) : when}</p>
       {status.prompt && (
         <p className="mt-6 max-w-[34rem] font-serif text-[1.1875rem] leading-snug text-ink-2 italic">
           {t.record.asked}: {status.prompt}
@@ -190,7 +191,7 @@ export function RecordingLive({ initial }: { initial: Status }) {
               <span className="flex h-7 items-center">
                 <StepMark state={state} />
               </span>
-              <div>
+              <div className="min-w-0">
                 <p className={`text-[1.125rem] leading-7 ${state === "pending" ? "text-ink-2" : "text-ink"}`}>
                   {label}
                   {state === "active" && stage === "transcribing" && duration > 0 && writtenUntil > 0 && (
@@ -244,7 +245,9 @@ export function RecordingLive({ initial }: { initial: Status }) {
                 {state === "failed" && status.failedStage && (
                   <div role="alert" className="mt-3 max-w-[32rem]">
                     <p className="text-[1.0625rem]">{t.processing.failed[status.failedStage]}</p>
-                    <p className="mt-1 text-[1.0625rem] text-ink-2">{t.processing.safe}</p>
+                    <p className="mt-1 text-[1.0625rem] text-ink-2">
+                      {status.failedStage === "preserving" ? t.processing.safeOriginal : t.processing.safe}
+                    </p>
                     <button
                       type="button"
                       onClick={retry}
@@ -253,12 +256,17 @@ export function RecordingLive({ initial }: { initial: Status }) {
                     >
                       {retrying ? t.processing.retrying : t.processing.retry}
                     </button>
+                    {status.failedStage === "preserving" && (
+                      <div className="mt-2">
+                        <RemoveRecording id={status.id} />
+                      </div>
+                    )}
                     {status.error && (
                       <details className="mt-4">
                         <summary className="t-small inline-flex min-h-11 cursor-pointer items-center text-ink-2 hover:text-ink">
                           {t.processing.technical}
                         </summary>
-                        <pre className="t-small mt-2 max-h-60 overflow-auto rounded-md border border-rule bg-paper-raised p-3 font-mono whitespace-pre-wrap text-ink-2">
+                        <pre className="t-small mt-2 max-h-60 overflow-auto rounded-md border border-rule bg-paper-raised p-3 font-mono whitespace-pre-wrap text-ink-2 [overflow-wrap:anywhere]">
                           {status.error.message}
                           {status.error.detail ? `\n\n${status.error.detail}` : ""}
                         </pre>

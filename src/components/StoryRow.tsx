@@ -26,7 +26,7 @@ export function StoryRow({
     language: story.language,
   };
   return (
-    <li className="group relative grid grid-cols-[1.25rem_1fr] gap-x-3 py-6 sm:grid-cols-[1.25rem_7.5rem_1fr_auto] sm:gap-x-5 sm:py-7">
+    <li className="group relative grid grid-cols-[1.25rem_minmax(0,1fr)] gap-x-3 py-6 sm:grid-cols-[1.25rem_7.5rem_minmax(0,1fr)_auto] sm:gap-x-5 sm:py-7">
       <div className="relative z-10 pt-[0.7rem]">
         <TimelineDot when={showWhen ? story.when : null} />
       </div>
@@ -62,8 +62,10 @@ export function StoryRow({
           </p>
         )}
       </div>
-      <div className="relative z-10 col-start-2 mt-4 flex items-center gap-4 sm:col-start-auto sm:mt-0 sm:self-start sm:pt-1">
-        <WaveSignature peaks={peaks} height={22} className="text-ink-3 opacity-60 transition-opacity group-hover:opacity-100" />
+      <div className="relative z-10 col-start-2 mt-4 flex min-w-0 items-center gap-4 sm:col-start-auto sm:mt-0 sm:self-start sm:pt-1">
+        <div className="min-w-0 flex-1 sm:w-[11rem] sm:flex-none">
+          <WaveSignature peaks={peaks} height={22} fluid className="text-ink-3 opacity-60 transition-opacity group-hover:opacity-100" />
+        </div>
         <span className="t-time w-10 text-right text-ink-2">
           <span className="visually-hidden">{t.story.listen}, </span>
           {formatClock(story.end - story.start)}

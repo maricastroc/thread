@@ -199,30 +199,44 @@ export function getSegments(recordingId: string, from = 0, to = Number.MAX_SAFE_
   ).map(toSegment);
 }
 
-export function clearInterpretation(recordingId: string): void {
+export type PreviousStory = { id: string; start: number; end: number; title: string; titleBy: "archive" | "family" };
+
+export function clearInterpretation(recordingId: string): PreviousStory[] {
+  const previous = (
+    db().prepare("SELECT id, start_sec, end_sec, title, title_by FROM stories WHERE recording_id = ?").all(recordingId) as Row[]
+  ).map((r) => ({
+    id: String(r.id),
+    start: Number(r.start_sec),
+    end: Number(r.end_sec),
+    title: String(r.title),
+    titleBy: r.title_by === "family" ? ("family" as const) : ("archive" as const),
+  }));
   transaction(() => {
     db().prepare("DELETE FROM chunks WHERE recording_id = ?").run(recordingId);
     db().prepare("DELETE FROM stories WHERE recording_id = ?").run(recordingId);
   });
+  return previous;
 }
 
 export function insertStory(input: {
+  id?: string;
   recordingId: string;
   ord: number;
   title: string;
+  titleBy?: "archive" | "family";
   segStart: number;
   segEnd: number;
   start: number;
   end: number;
   quoteSeg: number;
 }): string {
-  const id = newId();
+  const id = input.id ?? newId();
   db()
     .prepare(
-      `INSERT INTO stories (id, recording_id, ord, title, seg_start, seg_end, start_sec, end_sec, quote_seg)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO stories (id, recording_id, ord, title, title_by, seg_start, seg_end, start_sec, end_sec, quote_seg)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run(id, input.recordingId, input.ord, input.title, input.segStart, input.segEnd, input.start, input.end, input.quoteSeg);
+    .run(id, input.recordingId, input.ord, input.title, input.titleBy ?? "archive", input.segStart, input.segEnd, input.start, input.end, input.quoteSeg);
   return id;
 }
 
@@ -241,9 +255,11 @@ function resolveEntity(kind: EntityKind, entity: NonNullable<VerifiedFact["entit
   if (row) {
     const aliases = new Set(JSON.parse(String(row.aliases)) as string[]);
     for (const alias of entity.aliases) if (normalize(alias) !== String(row.norm)) aliases.add(alias);
+    const current = String(row.name);
+    const name = current === current.toUpperCase() && entity.name !== entity.name.toUpperCase() ? entity.name : current;
     database
-      .prepare("UPDATE entities SET aliases = ?, relation = COALESCE(relation, ?) WHERE id = ?")
-      .run(JSON.stringify([...aliases]), entity.relation, String(row.id));
+      .prepare("UPDATE entities SET name = ?, aliases = ?, relation = COALESCE(relation, ?) WHERE id = ?")
+      .run(name, JSON.stringify([...aliases]), entity.relation, String(row.id));
     return String(row.id);
   }
   const id = newId();

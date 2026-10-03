@@ -51,7 +51,7 @@ const Paragraph = memo(function Paragraph({
   return (
     <div
       ref={(el) => register(index, el)}
-      className="grid grid-cols-[3.25rem_minmax(0,1fr)] gap-x-3 py-3 sm:grid-cols-[4.5rem_minmax(0,1fr)] sm:gap-x-6 lg:grid-cols-[4.5rem_minmax(0,38rem)_minmax(0,1fr)] lg:gap-x-10"
+      className="grid grid-cols-[3.25rem_minmax(0,1fr)] gap-x-3 py-3 @xl:grid-cols-[4.5rem_minmax(0,1fr)] @xl:gap-x-6 @5xl:grid-cols-[4.5rem_minmax(0,38rem)_minmax(12rem,1fr)] @5xl:gap-x-10"
     >
       <div className="relative pt-[0.45rem]">
         <button
@@ -105,7 +105,7 @@ const Paragraph = memo(function Paragraph({
       </p>
 
       {notes.length > 0 && (
-        <div className="col-start-2 mt-3 border-l border-rule pl-3 lg:col-start-3 lg:mt-0 lg:border-l-0 lg:pt-1 lg:pl-0">
+        <div className="col-start-2 mt-3 border-l border-rule pl-3 @5xl:col-start-3 @5xl:mt-0 @5xl:border-l-0 @5xl:pt-1 @5xl:pl-0">
           {notes.map((note: ViewNote) => (
             <Note
               key={note.id}
@@ -209,7 +209,7 @@ export function Transcript({ track, paragraphs, language, offset }: Props) {
   };
 
   return (
-    <div className="relative">
+    <div className="@container relative">
       {paragraphs.map((paragraph, index) => (
         <Paragraph
           key={index}

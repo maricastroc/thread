@@ -50,11 +50,11 @@ export function Setup() {
           )}
         </div>
 
-        <div className="mt-10 grid gap-10 sm:grid-cols-[10rem_1fr]">
-          <div>
-            <label htmlFor="year" className="block text-[1rem] text-ink-2">
-              {t.setup.birthYearLabel} <span className="text-ink-3">· {t.setup.optional}</span>
-            </label>
+        <div className="mt-10">
+          <label htmlFor="year" className="block text-[1rem] text-ink-2">
+            {t.setup.birthYearLabel} <span className="text-ink-3">· {t.setup.optional}</span>
+          </label>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-8">
             <input
               id="year"
               name="year"
@@ -65,12 +65,12 @@ export function Setup() {
               defaultValue={state.values.year}
               aria-invalid={state.errors.year ? true : undefined}
               aria-describedby={state.errors.year ? "year-error year-hint" : "year-hint"}
-              className={`${field} t-time !font-mono !text-[1.5rem]`}
+              className={`${field} t-time max-w-[8rem] !font-mono !text-[1.5rem]`}
             />
+            <p id="year-hint" className="t-small pb-2 text-ink-2">
+              {t.setup.birthYearHint}
+            </p>
           </div>
-          <p id="year-hint" className="t-small self-end pb-3 text-ink-2">
-            {t.setup.birthYearHint}
-          </p>
         </div>
         {state.errors.year && (
           <p id="year-error" className="t-small mt-2 text-voice">

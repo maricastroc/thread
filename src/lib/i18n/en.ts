@@ -172,6 +172,7 @@ export const en = {
       indexing: "The recording couldn’t be prepared for search.",
     } satisfies Record<WorkStage, string>,
     safe: "The recording itself is safe and can be played.",
+    safeOriginal: "The original file is kept on this computer, exactly as it was received.",
     retry: "Try again",
     retrying: "Trying again",
     technical: "Technical details",

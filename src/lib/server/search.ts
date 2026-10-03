@@ -154,7 +154,9 @@ export async function search(query: string, birthYear: number | null): Promise<S
   const byCos = [...groups.values()].sort((a, b) => b.cos - a.cos);
   const topCos = byCos[0]?.cos ?? 0;
   const secondCos = byCos[1]?.cos ?? 0;
-  const lexicalStrong = byCos.some((r) => r.cover >= 0.5 && r.cos >= COS_WEAK && (terms.length <= 2 || r.cover >= 0.6));
+  const lexicalStrong = byCos.some(
+    (r) => r.cover >= 0.5 && (!semantic || r.cos >= COS_WEAK) && (terms.length <= 2 || r.cover >= 0.6),
+  );
   const separated = topCos >= COS_WEAK && topCos - secondCos >= SEPARATION;
   const strength: SearchOutcome["strength"] =
     topCos >= COS_STRONG || separated || lexicalStrong
