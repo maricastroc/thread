@@ -90,7 +90,8 @@ export function RecordingLive({ initial }: { initial: Status }) {
   const [lines, setLines] = useState<Line[]>(initial.transcript.lines);
   const [source, setSource] = useState(initial.transcript.source);
   const [retrying, setRetrying] = useState(false);
-  const peaks = useRef<number[] | null>(initial.peaks);
+  const [peaks, setPeaks] = useState<number[] | null>(initial.peaks);
+  const peaksLoaded = useRef(!!initial.peaks?.length);
   const linesRef = useRef(lines);
   const sourceRef = useRef(source);
 
@@ -107,12 +108,15 @@ export function RecordingLive({ initial }: { initial: Status }) {
       try {
         const after = sourceRef.current === "live" ? linesRef.current.length : 0;
         const params = new URLSearchParams({ after: String(after) });
-        if (!peaks.current) params.set("peaks", "1");
+        if (!peaksLoaded.current) params.set("peaks", "1");
         const response = await fetch(`/api/recordings/${status.id}?${params}`, { cache: "no-store" });
         if (!response.ok) throw new Error();
         const next = (await response.json()) as Status;
         if (cancelled) return;
-        if (next.peaks?.length) peaks.current = next.peaks;
+        if (next.peaks?.length) {
+          peaksLoaded.current = true;
+          setPeaks(next.peaks);
+        }
         if (next.transcript.source !== sourceRef.current) {
           setSource(next.transcript.source);
           setLines(next.transcript.lines);
@@ -179,7 +183,7 @@ export function RecordingLive({ initial }: { initial: Status }) {
       )}
 
       <div className="mt-10">
-        <Wave peaks={peaks.current ?? []} fill={fill} regions={status.stories} duration={duration || 1} />
+        <Wave peaks={peaks ?? []} fill={fill} regions={status.stories} duration={duration || 1} />
       </div>
 
       <ol className="mt-10 space-y-6" aria-label={t.processing.steps.preserving.active}>

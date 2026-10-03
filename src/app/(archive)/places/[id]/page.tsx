@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { EntityMoments } from "@/components/entities/EntityMoments";
+import { Lifeline } from "@/components/life/Lifeline";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
+import { loadLife } from "@/lib/server/life";
 import { getEntity } from "@/lib/server/repo";
 
 export async function generateMetadata(props: PageProps<"/places/[id]">): Promise<Metadata> {
@@ -25,6 +27,7 @@ export default async function PlacePage(props: PageProps<"/places/[id]">) {
       facts={data.facts}
       segments={data.segments}
       language={data.stories[0]?.language ?? null}
+      lifeline={<Lifeline life={loadLife(vault)} initialTrail={id} trailKinds={["place"]} showTrailBar={false} syncUrl={false} />}
     />
   );
 }

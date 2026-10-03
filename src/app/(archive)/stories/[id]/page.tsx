@@ -103,6 +103,10 @@ export default async function StoryPage(props: PageProps<"/stories/[id]">) {
           )}
           <RenameTitle storyId={story.id} title={story.title} titleBy={story.titleBy} language={story.language} />
           <p className="t-meta mt-6">
+            <Link href={{ pathname: "/", query: { story: story.id } }} className="link">
+              {t.story.inLife(vault.narrator)}
+            </Link>
+            <span aria-hidden="true"> · </span>
             {t.story.told(formatDate(story.recordedAt))}
             <span aria-hidden="true"> · </span>
             {formatDuration(story.end - story.start)}

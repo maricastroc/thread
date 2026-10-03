@@ -104,8 +104,7 @@ export function Recorder({ narrator, prompts, initialQuestion }: Props) {
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, [phase]);
 
-  const save = useCallback(
-    async (audio: Blob) => {
+  const save = async (audio: Blob) => {
       setPhase("saving");
       setProgress(0);
       setAnnouncement(t.record.saving);
@@ -124,9 +123,7 @@ export function Recorder({ narrator, prompts, initialQuestion }: Props) {
         setPhase("error");
         setAnnouncement(t.record.errors.upload.title);
       }
-    },
-    [prompt?.text, router],
-  );
+    };
 
   const start = async () => {
     setError(null);

@@ -1,24 +1,33 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { EntityIndex } from "@/components/entities/EntityIndex";
+import { Lifeline } from "@/components/life/Lifeline";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
-import { listEntities, listRecordings } from "@/lib/server/repo";
+import { loadLife } from "@/lib/server/life";
 
 export const metadata: Metadata = { title: t.entities.people };
 
-export default async function PeoplePage() {
+export default async function PeoplePage(props: PageProps<"/people">) {
   const vault = await loadVault();
   if (!vault) redirect("/");
-  const language = listRecordings().find((r) => r.language)?.language ?? null;
+  const params = await props.searchParams;
+  const life = loadLife(vault);
+  const hasPeople = life.entities.some((e) => e.kind === "person");
   return (
-    <EntityIndex
-      title={t.entities.people}
-      intro={t.entities.peopleIntro(vault.narrator)}
-      empty={t.entities.empty}
-      entities={listEntities("person")}
-      base="/people"
-      language={language}
-    />
+    <section className="mx-auto max-w-6xl px-4 pt-6 pb-10 sm:px-6 sm:pt-12">
+      <h1 className="t-display">{t.entities.people}</h1>
+      <p className="t-meta mt-5 mb-8 max-w-[34rem]">{t.life.peopleIntro(vault.narrator)}</p>
+      {hasPeople ? (
+        <Lifeline
+          life={life}
+          trailKinds={["person"]}
+          trailBarFirst
+          initialTrail={typeof params.trail === "string" ? params.trail : null}
+          initialStory={typeof params.story === "string" ? params.story : null}
+        />
+      ) : (
+        <p className="text-[1.0625rem] text-ink-2">{t.entities.empty}</p>
+      )}
+    </section>
   );
 }

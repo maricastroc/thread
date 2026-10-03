@@ -206,6 +206,7 @@ export const en = {
     related: "Related stories",
     relatedBecause: (names: string) => `Also about ${names}`,
     sameRecording: "From the same recording",
+    inLife: (name: string) => `See it in ${possessive(name)} life`,
     questions: "Questions for next time",
     askThis: "Ask this",
     titleByArchive: "Title suggested by the archive",
@@ -224,6 +225,45 @@ export const en = {
     notFound: "This story isn’t in the archive.",
     followAlong: "Follow along",
     backToNow: "Back to the voice",
+  },
+
+  life: {
+    label: (name: string) => `${possessive(name)} life, with the moments where a voice was kept`,
+    summary: (born: number | null, stories: number, minutes: string, kept: number, years: number) =>
+      `${born ? `Born ${born}. ` : ""}${stories} ${plural(stories, "story", "stories")}, ${minutes} of voice. A voice has been kept for ${kept} of ${years} years.`,
+    born: "born",
+    now: (year: number) => `now, ${year}`,
+    gap: (years: number) => `${years} years, no voice yet`,
+    gapAsk: (from: number, to: number) => `Nothing yet from ${from} to ${to}.`,
+    gapQuestion: (from: number, to: number) => `What do you remember from the years ${from} to ${to}?`,
+    askAbout: "Ask about it next time",
+    hint: (name: string) =>
+      `Each mark is a moment where ${possessive(name)} voice was kept. Its width is how long the story lasts. Choose one to open it.`,
+    unplaced: "Not yet placed in time",
+    latest: "latest recording",
+    through: "Through these stories",
+    trail: (from: number, to: number, n: number) => (from === to ? `${from} · ${n} ${plural(n, "story", "stories")}` : `${from}–${to} · ${n} ${plural(n, "story", "stories")}`),
+    trailUndated: (n: number) => `${n} ${plural(n, "story", "stories")}`,
+    clearTrail: "Show the whole life",
+    everyMoment: (name: string) => `Every moment ${name} comes up`,
+    traces: "In this memory",
+    age: (n: number) => `age ${n}`,
+    aboutAge: (n: number) => `about ${n} years old`,
+    close: "Close",
+    read: "Read what was said",
+    certainty: {
+      said: "said",
+      extracted: "from the words",
+      inferred: "inferred",
+      none: "not placed in time",
+    },
+    views: { life: "Life", list: "List" },
+    viewLabel: "How to show the stories",
+    noDate: "no date",
+    peopleIntro: (name: string) => `Everyone ${name} has mentioned, across the years they appear.`,
+    placesIntro: (name: string) => `Every place ${name} has mentioned, across the years it appears.`,
+    span: (from: number | null, to: number | null, stories: number, moments: number) =>
+      `${from && to ? (from === to ? `${from} · ` : `${from}–${to} · `) : ""}${stories} ${plural(stories, "story", "stories")} · ${moments} ${plural(moments, "moment", "moments")}`,
   },
 
   recording: {

@@ -8,6 +8,7 @@ import type { Fact, Segment, StorySummary } from "@/lib/types";
 
 type Props = {
   back: { href: string; label: string };
+  lifeline?: React.ReactNode;
   entity: { name: string; relation: string | null; aliases: string[] };
   stories: StorySummary[];
   facts: (Fact & { primary: boolean })[];
@@ -35,7 +36,7 @@ function Sentence({ text, evidence }: { text: string; evidence: string | null })
   );
 }
 
-export function EntityMoments({ back, entity, stories, facts, segments, language }: Props) {
+export function EntityMoments({ back, lifeline, entity, stories, facts, segments, language }: Props) {
   const ordered = [...stories].sort((a, b) => (a.when?.yearFrom ?? 9999) - (b.when?.yearFrom ?? 9999) || a.recordedAt.localeCompare(b.recordedAt));
   const momentCount = facts.filter((f) => f.seg !== null).length;
   const lang = language ?? undefined;
@@ -48,7 +49,7 @@ export function EntityMoments({ back, entity, stories, facts, segments, language
           {back.label}
         </Link>
       </nav>
-      <header className="pt-6 pb-10 sm:pt-10">
+      <header className="pt-6 pb-8 sm:pt-10">
         <h1 className="t-display" lang={lang}>
           {entity.name}
         </h1>
@@ -68,7 +69,9 @@ export function EntityMoments({ back, entity, stories, facts, segments, language
         )}
       </header>
 
-      <section aria-labelledby="moments-heading" className="border-t border-rule pt-8">
+      {lifeline && <div className="pb-4">{lifeline}</div>}
+
+      <section aria-labelledby="moments-heading" className="mt-6 border-t border-rule pt-8">
         <h2 id="moments-heading" className="t-heading" lang={lang}>
           {t.entities.momentsOf(entity.name)}
         </h2>

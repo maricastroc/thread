@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Recorder } from "@/components/record/Recorder";
 import { t } from "@/lib/i18n";
 import { loadVault } from "@/lib/server/data";
-import { openQuestions } from "@/lib/server/repo";
+import { listRecordings, openQuestions } from "@/lib/server/repo";
 
 export const metadata: Metadata = { title: t.nav.record };
 
@@ -12,8 +12,8 @@ export default async function RecordPage(props: PageProps<"/record">) {
   if (!vault) redirect("/");
   const { q } = await props.searchParams;
   const question = typeof q === "string" && q.trim() ? q.trim().slice(0, 300) : null;
-  const day = Math.floor(Date.now() / 86_400_000);
-  const generic = t.record.prompts.map((_, i, all) => all[(i + day) % all.length]);
+  const offset = listRecordings().length;
+  const generic = t.record.prompts.map((_, i, all) => all[(i + offset) % all.length]);
   const prompts = [
     ...openQuestions(6).map((text) => ({ text, fromArchive: true })),
     ...generic.map((text) => ({ text, fromArchive: false })),

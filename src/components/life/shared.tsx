@@ -8,7 +8,7 @@ import { TimeReadout } from "@/components/audio/TimeReadout";
 import { ArrowIcon, PauseIcon, PlayIcon } from "@/components/icons";
 import { formatClock } from "@/lib/format";
 import { t } from "@/lib/i18n";
-import type { LifeStory } from "@/lib/life";
+import type { Life, LifeEntity, LifeStory } from "@/lib/life";
 
 export function trackOf(story: LifeStory): Track {
   return {
@@ -21,18 +21,31 @@ export function trackOf(story: LifeStory): Track {
   };
 }
 
+export function isCertain(story: LifeStory): boolean {
+  return story.certainty === "exact" || story.certainty === "range";
+}
+
 export function whenLabel(story: LifeStory): string {
   if (story.certainty === "none") return t.time.undated;
-  if (story.certainty === "exact" || story.certainty === "range") return story.label ?? String(story.year);
+  if (isCertain(story)) return story.label ?? String(story.year);
   if (story.certainty === "stage") return `[${story.label}]`;
-  return `[c. ${story.year}]`;
+  return `[${t.time.circa(String(story.year))}]`;
+}
+
+export function ageLabel(story: LifeStory): string | null {
+  if (story.age === null || story.certainty === "none" || story.certainty === "stage") return null;
+  return isCertain(story) ? t.life.age(story.age) : t.life.aboutAge(story.age);
 }
 
 export function certaintyWord(story: LifeStory): string {
-  if (story.certainty === "none") return "not placed in time";
-  if (story.provenance === "said") return "said";
-  if (story.provenance === "extracted") return "from the words";
-  return "inferred";
+  if (story.certainty === "none") return t.life.certainty.none;
+  if (story.provenance === "said") return t.life.certainty.said;
+  if (story.provenance === "extracted") return t.life.certainty.extracted;
+  return t.life.certainty.inferred;
+}
+
+export function entityHref(entity: { id: string; kind: "person" | "place" }): string {
+  return entity.kind === "person" ? `/people/${entity.id}` : `/places/${entity.id}`;
 }
 
 const LIT_WINDOW = 5;
@@ -49,6 +62,21 @@ export function useMentionState(story: LifeStory | null) {
 export function parseMentionState(value: string) {
   const [lit = "", said = ""] = value.split("|");
   return { lit: new Set(lit.split(",").filter(Boolean)), said: new Set(said.split(",").filter(Boolean)) };
+}
+
+export function useProgress(story: LifeStory | null, steps = 60) {
+  return useAudioState((s) => {
+    if (!story || !isSameTrack(s.track, trackOf(story))) return 0;
+    return Math.round(((s.time - story.start) / Math.max(1, story.duration)) * steps) / steps;
+  });
+}
+
+export function usePlayingStory() {
+  return useAudioState((s) => (s.track?.storyId && s.playing ? s.track.storyId : null));
+}
+
+export function glyphWidth(duration: number) {
+  return Math.round(Math.min(104, Math.max(16, duration * 1.2)));
 }
 
 export function PlayLarge({ story }: { story: LifeStory }) {
@@ -79,52 +107,67 @@ type OpenProps = {
   onEntity: (id: string | null) => void;
   onClose: () => void;
   compact?: boolean;
+  headingLevel?: "h2" | "h3";
 };
 
-export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact }: OpenProps) {
+export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact, headingLevel = "h2" }: OpenProps) {
   const { play } = useAudio();
   const track = trackOf(story);
   const { lit, said } = parseMentionState(useMentionState(story));
   const traces = [...story.people.map((p) => ({ ...p, kind: "person" as const })), ...story.places.map((p) => ({ ...p, kind: "place" as const }))];
   const lang = story.language ?? undefined;
+  const Heading = headingLevel;
+  const active = traces.find((trace) => trace.id === activeEntity) ?? null;
+  const age = ageLabel(story);
 
   return (
     <div className="animate-rise">
       <Dock id={story.id} />
       <div className="flex items-start justify-between gap-6">
         <div className="min-w-0">
-          <p className={`text-[0.9375rem] ${story.certainty === "exact" || story.certainty === "range" ? "text-ink" : "text-ink-2 italic"}`}>
-            {whenLabel(story)} <span className="not-italic text-ink-2">· {certaintyWord(story)}</span>
+          <p className="text-[0.9375rem]">
+            <span className={isCertain(story) ? "text-ink" : "text-ink-2 italic"}>{whenLabel(story)}</span>
+            {age && <span className="text-ink"> · {age}</span>}
+            <span className="text-ink-2"> · {certaintyWord(story)}</span>
           </p>
-          <h2 className={`${compact ? "t-entry" : "t-heading"} mt-2`} lang={lang}>
+          <Heading className={`${compact ? "t-entry" : "t-heading"} mt-2`} lang={lang}>
             {story.title}
-          </h2>
+          </Heading>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="inline-flex min-h-10 shrink-0 items-center rounded-full px-3 text-[0.875rem] text-ink-2 hover:bg-ink/[0.05] hover:text-ink"
+          className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-[0.9375rem] text-ink-2 hover:bg-ink/[0.05] hover:text-ink"
         >
-          Close
+          {t.life.close}
         </button>
       </div>
 
       {story.quote && (
         <blockquote className={`mt-5 max-w-[40rem] font-serif italic ${compact ? "text-[1.125rem] leading-snug" : "text-[1.375rem] leading-[1.35]"}`} lang={lang}>
-          “{story.quote.text}”
+          <span aria-hidden="true">“</span>
+          {story.quote.text}
+          <span aria-hidden="true">”</span>
         </blockquote>
       )}
 
       <div className="mt-6 flex items-center gap-4">
         <PlayLarge story={story} />
-        <Scrubber track={track} peaks={story.peaks} label={t.story.seek} height={compact ? 36 : 44} markers={story.mentions.map((m) => ({ time: m.time, label: m.entityId }))} className="min-w-0 flex-1" />
+        <Scrubber
+          track={track}
+          peaks={story.peaks}
+          label={t.story.seek}
+          height={compact ? 36 : 44}
+          markers={story.mentions.map((m) => ({ time: m.time, label: traces.find((x) => x.id === m.entityId)?.name ?? "" }))}
+          className="min-w-0 flex-1"
+        />
         <TimeReadout track={track} className="hidden sm:inline" />
       </div>
 
       {traces.length > 0 && (
         <div className="mt-6">
-          <p className="t-small text-ink-2">Traces in this memory</p>
-          <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+          <p className="t-small text-ink-2">{t.life.traces}</p>
+          <ul className="mt-1 flex flex-wrap gap-x-5">
             {traces.map((trace) => {
               const isLit = lit.has(trace.id);
               const isActive = activeEntity === trace.id;
@@ -139,7 +182,9 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact }
                     type="button"
                     onClick={() => onEntity(isActive ? null : trace.id)}
                     aria-pressed={isActive}
-                    className={`min-h-9 rounded-sm text-[1rem] underline-offset-[0.22em] transition-colors ${isActive ? "text-ink underline decoration-ink" : "text-ink hover:underline decoration-rule-2"}`}
+                    className={`min-h-11 rounded-sm text-[1rem] underline-offset-[0.22em] transition-colors ${
+                      isActive ? "text-ink underline decoration-ink" : "text-ink decoration-rule-2 hover:underline"
+                    }`}
                     lang={lang}
                   >
                     {trace.name}
@@ -148,7 +193,7 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact }
                     <button
                       type="button"
                       onClick={() => play(track, Math.max(story.start, first.time - 1))}
-                      className="t-time text-ink-2 hover:text-ink"
+                      className="t-time inline-flex min-h-11 items-center text-ink-2 hover:text-ink"
                       aria-label={t.story.playMoment(formatClock(first.time - story.start))}
                     >
                       {formatClock(first.time - story.start)}
@@ -161,9 +206,16 @@ export function FragmentOpen({ story, activeEntity, onEntity, onClose, compact }
         </div>
       )}
 
-      <Link href={`/stories/${story.id}`} className="mt-6 inline-flex min-h-11 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink">
-        Read what was said <ArrowIcon size={14} />
-      </Link>
+      <div className="mt-3 flex flex-wrap gap-x-8">
+        <Link href={`/stories/${story.id}`} className="inline-flex min-h-11 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink">
+          {t.life.read} <ArrowIcon size={14} />
+        </Link>
+        {active && (
+          <Link href={entityHref(active)} className="inline-flex min-h-11 items-center gap-2 text-[0.9375rem] text-ink-2 hover:text-ink" lang={lang}>
+            {t.life.everyMoment(active.name)} <ArrowIcon size={14} />
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
@@ -173,63 +225,64 @@ export function TrailBar({
   activeEntity,
   onEntity,
   language,
-  limit = 10,
+  limit = 8,
+  kinds = ["person", "place"],
 }: {
-  entities: { id: string; name: string; kind: "person" | "place"; storyIds: string[] }[];
+  entities: LifeEntity[];
   activeEntity: string | null;
   onEntity: (id: string | null) => void;
   language: string | null;
   limit?: number;
+  kinds?: ("person" | "place")[];
 }) {
-  const people = entities.filter((e) => e.kind === "person" && e.storyIds.length > 0).slice(0, limit);
-  const places = entities.filter((e) => e.kind === "place" && e.storyIds.length > 0).slice(0, limit);
-  const group = (title: string, list: typeof people) => (
-    <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-      <span className="t-kicker w-16 shrink-0">{title}</span>
-      {list.map((e) => (
-        <button
-          key={e.id}
-          type="button"
-          onClick={() => onEntity(activeEntity === e.id ? null : e.id)}
-          aria-pressed={activeEntity === e.id}
-          lang={language ?? undefined}
-          className={`min-h-9 font-serif text-[1.0625rem] underline-offset-[0.22em] transition-colors ${
-            activeEntity === e.id ? "text-ink underline decoration-ink" : activeEntity ? "text-ink-3 hover:text-ink" : "text-ink hover:underline decoration-rule-2"
-          }`}
-        >
-          {e.name}
-          <span className="t-time ml-1 text-ink-3">{e.storyIds.length}</span>
-        </button>
-      ))}
-    </div>
-  );
-  return (
-    <div className="space-y-1.5">
-      {group("People", people)}
-      {group("Places", places)}
-    </div>
-  );
+  const group = (kind: "person" | "place") => {
+    const list = entities.filter((e) => e.kind === kind).slice(0, limit);
+    if (!list.length) return null;
+    return (
+      <div key={kind} className="flex flex-wrap items-baseline gap-x-4">
+        <span className="t-kicker w-16 shrink-0">{kind === "person" ? t.nav.people : t.nav.places}</span>
+        {list.map((e) => (
+          <button
+            key={e.id}
+            type="button"
+            onClick={() => onEntity(activeEntity === e.id ? null : e.id)}
+            aria-pressed={activeEntity === e.id}
+            lang={language ?? undefined}
+            className={`min-h-11 font-serif text-[1.0625rem] underline-offset-[0.22em] transition-colors ${
+              activeEntity === e.id ? "text-ink underline decoration-ink" : activeEntity ? "text-ink-3 hover:text-ink" : "text-ink decoration-rule-2 hover:underline"
+            }`}
+          >
+            {e.name}
+            <span className="t-time ml-1 text-ink-3">{e.storyIds.length}</span>
+          </button>
+        ))}
+      </div>
+    );
+  };
+  return <div>{kinds.map(group)}</div>;
 }
 
-const GLYPH_BAR = 2;
-const GLYPH_GAP = 1.5;
-
-export function Glyph({ story, width, height, progress }: { story: LifeStory; width: number; height: number; progress: number }) {
-  const count = Math.max(6, Math.floor(width / (GLYPH_BAR + GLYPH_GAP)));
-  const step = story.peaks.length / count;
-  const bars = Array.from({ length: count }, (_, i) => {
-    let max = 0;
-    for (let k = Math.floor(i * step); k < Math.floor((i + 1) * step) && k < story.peaks.length; k++) max = Math.max(max, story.peaks[k]);
-    return max;
-  });
-  return (
-    <svg width={width} height={height} viewBox={`0 0 ${count * (GLYPH_BAR + GLYPH_GAP)} ${height}`} preserveAspectRatio="none" aria-hidden="true" className="block">
-      {bars.map((p, i) => {
-        const h = Math.max(2, p * height);
-        const played = progress > 0 && i / count < progress;
-        return <rect key={i} x={i * (GLYPH_BAR + GLYPH_GAP)} y={height - h} width={GLYPH_BAR} height={h} rx={1} className={played ? "fill-voice" : "fill-current"} />;
-      })}
-    </svg>
-  );
+export function lifeSpan(life: Life) {
+  const years = life.stories.filter((s) => s.from !== null).map((s) => s.from!);
+  const start = life.birthYear ?? (years.length ? Math.min(...years) - 2 : life.now - 10);
+  return { start, end: life.now };
 }
 
+export function gapsOf(life: Life, start: number, end: number, minimum = 8) {
+  const reach = new Set<number>();
+  for (const s of life.stories) {
+    if (s.year === null) continue;
+    for (let y = Math.round(s.from ?? s.year); y <= Math.round(s.to ?? s.year); y++) reach.add(y);
+  }
+  const gaps: { from: number; to: number }[] = [];
+  let open: number | null = null;
+  for (let y = start; y <= end; y++) {
+    if (!reach.has(y)) open ??= y;
+    else if (open !== null) {
+      if (y - open >= minimum) gaps.push({ from: open, to: y - 1 });
+      open = null;
+    }
+  }
+  if (open !== null && end - open + 1 >= minimum) gaps.push({ from: open, to: end });
+  return gaps;
+}

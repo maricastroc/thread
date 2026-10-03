@@ -61,22 +61,25 @@ export const audioSrc = (recordingId: string) => `/api/recordings/${recordingId}
 
 export function AudioProvider({ narrator, children }: { narrator: string | null; children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const store = useMemo(createStore, []);
+  const store = useMemo(() => createStore(), []);
   const frame = useRef<number | null>(null);
   const pendingSeek = useRef<number | null>(null);
 
-  const tick = useCallback(() => {
-    const audio = audioRef.current;
-    const { track } = store.get();
-    if (!audio || !track) return;
-    const time = audio.currentTime;
-    if (time >= track.end - 0.04) {
-      audio.pause();
-      store.set({ time: track.end, playing: false, ended: true });
-      return;
-    }
-    store.set({ time });
-    frame.current = requestAnimationFrame(tick);
+  const tick = useRef<() => void>(() => undefined);
+  useEffect(() => {
+    tick.current = () => {
+      const audio = audioRef.current;
+      const { track } = store.get();
+      if (!audio || !track) return;
+      const time = audio.currentTime;
+      if (time >= track.end - 0.04) {
+        audio.pause();
+        store.set({ time: track.end, playing: false, ended: true });
+        return;
+      }
+      store.set({ time });
+      frame.current = requestAnimationFrame(() => tick.current());
+    };
   }, [store]);
 
   const stopTicking = () => {
@@ -149,7 +152,7 @@ export function AudioProvider({ narrator, children }: { narrator: string | null;
     const onPlay = () => {
       store.set({ playing: true, ended: false });
       stopTicking();
-      frame.current = requestAnimationFrame(tick);
+      frame.current = requestAnimationFrame(() => tick.current());
     };
     const onPause = () => {
       stopTicking();
@@ -181,7 +184,7 @@ export function AudioProvider({ narrator, children }: { narrator: string | null;
       audio.removeEventListener("canplay", onPlaying);
       audio.removeEventListener("error", onError);
     };
-  }, [store, tick]);
+  }, [store]);
 
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;

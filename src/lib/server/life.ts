@@ -1,15 +1,47 @@
 import "server-only";
 import type { Certainty, Life, LifeEntity, LifeMention, LifeStory } from "@/lib/life";
 import type { Vault } from "@/lib/types";
-import { factsForStories, listRecordings, listStories } from "./repo";
+import { PEAKS_PER_SECOND } from "./audio";
+import { factsForStories, getPeaks, listRecordings, listStories } from "./repo";
 import { peaksForStories } from "./timeline";
 
 const APPROXIMATE_SPREAD = 2;
+const VOICE_THRESHOLD = 0.2;
+const MERGE_PAUSE = 0.35;
+const MIN_RUN = 0.2;
+
+function rhythmOf(peaks: Uint8Array | null, start: number, end: number): [number, number][] {
+  if (!peaks?.length || end <= start) return [];
+  const from = Math.floor(start * PEAKS_PER_SECOND);
+  const to = Math.min(peaks.length, Math.ceil(end * PEAKS_PER_SECOND));
+  const runs: [number, number][] = [];
+  let open: number | null = null;
+  for (let i = from; i < to; i++) {
+    const active = peaks[i] / 255 >= VOICE_THRESHOLD;
+    if (active && open === null) open = i;
+    if (!active && open !== null) {
+      runs.push([open / PEAKS_PER_SECOND, i / PEAKS_PER_SECOND]);
+      open = null;
+    }
+  }
+  if (open !== null) runs.push([open / PEAKS_PER_SECOND, to / PEAKS_PER_SECOND]);
+  const merged: [number, number][] = [];
+  for (const run of runs) {
+    const last = merged[merged.length - 1];
+    if (last && run[0] - last[1] < MERGE_PAUSE) last[1] = run[1];
+    else merged.push([...run]);
+  }
+  const span = end - start;
+  return merged
+    .filter(([a, b]) => b - a >= MIN_RUN)
+    .map(([a, b]) => [Math.max(0, (a - start) / span), Math.min(1, (b - start) / span)] as [number, number]);
+}
 
 export function loadLife(vault: Vault): Life {
   const stories = listStories(vault.birthYear);
   const facts = factsForStories(stories.map((s) => s.id));
   const peaks = peaksForStories(stories, 64);
+  const rawPeaks = new Map<string, Uint8Array | null>();
   const entities = new Map<string, LifeEntity>();
 
   const lifeStories: LifeStory[] = stories.map((story) => {
@@ -79,7 +111,12 @@ export function loadLife(vault: Vault): Life {
       from,
       to,
       quote: story.quote,
+      age: vault.birthYear && year !== null && year >= vault.birthYear ? year - vault.birthYear : null,
       peaks: peaks.get(story.id) ?? [],
+      rhythm: (() => {
+        if (!rawPeaks.has(story.recordingId)) rawPeaks.set(story.recordingId, getPeaks(story.recordingId));
+        return rhythmOf(rawPeaks.get(story.recordingId) ?? null, story.start, story.end);
+      })(),
       people: [...people.entries()].map(([id, name]) => ({ id, name })),
       places: [...places.entries()].map(([id, name]) => ({ id, name })),
       themes: story.themes,

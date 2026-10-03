@@ -21,7 +21,9 @@ export type LifeStory = {
   from: number | null;
   to: number | null;
   quote: Quote | null;
+  age: number | null;
   peaks: number[];
+  rhythm: [number, number][];
   people: { id: string; name: string }[];
   places: { id: string; name: string }[];
   themes: Theme[];

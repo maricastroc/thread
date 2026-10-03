@@ -29,6 +29,7 @@ export function LevelMeter({ analyser, active, className }: Props) {
     let frame = 0;
     let last = 0;
     const style = getComputedStyle(canvas);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw);
@@ -54,6 +55,19 @@ export function LevelMeter({ analyser, active, className }: Props) {
       context.clearRect(0, 0, width, height);
       const color = style.getPropertyValue("--meter") || style.color;
       const values = levels.current;
+      if (reduce) {
+        const level = values[values.length - 1] ?? 0;
+        context.fillStyle = color;
+        context.globalAlpha = 0.2;
+        context.beginPath();
+        context.roundRect(0, height / 2 - 3, width, 6, 3);
+        context.fill();
+        context.globalAlpha = 1;
+        context.beginPath();
+        context.roundRect(0, height / 2 - 3, Math.max(6, level * width), 6, 3);
+        context.fill();
+        return;
+      }
       for (let i = 0; i < values.length; i++) {
         const x = width - (values.length - i) * (BAR + GAP);
         const h = Math.max(2, values[i] * height);
