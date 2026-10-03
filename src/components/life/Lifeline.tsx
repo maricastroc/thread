@@ -519,8 +519,9 @@ function Horizontal(props: Shared) {
       const top = frame.current?.getBoundingClientRect().top;
       if (!box || top === undefined || box.width === 0) return;
       const overflow = box.top + Math.min(box.height, 340) - window.innerHeight + 24;
-      const by = Math.min(overflow, top - 12);
-      if (by > 0) window.scrollBy({ top: by, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      if (overflow <= 0) return;
+      const by = Math.max(overflow, top - 24);
+      window.scrollBy({ top: by, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     }, 540);
     return () => window.clearTimeout(timer);
   }, [openId]);

@@ -35,7 +35,7 @@ export function Bars({ story, width, height, progress = 0, heard, rest = false }
   return (
     <svg width={width} height={height} viewBox={`0 0 ${count * (bar + gap)} ${height}`} preserveAspectRatio="none" aria-hidden="true" className="block">
       {values.map((p, i) => {
-        const h = Math.max(2, p * height);
+        const h = Math.round(Math.max(2, p * height) * 100) / 100;
         const tone = progress > 0 && i / count < progress ? "fill-voice" : !rest ? "fill-current" : heardAt(heard, (i + 0.5) / count) ? "fill-wave-heard" : "fill-wave";
         return <rect key={i} x={i * (bar + gap)} y={height - h} width={bar} height={h} rx={1} className={tone} />;
       })}
