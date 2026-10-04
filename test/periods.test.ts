@@ -146,3 +146,41 @@ test("no evidence means no date: nothing is filled in with an approximate year",
   assert.equal(rejected[0].kind, "time");
   assert.equal(yearOf(periodCarrier(1948)(facts).facts), null);
 });
+
+test("the refusal to carry an inferred year is kept even when the story's own words also give its stage of life", () => {
+  const stated: VerifiedFact = {
+    kind: "life_stage",
+    value: "adulthood",
+    detail: null,
+    yearFrom: null,
+    yearTo: null,
+    provenance: "extracted",
+    primary: true,
+    seg: 0,
+    evidence: "quando eu já era adulta",
+    start: 0,
+    end: 1,
+    note: null,
+  };
+  const carry = periodCarrier(1948);
+  carry([said(1978)]);
+  carry([]);
+  const third = carry([stated]);
+  assert.equal(yearOf(third.facts), null);
+  assert.deepEqual(third.facts, [stated]);
+  assert.equal(third.rejected.length, 1);
+  assert.match(third.rejected[0].reason, /only by inference/);
+});
+
+test("refusals are kept only where they explain something: a story with its own year needs none, and nothing cascades", () => {
+  const carry = periodCarrier(1948);
+  carry([said(1978)]);
+  carry([]);
+  assert.deepEqual(carry([said(1985)]).rejected, []);
+
+  const again = periodCarrier(1948);
+  again([said(1978)]);
+  again([]);
+  assert.equal(again([]).rejected.length, 1);
+  assert.deepEqual(again([]).rejected, []);
+});

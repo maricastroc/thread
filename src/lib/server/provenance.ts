@@ -125,8 +125,6 @@ const CARRIED = "Told right after";
 
 export function carryPeriod(facts: VerifiedFact[], previous: VerifiedFact | null, birthYear: number | null): Verified {
   if (!previous?.yearFrom || facts.some((f) => f.kind === "time" && f.yearFrom)) return { facts, rejected: [] };
-  const stage = facts.find((f) => f.kind === "life_stage");
-  if (stage && stage.provenance !== "inferred") return { facts, rejected: [] };
   if (previous.provenance === "inferred") {
     return {
       facts,
@@ -135,11 +133,13 @@ export function carryPeriod(facts: VerifiedFact[], previous: VerifiedFact | null
           kind: "time",
           value: previous.value,
           mention: null,
-          reason: "The story told right before it is dated only by inference, and an inference is never the basis for another. Nothing in this story says when it happened.",
+          reason: "The story told right before it is dated only by inference, and an inference is never the basis for another. No year is said in this story.",
         },
       ],
     };
   }
+  const stage = facts.find((f) => f.kind === "life_stage");
+  if (stage && stage.provenance !== "inferred") return { facts, rejected: [] };
   const year = previous.yearFrom;
   const result = facts.filter((f) => f.kind !== "life_stage");
   result.push({
