@@ -4,12 +4,20 @@ A life archive for one person, built from recordings.
 
 Thread keeps one person's stories. You record or import conversations, and Thread builds that person's life from what was said: the stories, the people and places in them, and where each one sits in their life. It follows one rule: **the AI never replaces the memory.** The recording is the artifact. Search never answers with generated text; it takes you to the moment in the recording and plays the voice from there.
 
+![A memory playing on Kiara's lifeline: when Graça is named, threads reach the other stories she appears in](docs/post/02-playback.png)
+
+*A memory playing on the life: each name lights up at the second it is said, and threads reach every other moment where that person appears.*
+
 An archive has four layers, and each one leads back to the one before:
 
 - **Recordings** are the evidence: every file added to the archive, kept exactly as it was received, even when nothing could be extracted from it.
 - **Stories** are the interpretation: the separate memories found in a recording. A recording can hold several, one, or none.
 - **The life** is the representation: the stories placed on the person's lifeline, connected through the people and places they share.
 - **People and places** are the entities those stories mention, each one tied to the words that support it.
+
+![A recording page: the whole waveform, with each story found in it marked as a numbered span and listed below](docs/post/03-recording.png)
+
+*A recording and the three stories found in it, laid over the waveform they came from.*
 
 This version keeps one person per installation. Several archives side by side would be a layer above this one.
 
@@ -38,6 +46,10 @@ Gemma works as an archivist rather than a chatbot. It returns structured JSON (c
 - **said**: the words are in the recording.
 - **from the words**: taken from what was said, like `1978` from “setenta e oito”.
 - **[inferred]**: deduced by the archive, never presented as memory. Brackets follow the cataloguing convention for information supplied by the archivist.
+
+![A story's transcript with its notes: Fortaleza said at 0:02, 1978 from “78” at 0:04, José said at 0:05](docs/post/04-story.png)
+
+*Every fact points back to its words and the second they were said.*
 
 If Gemma cites words that aren't in the transcript, the claim is dropped. Each fact links to the segment, the second, and the audio. See [docs/design.md](docs/design.md) for the full design and [docs/writeup-notes.md](docs/writeup-notes.md) for the reasoning behind each decision.
 
