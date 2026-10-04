@@ -15,6 +15,8 @@ This version keeps one person per installation. Several archives side by side wo
 
 Everything runs on your machine. The recordings, transcripts and search index never leave it.
 
+The hosted version is a read-only demo of a preprocessed archive. Thread is designed to run locally, where recordings are transcribed and interpreted on the user's machine using Whisper and Gemma.
+
 ```
 record ──► preserve ──► discover ──► listen
            ffmpeg        whisper.cpp   the original voice,
