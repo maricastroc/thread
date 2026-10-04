@@ -1,4 +1,5 @@
 import "server-only";
+import type { LifeStage } from "@/lib/types";
 import { normalize, tokens } from "./text";
 
 export const kinship = new Set(
@@ -40,6 +41,56 @@ const firstPerson = new Set(["meu", "minha", "meus", "minhas", "nosso", "nossa",
 export function isKinshipName(name: string): boolean {
   const words = tokens(name).filter((w) => !leadingWords.has(w));
   return words.length > 0 && kinship.has(words[0]);
+}
+
+const stageNames: Record<string, LifeStage> = {
+  crianca: "childhood", menina: "childhood", menino: "childhood", pequena: "childhood", pequeno: "childhood",
+  pequenininha: "childhood", pequenininho: "childhood", garotinha: "childhood", garotinho: "childhood", nenem: "childhood",
+  bebe: "childhood", infancia: "childhood", meninice: "childhood",
+  mocinha: "youth", mocinho: "youth", moca: "youth", rapaz: "youth", rapazinho: "youth", jovem: "youth",
+  adolescente: "youth", adolescencia: "youth", juventude: "youth", mocidade: "youth",
+  adulta: "adulthood", adulto: "adulthood", "idade adulta": "adulthood", "mulher feita": "adulthood", "homem feito": "adulthood",
+  velha: "later_life", velho: "later_life", idosa: "later_life", idoso: "later_life", velhinha: "later_life",
+  velhinho: "later_life", velhice: "later_life", "terceira idade": "later_life",
+  child: "childhood", kid: "childhood", baby: "childhood", toddler: "childhood", "little girl": "childhood",
+  "little boy": "childhood", childhood: "childhood",
+  teenager: "youth", teen: "youth", teens: "youth", "teenage years": "youth", adolescent: "youth", adolescence: "youth",
+  youth: "youth", "young woman": "youth", "young man": "youth",
+  adult: "adulthood", adulthood: "adulthood", "grown up": "adulthood", "grown woman": "adulthood", "grown man": "adulthood",
+  elderly: "later_life", "old woman": "later_life", "old man": "later_life", "old age": "later_life",
+  nina: "childhood", nino: "childhood", ninez: "childhood", chiquita: "childhood", chiquito: "childhood",
+  muchacha: "youth", muchacho: "youth", jovencita: "youth", jovencito: "youth", joven: "youth", juventud: "youth",
+  vieja: "later_life", viejo: "later_life", anciana: "later_life", anciano: "later_life", vejez: "later_life",
+};
+
+const STAGE = `(?<stage>${Object.keys(stageNames)
+  .sort((a, b) => b.length - a.length)
+  .join("|")})`;
+
+const namedStagePatterns = [
+  `\\beu (?:(?:ja|ainda|so) )?(?:era|estava|tava|fui|ficava|fiquei|virei) (?:(?:uma|um|bem|muito|ainda|ja|so) )*${STAGE}\\b`,
+  `\\bminha (?<stage>infancia|meninice|adolescencia|juventude|mocidade|velhice|idade adulta)\\b`,
+  `\\b(?:quando|na|no|desde a|durante a|de) (?:(?:ja|ainda) )?(?:(?:era|estava|tava|fui) )?(?:(?:uma|um|bem|muito) )*${STAGE} eu\\b`,
+  `\\bi (?:was|were|became) (?:(?:still|just|already|only|a|an|very|quite) )*${STAGE}\\b(?! s\\b)`,
+  `\\bmy (?<stage>childhood|youth|teens|teenage years|adolescence|adulthood|old age)\\b`,
+  `\\b(?:as a|as an|when a) ${STAGE} i\\b`,
+  `\\byo (?:(?:ya|todavia|aun) )?(?:era|estaba|fui) (?:(?:una|un|muy|todavia|ya) )*${STAGE}\\b`,
+  `\\bmi (?<stage>infancia|ninez|adolescencia|juventud|vejez)\\b`,
+  `\\b(?:cuando|de|en la) (?:(?:ya|todavia) )?(?:(?:era|estaba) )?(?:(?:una|un|muy) )*${STAGE} yo\\b`,
+].map((source) => new RegExp(source, "g"));
+
+export function findNamedStages(text: string): { value: LifeStage; phrase: string; index: number }[] {
+  const plain = normalize(text);
+  const found: { value: LifeStage; phrase: string; index: number }[] = [];
+  for (const pattern of namedStagePatterns) {
+    pattern.lastIndex = 0;
+    for (const match of plain.matchAll(pattern)) {
+      const value = stageNames[match.groups?.stage ?? ""];
+      const index = match.index ?? 0;
+      if (value && !found.some((f) => index < f.index + f.phrase.length && f.index < index + match[0].length)) found.push({ value, phrase: match[0], index });
+    }
+  }
+  return found.sort((a, b) => a.index - b.index);
 }
 
 export function namesInstitution(name: string): boolean {

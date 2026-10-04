@@ -1,9 +1,9 @@
 import "server-only";
 import type { FactKind, LifeStage, Provenance, Segment } from "@/lib/types";
 import type { StoryAnnotation } from "./interpreter/types";
-import { findFirstPersonAge, isApproximate, statesYear } from "./numbers";
+import { findAges, findFirstPersonAge, isApproximate, statesYear } from "./numbers";
 import { containsPhrase, locateInSegment, normalize, tokens } from "./text";
-import { hasProperWord, kinship, leadingWords, mentionsOwnKin, namesInstitution, ownedKin, properWords } from "./words";
+import { findNamedStages, hasProperWord, kinship, leadingWords, mentionsOwnKin, namesInstitution, ownedKin, properWords } from "./words";
 
 export type VerifiedFact = {
   kind: FactKind;
@@ -98,6 +98,23 @@ function stageForAge(age: number): LifeStage {
   if (age <= 25) return "youth";
   if (age <= 59) return "adulthood";
   return "later_life";
+}
+
+type StatedStage = Evidence & { value: LifeStage; note: string | null };
+
+function statedStages(inStory: Segment[]): StatedStage[] {
+  const found: StatedStage[] = [];
+  for (const segment of inStory) {
+    const ages = findAges(segment.text)
+      .filter((a) => a.firstPerson)
+      .map((a) => ({ value: stageForAge(a.age), phrase: a.phrase, note: `Said as an age, ${a.age}.` }));
+    const named = findNamedStages(segment.text).map((s) => ({ value: s.value, phrase: s.phrase, note: null }));
+    for (const item of [...ages, ...named]) {
+      const hit = locateInSegment(segment, item.phrase);
+      found.push({ value: item.value, note: item.note, seg: segment.idx, start: hit?.start ?? segment.start, end: hit?.end ?? segment.end, evidence: hit?.evidence ?? item.phrase });
+    }
+  }
+  return found.sort((a, b) => a.start - b.start);
 }
 
 export function statedPeriod(facts: VerifiedFact[]): VerifiedFact | null {
@@ -400,6 +417,30 @@ export function verify(
     }
   }
 
+  const proposed = annotation.lifeStage;
+  const stated = statedStages(inStory);
+  if (stated.length) {
+    const chosen = stated.find((s) => s.value === proposed?.value) ?? stated[0];
+    facts.push({
+      kind: "life_stage",
+      value: chosen.value,
+      detail: null,
+      yearFrom: null,
+      yearTo: null,
+      provenance: "extracted",
+      primary: true,
+      seg: chosen.seg,
+      evidence: chosen.evidence,
+      start: chosen.start,
+      end: chosen.end,
+      note: chosen.note,
+    });
+    if (proposed && proposed.value !== chosen.value) {
+      reject("life_stage", proposed.value, proposed.mention, `The words say “${chosen.evidence}”, which is another stage of life.`);
+    }
+    return { facts, rejected };
+  }
+
   const anchor = statedPeriod(facts);
   if (anchor && birthYear && anchor.yearFrom! >= birthYear) {
     const age = anchor.yearFrom! - birthYear;
@@ -420,24 +461,23 @@ export function verify(
     return { facts, rejected };
   }
 
-  const stage = annotation.lifeStage;
-  if (stage) {
-    const evidence =
-      stage.explicit && stage.mention.trim() ? findEvidence(segments, range.from, range.to, stage.segment, [stage.mention]) : null;
-    facts.push({
-      kind: "life_stage",
-      value: stage.value satisfies LifeStage,
-      detail: null,
-      yearFrom: null,
-      yearTo: null,
-      provenance: evidence ? "extracted" : "inferred",
-      primary: true,
-      seg: evidence?.seg ?? null,
-      evidence: evidence?.evidence ?? null,
-      start: evidence?.start ?? null,
-      end: evidence?.end ?? null,
-      note: null,
-    });
+  if (proposed) {
+    const evidence = proposed.mention.trim() ? findEvidence(segments, range.from, range.to, proposed.segment, [proposed.mention]) : null;
+    if (evidence) {
+      facts.push({
+        kind: "life_stage",
+        value: proposed.value satisfies LifeStage,
+        detail: null,
+        yearFrom: null,
+        yearTo: null,
+        provenance: "inferred",
+        primary: true,
+        ...evidence,
+        note: "Inferred from these words, which don't name a stage of life.",
+      });
+    } else {
+      reject("life_stage", proposed.value, proposed.mention, "No words in this story support this stage of life.");
+    }
   }
 
   return { facts, rejected };
