@@ -134,6 +134,7 @@ The processing screen is designed around this. You see the waveform fill as the 
 - Long sessions are slow to organize: annotation runs story by story at ~30 s each on E4B, so a 30-minute session with 35 stories takes ~19 minutes. Transcription stays fast (~9× real time). Next step: annotate stories in parallel (Ollama `OLLAMA_NUM_PARALLEL`), or use E2B for long sessions.
 - On a 16 GB laptop, having Gemma (4.3 GB resident) loaded while Whisper runs pushed the machine into swap. The pipeline now unloads Gemma before transcribing and reloads it for the organizing step.
 
+- Themes are not verified. They are labels that no code checks against the words, and some are wrong: in the human reading of Fortaleza, the arrival by the sea was tagged "music" and the sewing story "travel". People, places and years are verified; themes are not yet.
 - E4B is not deterministic across prompt changes: the same recording split into 1 or 4 stories depending on the question asked before it. The verification layer keeps facts honest, but segmentation still varies.
 - A misheard name propagates. Whisper heard "Quixadá" as "Iquixadá" in the synthetic demo voice, and since known names feed Whisper's prompt, an error can be reinforced. Next step: let the family correct a name once and feed the correction back.
 - No speaker diarization. The interviewer's questions are part of the transcript.
