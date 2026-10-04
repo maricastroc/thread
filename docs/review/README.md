@@ -5,7 +5,7 @@ Captures of the demo at 1440 × 900 (mobile at 390 × 844), each in the light an
 - `review-sheet.jpg`: the ten key screens on one page.
 - `light-and-dark.jpg`: the same states side by side in both themes.
 
-Playback uses "Como conhecer o avô em festa" (c. 1966): at 0:19 "José" is being said and his thread reaches 1978, 1995 and 2010; at 0:48 "Graça" reaches back to 1956 and 1958 while Quixadá and José stay as traces and Antônio is not said yet.
+Playback uses "O encontro com José no São João" (c. 1966): at 0:19 "José" is being said and his thread reaches 1978, 1995 and 2010; at 0:48 "Graça" reaches back to 1956 and 1958 while Quixadá and José stay as traces and Antônio is not said yet.
 
 The empty archive, the setup and the zero-story recording come from separate data folders, so the demo archive was not changed: an empty archive for the demo's person, a fresh install, and a copy of the demo with a microphone test added.
 
