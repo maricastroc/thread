@@ -60,6 +60,8 @@ Gemma returns, for each claim, `{ segment, mention, explicit, … }`, with the e
    - Real catch: Gemma filed "Colégio das Freiras" as a person in the human reading of Fortaleza.
 7. A stage of life counts as stated only when the narrator says an age ("eu tinha 8 anos", "I was fifteen", "yo tenía 70 años") or names the stage as their own ("quando eu era criança", "na minha adolescência", "as a child, I", "en mi juventud"). An activity that suggests a stage ("comecei a trabalhar", "casei", "tive meu primeiro filho") keeps the model's stage only as inferred, citing those words. A stage with no words behind it is refused, and so is one the words contradict.
    - Real catch: Gemma claimed "eu comecei a costurar pra fora" stated adulthood, and the verifier, which only checked that the words existed, labelled it from the words.
+8. Interpreting a recording again first forgets the people and places that only its previous interpretation supported, so an old spelling can't lend its name to what is said now. People and places supported by any other story stay.
+   - Real catch: "Iquixadá", from the transcript of the synthetic voice, kept absorbing the human reading's "Quixadá" and showed as said.
 
 The UI borrows the cataloguing convention for information supplied by the archivist: **brackets**. `[c. 1966]` is inferred; `1958` is not. Nothing depends on colour alone. Hollow dots mark inferred dates on the timeline, solid dots dated ones.
 

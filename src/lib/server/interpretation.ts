@@ -95,6 +95,7 @@ export function clearInterpretation(recordingId: string): PreviousStory[] {
   transaction(() => {
     db().prepare("DELETE FROM chunks WHERE recording_id = ?").run(recordingId);
     db().prepare("DELETE FROM stories WHERE recording_id = ?").run(recordingId);
+    deleteOrphanEntities();
   });
   return previous;
 }
