@@ -90,7 +90,7 @@ Playing a memory used to light a few arcs for five seconds and forget them. Now 
 - When a name is spoken, it appears above the waveform at that second, and threads drop from that exact point to every other moment of the life where the same person or place appears. Those moments come back from the background.
 - When time is spoken and the words establish it, it lands on the axis. "Eu tinha 18 anos" marks *age 18* and the stage *youth*. "42 anos tocando" shows as a length at the story's own place, not as a span, and "dois anos depois" is refused because the 42 years sit between it and the year: a person can tell, the parser can't, so nothing is invented.
 - Nothing fades. The name being said takes the voice colour and draws all its threads; when the next name arrives, the previous one condenses to a single faint thread to its nearest moment, and its other moments stay highlighted. Detail follows attention, and the trace stays.
-- At the end the trace remains, and the memory says what it touched: "This memory reaches from 1954 to 2010, through 8 other moments", plus the open question it left ("What was the church where the wedding took place?").
+- At the end the trace remains, and the memory says what it touched: "This memory reaches from 1954 to 2010, through 7 other moments", plus the questions it left ("What was the atmosphere like at the festa de São João?").
 
 Everything is derived from timestamps that already exist. Nothing is generated during playback, and ten seconds with no new name or date show only the waveform moving. Positions of labels are packed from the whole story before playback starts, so nothing jumps when a new name appears.
 
