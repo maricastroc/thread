@@ -88,7 +88,7 @@ npm run dev
 
 Open http://localhost:3000, write whose stories you are keeping, and record.
 
-To try the archive without recording, generate three short synthetic stories with the macOS `say` voice and import them:
+To try the archive without recording, import the demo's four stories from `demo/audio/`. When that folder is empty, the scripts in `demo/roteiros/` are first turned into speech with the macOS `say` voice:
 
 ```bash
 npm run demo
@@ -140,7 +140,7 @@ The results before and after the generalization work, case by case, are in [`doc
 
 ## The online demo
 
-The online version is a read-only copy of the demo archive, so anyone can listen to it without installing anything. It runs from `demo/archive/`: the database and the audio of the demo's four recordings, kept in the repository. On Vercel, or with `COFRE_READ_ONLY=1`, Thread opens a working copy of that folder and refuses every change: nothing can be recorded, imported, renamed or removed, and search works by words only, because the models are not there. Recording and processing need Thread running on your own computer.
+The online version is a read-only copy of the demo archive, so anyone can listen to it without installing anything. It runs from `demo/archive/`: the database and the audio of the demo's four recordings, kept in the repository. The recordings are a real voice, the author's, reading Kiara's memories from the scripts in `demo/roteiros/`. On Vercel, or with `COFRE_READ_ONLY=1`, Thread opens a working copy of that folder and refuses every change: nothing can be recorded, imported, renamed or removed, and search works by words only, because the models are not there. Recording and processing need Thread running on your own computer.
 
 After reprocessing the demo locally, refresh the copy and try it the way it runs online:
 

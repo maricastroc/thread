@@ -63,7 +63,7 @@ Gemma returns, for each claim, `{ segment, mention, explicit, … }`, with the e
 8. A person or place counts as said only when its name is said as one expression. A name the model builds from words said apart is refused; when the model adds words to a short name that was said, only the words actually said are kept ("Maria" from "a Maria", never "Maria Silva"). A word in lowercase, or capitalized only because it starts a sentence, counts as a name only when it is written as a name elsewhere in the recording or the archive already knows it; otherwise it is refused as a common word.
    - Real catch: Gemma proposed a place "Bodega do pai" for "na bodega" and "O meu pai".
 9. Interpreting a recording again first forgets the people and places that only its previous interpretation supported, so an old spelling can't lend its name to what is said now. People and places supported by any other story stay.
-   - Real catch: "Iquixadá", from the transcript of the synthetic voice, kept absorbing the human reading's "Quixadá" and showed as said.
+   - Real catch: "Iquixadá", from the transcript of an early synthetic version of the demo, kept absorbing the "Quixadá" of my own reading and showed as said.
 
 The UI borrows the cataloguing convention for information supplied by the archivist: **brackets**. `[c. 1966]` is inferred; `1958` is not. Nothing depends on colour alone. Hollow dots mark inferred dates on the timeline, solid dots dated ones.
 
@@ -144,10 +144,10 @@ The processing screen is designed around this. You see the waveform fill as the 
 - Some interpretation choices stay as the model made them. In Quixadá, the drought and the credit at the shop became one story, and São João's title, "Como conhecer o avô em festa", reads like an instruction. Titles, like themes, are labels no code checks. Annotations also vary between runs: when Quixadá was interpreted again, Gemma no longer proposed Ceará or the pedra da galinha Choca, and wrote the narrator's mother as "MÃE", since names of three letters keep the model's capitals.
 - Themes are not verified. They are labels that no code checks against the words, and some are wrong: in the human reading of Fortaleza, the arrival by the sea was tagged "music" and the sewing story "travel". People, places and years are verified; themes are not yet.
 - E4B is not deterministic across prompt changes: the same recording split into 1 or 4 stories depending on the question asked before it. The verification layer keeps facts honest, but segmentation still varies.
-- A misheard name propagates. Whisper heard "Quixadá" as "Iquixadá" in the synthetic demo voice, and since known names feed Whisper's prompt, an error can be reinforced. Next step: let the family correct a name once and feed the correction back.
+- A misheard name propagates. Whisper heard "Quixadá" as "Iquixadá" in an early synthetic version of the demo, and since known names feed Whisper's prompt, an error can be reinforced. Next step: let the family correct a name once and feed the correction back.
 - No speaker diarization. The interviewer's questions are part of the transcript.
 - Phone recording over the local network needs HTTPS (secure context for the microphone).
-- The demo data uses a synthetic macOS voice (Luciana). The real thing is a person.
+- The demo's four recordings are my own voice, reading Kiara's memories from the scripts in `demo/roteiros/`. Read speech is cleaner than a conversation: the pipeline has not yet met an older narrator speaking freely, with hesitations, interruptions and a relative's questions in the middle. The second and dense archives in `fixtures/` use synthetic macOS voices.
 
 ## Feedback from the real person
 
