@@ -527,7 +527,7 @@ function Horizontal(props: Shared) {
   }, [openId]);
 
   const { start, end } = lifeSpan(life);
-  const x = (year: number) => ((year - start) / (end - start)) * width;
+  const x = (year: number) => ((year - start) / (end + 1 - start)) * width;
   const center = (year: number) => x(year + 0.5);
   const dated = life.stories.filter((s) => s.year !== null);
   const undated = life.stories.filter((s) => s.year === null);
