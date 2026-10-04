@@ -1,11 +1,11 @@
 # Visual review
 
-Captures of the demo at 1440 × 900 (mobile at 390 × 844), each in the light and the dark theme, taken while the demo's person was still called Lúcia; the demo is now Kiara's. Every `-light` / `-dark` pair was taken in the same state; during playback the audio was slowed to a near stop so both themes show the same moment.
+Captures of the demo at 1440 × 900 (mobile at 390 × 844), each in the light and the dark theme, taken on Kiara's final archive: the human recordings, read by the final pipeline. Every `-light` / `-dark` pair was taken in the same state; during playback the audio was slowed to a near stop so both themes show the same moment.
 
 - `review-sheet.jpg`: the ten key screens on one page.
 - `light-and-dark.jpg`: the same states side by side in both themes.
 
-Playback uses "Como conheceu o avô em festa" (c. 1966): at 0:19 "José" is being said and his thread reaches 1978, 1995 and 2010; at 0:50 "Graça" reaches back to 1956 and 1958 while José and Iquixadá stay as traces and Antônio is not said yet.
+Playback uses "Como conhecer o avô em festa" (c. 1966): at 0:19 "José" is being said and his thread reaches 1978, 1995 and 2010; at 0:48 "Graça" reaches back to 1956 and 1958 while Quixadá and José stay as traces and Antônio is not said yet.
 
 The empty archive, the setup and the zero-story recording come from separate data folders, so the demo archive was not changed: an empty archive for the demo's person, a fresh install, and a copy of the demo with a microphone test added.
 
@@ -29,7 +29,7 @@ The empty archive, the setup and the zero-story recording come from separate dat
 
 ## Capture flow
 
-`capture/` follows one real memory into the archive: the question about the house in Montese, answered in the demo's voice through a simulated microphone, recorded, processed by the real pipeline and filed as "Compra da casa em Montese" (1983, José, Montese). It ran on a copy of the demo archive, so the demo itself is unchanged.
+`capture/` follows one real memory into the archive: the question about the house in Montese, answered in the demo's voice through a simulated microphone, recorded, processed by the real pipeline and filed as "Compra da casa em Montese" (1983, José, Montese). It ran on a copy of the demo archive, so the demo itself is unchanged. These captures were taken before the demo's person was renamed Kiara and before human recordings replaced the synthetic voice, so they still show Lúcia.
 
 - `capture-sequence.jpg`: A → B → C → D in both themes, then the Life with the new memory in 1983.
 - `capture-alternatives.jpg`: the two compositions compared for each screen; the chosen one is first.
