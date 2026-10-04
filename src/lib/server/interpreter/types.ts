@@ -1,3 +1,4 @@
+import type { PauseEvidence } from "@/lib/server/pauses";
 import type { LifeStage, Segment, Theme } from "@/lib/types";
 
 export type KnownEntity = { name: string; relation: string | null; aliases: string[] };
@@ -8,6 +9,7 @@ export type TranscriptInput = {
   prompt: string | null;
   language: string | null;
   segments: Segment[];
+  pauses?: PauseEvidence;
 };
 
 export type StoryInput = {

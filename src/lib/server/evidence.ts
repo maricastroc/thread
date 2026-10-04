@@ -1,6 +1,8 @@
 import "server-only";
 import type { RecordingSummary, Segment, Stage, WorkStage } from "@/lib/types";
+import { PEAKS_PER_SECOND } from "./audio";
 import { db, num, str, transaction, type Row } from "./db";
+import { pauseEvidence, type PauseEvidence } from "./pauses";
 
 export type RecordingError = { message: string; detail: string };
 
@@ -160,6 +162,10 @@ export function getSegments(recordingId: string, from = 0, to = Number.MAX_SAFE_
       .prepare("SELECT * FROM segments WHERE recording_id = ? AND idx BETWEEN ? AND ? ORDER BY idx")
       .all(recordingId, from, to) as Row[]
   ).map(toSegment);
+}
+
+export function getPauseEvidence(recordingId: string, segments: Segment[] = getSegments(recordingId)): PauseEvidence {
+  return pauseEvidence(getPeaks(recordingId), PEAKS_PER_SECOND, segments);
 }
 
 export function transcriptSizes(): Map<string, number> {

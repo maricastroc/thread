@@ -1,4 +1,5 @@
 import "server-only";
+import type { PauseCue } from "@/lib/server/pauses";
 import { LIFE_STAGES, THEMES, type Segment } from "@/lib/types";
 import type { KnownEntity, StoryInput, TranscriptInput } from "./types";
 
@@ -16,13 +17,12 @@ function clock(seconds: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-export function transcriptLines(segments: Segment[], withTimes: boolean): string {
+export function transcriptLines(segments: Segment[], withTimes: boolean, cues: PauseCue[] = []): string {
   const lines: string[] = [];
   segments.forEach((segment, i) => {
     const previous = segments[i - 1];
-    if (previous && segment.start - previous.end >= 2.5) {
-      lines.push(`— pause ${Math.round(segment.start - previous.end)} s —`);
-    }
+    const cue = previous ? cues.find((c) => c.after === previous.idx) : undefined;
+    if (cue) lines.push(`— longer pause: ${cue.duration} s, ${cue.ratio}× this speaker's usual pause between sentences —`);
     lines.push(withTimes ? `[${segment.idx}] ${clock(segment.start)} ${segment.text}` : `[${segment.idx}] ${segment.text}`);
   });
   return lines.join("\n");
@@ -34,6 +34,7 @@ export function segmentationSystem(narrator: string, language: string): string {
 How to divide:
 - A story is one continuous stretch about a single memory, event, period, person or place. Start a new story only when the subject clearly changes.
 - Prefer fewer, complete stories over many fragments. A story normally lasts at least 20 seconds.
+- Lines like "— longer pause … —" are silences measured in the audio that are clearly longer than this speaker's usual pause between sentences. A longer pause is a hint, not a rule: start a new story there only if the subject also changes. People also pause to think, to remember or for emphasis in the middle of the same memory.
 - Use the segment numbers in square brackets. Stories keep the original order and never overlap.
 - Leave out talk that is not part of a memory: checking the recorder, greetings, goodbyes, instructions.
 
@@ -46,7 +47,8 @@ For each story:
 export function segmentationUser(input: TranscriptInput, language: string, segments: Segment[]): string {
   const lines = [`Narrator: ${input.narrator}`, `Recorded on: ${input.recordedAt.slice(0, 10)}`, `Language of the transcript: ${language}`];
   if (input.prompt) lines.push(`Question asked before recording: "${input.prompt}"`);
-  lines.push("", "Transcript (segment number, start time, words):", transcriptLines(segments, true));
+  if (input.pauses?.typical) lines.push(`Usual pause between sentences in this recording: ${input.pauses.typical} s`);
+  lines.push("", "Transcript (segment number, start time, words):", transcriptLines(segments, true, input.pauses?.cues));
   return lines.join("\n");
 }
 

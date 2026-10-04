@@ -12,7 +12,7 @@ import { createInterpreter } from "./interpreter/gemma";
 import { ModelServiceError, unload } from "./ollama";
 import { verify, type VerifiedFact } from "./provenance";
 import { getVault } from "./archive";
-import { deleteRecordingRow, getRecording, getSegments, pendingRecordingIds, replaceSegments, updateRecording, type RecordingError } from "./evidence";
+import { deleteRecordingRow, getPauseEvidence, getRecording, getSegments, pendingRecordingIds, replaceSegments, updateRecording, type RecordingError } from "./evidence";
 import { clearInterpretation, deleteOrphanEntities, insertStory, knownEntities, saveAnnotation, updateStoryTitle, type PreviousStory } from "./interpretation";
 import { attachLeftovers, planStories, uncovered, type PlannedStory } from "./structure";
 import { buildPrompt, transcribe } from "./whisper";
@@ -177,12 +177,14 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
     if (!segments.length || !vault) return;
     const interpreter = createInterpreter();
     updateRecording(id, { models: { interpreter: interpreter.model } });
+    const pauses = getPauseEvidence(id, segments);
     const drafts = await interpreter.findStories({
       narrator: vault.subject,
       recordedAt: recording.recordedAt,
       prompt: recording.prompt,
       language: recording.language,
       segments,
+      pauses,
     });
     let plan = planStories(drafts, segments);
     const missing = uncovered(plan, segments).filter((r) => r.to > r.from && segments[r.to].end - segments[r.from].start >= RETRY_SECONDS);
@@ -195,6 +197,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
           prompt: null,
           language: recording.language,
           segments: segments.slice(r.from, r.to + 1),
+          pauses,
         });
         extra.push(
           ...found
