@@ -3,7 +3,7 @@ import type { FactKind, LifeStage, Provenance, Segment } from "@/lib/types";
 import type { StoryAnnotation } from "./interpreter/types";
 import { findFirstPersonAge, isApproximate, statesYear } from "./numbers";
 import { containsPhrase, locateInSegment, normalize, tokens } from "./text";
-import { hasProperWord, kinship, leadingWords, mentionsOwnKin, ownedKin, properWords } from "./words";
+import { hasProperWord, kinship, leadingWords, mentionsOwnKin, namesInstitution, ownedKin, properWords } from "./words";
 
 export type VerifiedFact = {
   kind: FactKind;
@@ -233,6 +233,10 @@ export function verify(
     if (!key || key === subjectKey || subjectKey.split(" ").includes(key) || seenEntities.has(`person:${key}`)) continue;
     if (!isIndividual(name, person.mention || name)) {
       reject("person", name, person.mention, "A group or a common word, not one person.");
+      continue;
+    }
+    if (namesInstitution(name)) {
+      reject("person", name, person.mention, "The name of an institution, not a person.");
       continue;
     }
     const kin = bareKinship(name);

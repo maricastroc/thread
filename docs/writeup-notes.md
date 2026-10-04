@@ -56,6 +56,8 @@ Gemma returns, for each claim, `{ segment, mention, explicit, … }`, with the e
 4. A time claimed as explicit must contain a year-like phrase: digits, or number words like "setenta e oito", but **not** followed by "anos". If not, it is downgraded to **inferred**.
    - Real catch: the model labelled 1966 as stated because the narrator said "eu tinha 18 anos". The code saw an age, not a year, and relabelled it inferred, with the note "Calculated from “eu tinha 18 anos” and the year of birth, 1948."
 5. Inferred facts can still cite evidence: the words the inference was based on.
+6. A person whose name is built as an institution's, an institution word followed by the rest of the name ("Banco do Brasil", "Escuela Normal", "Bank of England"), is refused: the words support the name, not that it is a person. A single word stays a person, since it can be a surname or a nickname.
+   - Real catch: Gemma filed "Colégio das Freiras" as a person in the human reading of Fortaleza.
 
 The UI borrows the cataloguing convention for information supplied by the archivist: **brackets**. `[c. 1966]` is inferred; `1958` is not. Nothing depends on colour alone. Hollow dots mark inferred dates on the timeline, solid dots dated ones.
 

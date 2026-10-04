@@ -84,3 +84,33 @@ test("years need words that support them", () => {
   assert.equal(rejected.filter((r) => r.kind === "time").length, 1);
   assert.ok(!facts.some((f) => f.note?.includes("Five years after")), "the model's reasoning is never shown");
 });
+
+test("a name built as an institution's is not kept as a person, while people named after places stay people", () => {
+  const said = [
+    "Eu costurei quarenta fardas pro Colégio das Freiras.",
+    "O meu pai trabalhou no Banco do Brasil.",
+    "La Escuela Normal quedaba lejos del pueblo.",
+    "My brother worked at the Bank of England.",
+    "O Zé da Padaria me vendia pão fiado.",
+    "A dona Maria Igreja era a parteira.",
+    "O Capela jogava bola com a gente.",
+  ];
+  const lines: Segment[] = said.map((text, idx) => ({ idx, start: idx * 5, end: idx * 5 + 4, text, words: null, confidence: null }));
+  const names = ["Colégio das Freiras", "Banco do Brasil", "Escuela Normal", "Bank of England", "Zé da Padaria", "Maria Igreja", "Capela"];
+  const { facts, rejected } = verify(
+    annotation({ people: names.map((name, segment) => ({ name, relation: "", mention: name, segment, explicit: true })) }),
+    lines,
+    { from: 0, to: lines.length - 1 },
+    "Armando",
+    1939,
+  );
+  assert.deepEqual(
+    facts.filter((f) => f.kind === "person" && f.primary).map((f) => f.value),
+    ["Zé da Padaria", "Maria Igreja", "Capela"],
+  );
+  assert.deepEqual(
+    rejected.map((r) => r.value),
+    ["Colégio das Freiras", "Banco do Brasil", "Escuela Normal", "Bank of England"],
+  );
+  assert.ok(rejected.every((r) => r.kind === "person" && r.reason === "The name of an institution, not a person."));
+});
