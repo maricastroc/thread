@@ -12,7 +12,7 @@
     "setup": "bash scripts/setup.sh",
     "demo": "bash scripts/import-demo.sh http://localhost:3000",
     "reprocess": "bash scripts/reprocess.sh http://localhost:3000",
-    "test": "node --experimental-strip-types --no-warnings --import ./test/register.mjs --test test/*.test.ts"
+    "test": "node --experimental-transform-types --no-warnings --import ./test/register.mjs --test test/*.test.ts"
   },
   "dependencies": {
     "next": "16.3.8",
