@@ -10,7 +10,7 @@ import { bumpSearchVersion, indexRecording } from "./indexer";
 import { rederiveArchive } from "./derive";
 import { createInterpreter } from "./interpreter/gemma";
 import { ModelServiceError, unload } from "./ollama";
-import { verify, type VerifiedFact } from "./provenance";
+import { periodCarrier, statedPeriod, verify, type VerifiedFact } from "./provenance";
 import { getVault } from "./archive";
 import { deleteRecordingRow, getPauseEvidence, getRecording, getSegments, pendingRecordingIds, replaceSegments, updateRecording, type RecordingError } from "./evidence";
 import { clearInterpretation, deleteOrphanEntities, insertStory, knownEntities, saveAnnotation, updateStoryTitle, type PreviousStory } from "./interpretation";
@@ -210,7 +210,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
     const planned = matchPrevious(attachLeftovers(plan, segments), previous);
     const ids = planned.map((story, ord) => insertStory({ recordingId: id, ord, ...story }));
     const earlier: { title: string; when: string | null }[] = [];
-    let previousAnchor: VerifiedFact | null = null;
+    const carry = periodCarrier(vault.birthYear);
     for (let i = 0; i < planned.length; i++) {
       updateRecording(id, { detail: JSON.stringify({ annotating: i + 1, total: planned.length }), progress: i / planned.length });
       const story = planned[i];
@@ -226,17 +226,16 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
         earlier: earlier.slice(-4),
       });
       const verified = verify(annotation, segments, { from: story.segStart, to: story.segEnd }, vault.subject, vault.birthYear);
-      const facts = inheritPeriod(verified.facts, previousAnchor, vault.birthYear);
+      const carried = carry(verified.facts);
+      const facts = carried.facts;
       const title = restoreNames(story.title, facts);
       if (title !== story.title) updateStoryTitle(ids[i], title);
-      const anchor = facts.find((f) => f.kind === "time" && f.yearFrom);
-      earlier.push({ title, when: anchor ? anchor.value : null });
-      previousAnchor = anchor ?? null;
+      earlier.push({ title, when: statedPeriod(facts)?.value ?? null });
       saveAnnotation({
         storyId: ids[i],
         recordingId: id,
         facts,
-        rejected: verified.rejected,
+        rejected: [...verified.rejected, ...carried.rejected],
         themes: annotation.themes,
         questions: annotation.questions,
         model: interpreter.model,
@@ -276,51 +275,7 @@ function matchPrevious(planned: PlannedStory[], previous: PreviousStory[]) {
   });
 }
 
-const INHERITED = "Told right after";
 const RETRY_SECONDS = 12;
-
-function inheritPeriod(facts: VerifiedFact[], previous: VerifiedFact | null, birthYear: number | null): VerifiedFact[] {
-  if (!previous?.yearFrom || facts.some((f) => f.kind === "time" && f.yearFrom)) return facts;
-  const stage = facts.find((f) => f.kind === "life_stage");
-  if (stage && stage.provenance !== "inferred") return facts;
-  const year = previous.yearFrom;
-  const label = previous.provenance === "inferred" ? `about ${year}` : String(year);
-  const result = facts.filter((f) => f.kind !== "life_stage");
-  result.push({
-    kind: "time",
-    value: String(year),
-    detail: null,
-    yearFrom: year,
-    yearTo: previous.yearTo ?? year,
-    provenance: "inferred",
-    primary: true,
-    seg: null,
-    evidence: null,
-    start: null,
-    end: null,
-    note: `${INHERITED} a story from ${label}, in the same recording.`,
-  });
-  if (birthYear && year >= birthYear) {
-    const age = year - birthYear;
-    result.push({
-      kind: "life_stage",
-      value: age <= 12 ? "childhood" : age <= 25 ? "youth" : age <= 59 ? "adulthood" : "later_life",
-      detail: null,
-      yearFrom: null,
-      yearTo: null,
-      provenance: "inferred",
-      primary: true,
-      seg: null,
-      evidence: null,
-      start: null,
-      end: null,
-      note: `About ${age} years old in ${year}, counted from the year of birth.`,
-    });
-  } else if (stage) {
-    result.push(stage);
-  }
-  return result;
-}
 
 function restoreNames(title: string, facts: VerifiedFact[]): string {
   let result = title;

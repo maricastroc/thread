@@ -100,6 +100,76 @@ function stageForAge(age: number): LifeStage {
   return "later_life";
 }
 
+export function statedPeriod(facts: VerifiedFact[]): VerifiedFact | null {
+  return facts.find((f) => f.kind === "time" && f.yearFrom && f.provenance !== "inferred") ?? null;
+}
+
+const CARRIED = "Told right after";
+
+export function carryPeriod(facts: VerifiedFact[], previous: VerifiedFact | null, birthYear: number | null): Verified {
+  if (!previous?.yearFrom || facts.some((f) => f.kind === "time" && f.yearFrom)) return { facts, rejected: [] };
+  const stage = facts.find((f) => f.kind === "life_stage");
+  if (stage && stage.provenance !== "inferred") return { facts, rejected: [] };
+  if (previous.provenance === "inferred") {
+    return {
+      facts,
+      rejected: [
+        {
+          kind: "time",
+          value: previous.value,
+          mention: null,
+          reason: "The story told right before it is dated only by inference, and an inference is never the basis for another. Nothing in this story says when it happened.",
+        },
+      ],
+    };
+  }
+  const year = previous.yearFrom;
+  const result = facts.filter((f) => f.kind !== "life_stage");
+  result.push({
+    kind: "time",
+    value: previous.value,
+    detail: null,
+    yearFrom: year,
+    yearTo: previous.yearTo ?? year,
+    provenance: "inferred",
+    primary: true,
+    seg: null,
+    evidence: null,
+    start: null,
+    end: null,
+    note: `${CARRIED} a story from ${previous.value}, in the same recording.`,
+  });
+  if (birthYear && year >= birthYear) {
+    const age = year - birthYear;
+    result.push({
+      kind: "life_stage",
+      value: stageForAge(age),
+      detail: null,
+      yearFrom: null,
+      yearTo: null,
+      provenance: "inferred",
+      primary: true,
+      seg: null,
+      evidence: null,
+      start: null,
+      end: null,
+      note: `About ${age} years old in ${year}, counted from the year of birth.`,
+    });
+  } else if (stage) {
+    result.push(stage);
+  }
+  return { facts: result, rejected: [] };
+}
+
+export function periodCarrier(birthYear: number | null): (facts: VerifiedFact[]) => Verified {
+  let previous: VerifiedFact | null = null;
+  return (facts) => {
+    const carried = carryPeriod(facts, previous, birthYear);
+    previous = carried.facts.find((f) => f.kind === "time" && f.yearFrom) ?? null;
+    return carried;
+  };
+}
+
 function yearLabel(from: number | null, to: number | null, fallback: string): string {
   if (from && to && from !== to) {
     if (from % 10 === 0 && to === from + 9) return `${from}s`;
@@ -326,7 +396,7 @@ export function verify(
     }
   }
 
-  const anchor = facts.find((f) => f.kind === "time" && f.provenance !== "inferred" && f.yearFrom);
+  const anchor = statedPeriod(facts);
   if (anchor && birthYear && anchor.yearFrom! >= birthYear) {
     const age = anchor.yearFrom! - birthYear;
     facts.push({

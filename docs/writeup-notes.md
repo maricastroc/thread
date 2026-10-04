@@ -65,7 +65,7 @@ Each of these started as something the model "could do" and became deterministic
 
 - **Year from age.** "eu tinha 18 anos" + birth year → `[c. 1966]`. A regex plus a Portuguese/English/Spanish number-word parser. The model was inconsistent across runs; the code isn't.
 - **Stage of life from a dated story.** Age 30 in 1978 → adult life. The model once said "childhood" for the move to Fortaleza at 30.
-- **Period of an undated story.** It inherits the year of the story told right before it in the same recording, labelled inferred: "Told right after a story from about 1978, in the same recording."
+- **Period of an undated story.** It takes the year said in the story told right before it in the same recording, labelled inferred: "Told right after a story from 1978, in the same recording." Only a year the words say is carried, and only once: a year that is itself an inference, carried from an earlier story or calculated from an age, is never the basis for another. The story then stays undated, and the refusal is kept with its reason.
 - **Story boundaries.** Small gaps the model leaves between stories are closed. A gap ending in a question goes to the *next* story, because questions introduce stories. An opening question ("Você quer saber como eu conheci o seu avô?") joins the first story.
 - **Proper names in titles.** Gemma wrote "Mudança para fortaleza"; the code restores capitals from verified entity names.
 - **Related stories.** Shared people and places. No LLM call.
