@@ -185,6 +185,10 @@ function copySnapshot(): void {
   fs.renameSync(partial, config.dataDir);
 }
 
+function openSnapshot(): void {
+  if (config.readOnly && !fs.existsSync(path.join(config.dataDir, "cofre.db"))) copySnapshot();
+}
+
 export function db(): DatabaseSync {
   const h = holder.__cofreDb!;
   if (h.db) {
@@ -194,7 +198,7 @@ export function db(): DatabaseSync {
     }
     return h.db;
   }
-  if (config.readOnly && !fs.existsSync(path.join(config.dataDir, "cofre.db"))) copySnapshot();
+  openSnapshot();
   fs.mkdirSync(config.dataDir, { recursive: true });
   const database = new DatabaseSync(path.join(config.dataDir, "cofre.db"));
   database.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");
@@ -218,5 +222,6 @@ export function transaction<T>(fn: () => T): T {
 }
 
 export function recordingDir(id: string): string {
+  openSnapshot();
   return path.join(config.dataDir, "recordings", id);
 }
