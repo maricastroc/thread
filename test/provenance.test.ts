@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { StoryAnnotation } from "../src/lib/server/interpreter/types";
-import { verify } from "../src/lib/server/provenance";
+import { verify, type Known, type VerifiedFact } from "../src/lib/server/provenance";
 import type { Segment } from "../src/lib/types";
 
 const lines = [
@@ -113,4 +113,69 @@ test("a name built as an institution's is not kept as a person, while people nam
     ["Colégio das Freiras", "Banco do Brasil", "Escuela Normal", "Bank of England"],
   );
   assert.ok(rejected.every((r) => r.kind === "person" && r.reason === "The name of an institution, not a person."));
+});
+
+const story = (said: string[], patch: Partial<StoryAnnotation>, known?: Known) => {
+  const lines: Segment[] = said.map((text, idx) => ({ idx, start: idx * 5, end: idx * 5 + 4, text, words: null, confidence: null }));
+  return verify(annotation(patch), lines, { from: 0, to: lines.length - 1 }, "Armando", 1939, known);
+};
+const place = (name: string, mention: string, segment: number) => ({ name, mention, segment, explicit: true });
+const person = (name: string, mention: string, segment: number, relation = "") => ({ name, relation, mention, segment, explicit: true });
+const named = (facts: VerifiedFact[]) => facts.filter((f) => f.primary && (f.kind === "person" || f.kind === "place")).map((f) => [f.value, f.provenance]);
+
+test("a name said as one expression is said", () => {
+  const { facts, rejected } = story(["Eu nasci em Olinda, perto do rio Beberibe.", "A Bia era a mais velha."], {
+    places: [place("Olinda", "Olinda", 0), place("rio Beberibe", "rio Beberibe", 0)],
+    people: [person("Bia", "A Bia", 1)],
+  });
+  assert.deepEqual(named(facts), [
+    ["Bia", "said"],
+    ["Olinda", "said"],
+    ["rio Beberibe", "said"],
+  ]);
+  assert.deepEqual(rejected, []);
+});
+
+test("a real name written in lowercase counts only when it is written as a name elsewhere or the archive already knows it", () => {
+  const lines = ["Depois a gente foi morar em vila velha, na beira do mar."];
+  const proposal = { places: [place("Vila Velha", "vila velha", 0)] };
+  const alone = story(lines, proposal);
+  assert.deepEqual(named(alone.facts), []);
+  assert.match(alone.rejected[0].reason, /common word/);
+  assert.deepEqual(named(story(lines, proposal, { people: [], places: [{ name: "Vila Velha", relation: null, aliases: [] }] }).facts), [["Vila Velha", "said"]]);
+  assert.deepEqual(named(story([...lines, "Ela sempre voltava pra Vila Velha."], proposal).facts), [["Vila Velha", "said"]]);
+});
+
+test("a common noun is not a name, even when the model capitalizes it or a sentence begins with it", () => {
+  const { facts, rejected } = story(["O meu pai tinha uma bodega na esquina.", "Bodega era o lugar de todo mundo."], { places: [place("Bodega", "uma bodega", 0)] });
+  assert.deepEqual(named(facts), []);
+  assert.match(rejected[0].reason, /common word/);
+});
+
+test("a name made up from words said apart is never taken as said", () => {
+  const { facts, rejected } = story(["O meu pai dava fiado pra todo mundo na bodega.", "A Maria chegou cedo, e o Silva veio depois."], {
+    places: [place("Bodega do Pai", "na bodega", 0)],
+    people: [person("Maria Silva", "A Maria", 1)],
+  });
+  assert.ok(!facts.some((f) => f.value === "Bodega do Pai" || f.value === "Maria Silva"));
+  assert.match(rejected.find((r) => r.value === "Bodega do Pai")?.reason ?? "", /not together/);
+  assert.deepEqual(named(facts), [["Maria", "said"]]);
+  assert.match(rejected.find((r) => r.value === "Maria Silva")?.reason ?? "", /kept as “Maria”/);
+});
+
+test("someone the archive already knows can be mentioned again, in other words or by name", () => {
+  const known = { people: [{ name: "Antônio", relation: "pai", aliases: [] }, { name: "José", relation: null, aliases: [] }], places: [] };
+  const { facts, rejected } = story(
+    ["O meu pai dava fiado pra todo mundo.", "O José voltou do Rio."],
+    { people: [person("Antônio", "O meu pai", 0, "pai"), person("José", "O José", 1)] },
+    known,
+  );
+  assert.deepEqual(
+    facts.filter((f) => f.primary).map((f) => [f.value, f.provenance, f.evidence, f.detail]),
+    [
+      ["Antônio", "extracted", "O meu pai", "pai"],
+      ["José", "said", "José", null],
+    ],
+  );
+  assert.deepEqual(rejected, []);
 });

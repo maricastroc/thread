@@ -55,11 +55,55 @@ function findRun(haystack: string[], needle: string[]): [number, number] | null 
   return null;
 }
 
+function exactRun(haystack: string[], needle: string[]): [number, number] | null {
+  if (!needle.length || needle.length > haystack.length) return null;
+  outer: for (let i = 0; i + needle.length <= haystack.length; i++) {
+    for (let j = 0; j < needle.length; j++) {
+      if (haystack[i + j] !== needle[j]) continue outer;
+    }
+    return [i, i + needle.length - 1];
+  }
+  return null;
+}
+
 export function containsPhrase(text: string, phrase: string): boolean {
   return findRun(tokens(text), tokens(phrase)) !== null;
 }
 
+export function saysPhrase(text: string, phrase: string): boolean {
+  return exactRun(tokens(text), tokens(phrase)) !== null;
+}
+
+const SENTENCE_END = /[.!?…]["”»)]?$/;
+
+export function saidWords(text: string, phrase: string): { word: string; opensSentence: boolean }[] | null {
+  const raw = text.split(/\s+/).filter(Boolean);
+  const flat: string[] = [];
+  const owner: number[] = [];
+  raw.forEach((piece, wi) => {
+    for (const tok of tokens(piece)) {
+      flat.push(tok);
+      owner.push(wi);
+    }
+  });
+  const run = exactRun(flat, tokens(phrase));
+  if (!run) return null;
+  const words = [];
+  for (let wi = owner[run[0]]; wi <= owner[run[1]]; wi++) {
+    words.push({ word: raw[wi].replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""), opensSentence: wi === 0 || SENTENCE_END.test(raw[wi - 1]) });
+  }
+  return words;
+}
+
 export function locateInSegment(segment: Segment, mention: string): Located | null {
+  return locate(segment, mention, findRun);
+}
+
+export function locateSaid(segment: Segment, mention: string): Located | null {
+  return locate(segment, mention, exactRun);
+}
+
+function locate(segment: Segment, mention: string, match: (haystack: string[], needle: string[]) => [number, number] | null): Located | null {
   const needle = tokens(mention);
   if (!needle.length) return null;
 
@@ -72,7 +116,7 @@ export function locateInSegment(segment: Segment, mention: string): Located | nu
         owner.push(wi);
       }
     });
-    const run = findRun(flat, needle);
+    const run = match(flat, needle);
     if (run) {
       const first = owner[run[0]];
       const last = owner[run[1]];
@@ -97,7 +141,7 @@ export function locateInSegment(segment: Segment, mention: string): Located | nu
       owner.push(wi);
     }
   });
-  const run = findRun(flat, needle);
+  const run = match(flat, needle);
   if (!run) return null;
   return {
     start: segment.start,

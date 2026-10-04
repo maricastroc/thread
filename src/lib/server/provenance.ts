@@ -1,8 +1,8 @@
 import "server-only";
 import type { FactKind, LifeStage, Provenance, Segment } from "@/lib/types";
-import type { StoryAnnotation } from "./interpreter/types";
+import type { KnownEntity, StoryAnnotation } from "./interpreter/types";
 import { findAges, findFirstPersonAge, isApproximate, statesYear } from "./numbers";
-import { containsPhrase, locateInSegment, normalize, tokens } from "./text";
+import { containsPhrase, locateInSegment, locateSaid, normalize, saidWords, saysPhrase, tokens } from "./text";
 import { findNamedStages, hasProperWord, kinship, leadingWords, mentionsOwnKin, namesInstitution, ownedKin, properWords } from "./words";
 
 export type VerifiedFact = {
@@ -26,6 +26,27 @@ export type Rejection = { kind: FactKind; value: string; mention: string | null;
 export type Verified = { facts: VerifiedFact[]; rejected: Rejection[] };
 
 type Evidence = { seg: number; start: number; end: number; evidence: string };
+
+export type Known = { people: KnownEntity[]; places: KnownEntity[] };
+
+const linkingWords = new Set(["de", "da", "do", "das", "dos", "e", "del", "y", "of", "di", "du"]);
+
+const nameWord = (word: string) => /^\p{Lu}/u.test(word) && !linkingWords.has(normalize(word)) && !leadingWords.has(normalize(word));
+
+function isKnown(list: KnownEntity[], name: string): boolean {
+  const key = normalize(name);
+  return list.some((e) => normalize(e.name) === key || e.aliases.some((a) => normalize(a) === key));
+}
+
+function writtenAsName(segments: Segment[], phrase: string): boolean {
+  return segments.some((segment) => (saidWords(segment.text, phrase) ?? []).some((w) => !w.opensSentence && nameWord(w.word)));
+}
+
+function madeUpFrom(text: string, name: string): boolean {
+  const heard = new Set(tokens(text));
+  const parts = tokens(name).filter((w) => !linkingWords.has(w) && !leadingWords.has(w));
+  return parts.length > 1 && parts.every((w) => heard.has(w));
+}
 
 export function properAlias(mention: string): string | null {
   const words = mention.trim().split(/\s+/);
@@ -207,6 +228,7 @@ export function verify(
   range: { from: number; to: number },
   subject: string,
   birthYear: number | null,
+  known: Known = { people: [], places: [] },
 ): Verified {
   const facts: VerifiedFact[] = [];
   const rejected: Rejection[] = [];
@@ -216,6 +238,24 @@ export function verify(
   const inStory = segments.filter((s) => s.idx >= range.from && s.idx <= range.to);
   const storyText = inStory.map((s) => s.text).join(" ");
   const reject = (kind: FactKind, value: string, mention: string | null, reason: string) => rejected.push({ kind, value, mention: mention?.trim() || null, reason });
+
+  const spoken = (phrase: string, claimed: number): Evidence | null => {
+    for (const segment of rangeOrder(segments, range.from, range.to, claimed)) {
+      const hit = locateSaid(segment, phrase);
+      if (hit) return { seg: segment.idx, ...hit };
+    }
+    return null;
+  };
+
+  const spokenAlias = (mention: string, claimed: number): { name: string; evidence: Evidence } | null => {
+    const alias = properAlias(mention);
+    if (!alias || alias.includes(",") || tokens(alias).length > 3 || !writtenAsName(segments, alias)) return null;
+    const evidence = spoken(alias, claimed);
+    return evidence ? { name: alias, evidence } : null;
+  };
+
+  const unsaid = (name: string) =>
+    madeUpFrom(storyText, name) ? "These words are in the story, but not together, so the name would be made up from them." : "Not found in the words of this story.";
 
   const expand = (
     kind: "person" | "place",
@@ -228,12 +268,14 @@ export function verify(
     for (const segment of inStory) {
       if (segment.idx === primary.seg || (accept && !accept(segment))) continue;
       for (const phrase of phrases) {
-        const hit = locateInSegment(segment, phrase);
+        const hit = locateSaid(segment, phrase);
         if (!hit) continue;
+        const said = saysPhrase(hit.evidence, value);
+        if (said && !accept && !hit.evidence.split(/\s+/).some(nameWord)) continue;
         facts.push({
           ...base,
           kind,
-          provenance: containsPhrase(hit.evidence, value) ? "said" : "extracted",
+          provenance: said ? "said" : "extracted",
           primary: false,
           seg: segment.idx,
           ...hit,
@@ -268,36 +310,58 @@ export function verify(
       continue;
     }
     const accept = kin ? (segment: Segment) => ownsWord(segment, name) : undefined;
-    const evidence = findEvidence(segments, range.from, range.to, person.segment, evidencePhrases(name, person.mention, person.relation), accept);
+    let named = name;
+    let evidence: Evidence | null;
+    let provenance: Provenance = "said";
+    if (kin) {
+      evidence = findEvidence(segments, range.from, range.to, person.segment, evidencePhrases(name, person.mention, person.relation), accept);
+      if (evidence && !saysPhrase(byIdx.get(evidence.seg)?.text ?? "", name)) provenance = person.explicit ? "extracted" : "inferred";
+    } else {
+      evidence = spoken(name, person.segment);
+      if (evidence && !isKnown(known.people, name) && !writtenAsName(segments, name)) {
+        reject("person", name, person.mention, "Written here as a common word, so that it is someone's name would be a guess.");
+        continue;
+      }
+      if (!evidence && isKnown(known.people, name)) {
+        evidence = findEvidence(segments, range.from, range.to, person.segment, evidencePhrases(name, person.mention, person.relation));
+        provenance = person.explicit ? "extracted" : "inferred";
+      } else if (!evidence) {
+        const alias = spokenAlias(person.mention, person.segment);
+        if (alias && !seenEntities.has(`person:${normalize(alias.name)}`)) {
+          reject("person", name, person.mention, `Not said as one expression; kept as “${alias.name}”, the words actually said.`);
+          named = alias.name;
+          evidence = alias.evidence;
+        }
+      }
+    }
     if (!evidence) {
-      reject("person", name, person.mention, "Not found in the words of this story.");
+      reject("person", name, person.mention, kin ? "Not found in the words of this story." : unsaid(name));
       continue;
     }
-    seenEntities.add(`person:${key}`);
-    const literal = containsPhrase(byIdx.get(evidence.seg)?.text ?? "", name);
-    const provenance: Provenance = literal ? "said" : person.explicit ? "extracted" : "inferred";
+    const namedKey = normalize(named);
+    seenEntities.add(`person:${namedKey}`);
     const alias = properAlias(person.mention);
-    const aliases = alias && normalize(alias) !== key ? [alias] : [];
+    const aliases = alias && normalize(alias) !== namedKey ? [alias] : [];
     const said = person.relation.trim();
     let relation: string | null = said && containsPhrase(storyText, said) ? said : null;
     if (relation && bareKinship(relation) && !mentionsOwnKin(storyText, relation)) {
-      reject("person", `${name} (${relation})`, person.mention, "The relation is someone else's: the words never say “my”.");
+      reject("person", `${named} (${relation})`, person.mention, "The relation is someone else's: the words never say “my”.");
       relation = null;
     }
     const base = {
       kind: "person" as const,
-      value: name,
+      value: named,
       detail: relation,
       yearFrom: null,
       yearTo: null,
       note: null,
-      entity: { name, relation, aliases },
+      entity: { name: named, relation, aliases },
     };
     facts.push({ ...base, provenance, primary: true, ...evidence });
-    const phrases = [name, ...aliases, ...(!kin && tokens(person.mention).length <= 4 ? [person.mention] : [])].filter(
+    const phrases = [named, ...aliases, ...(!kin && tokens(person.mention).length <= 4 ? [person.mention] : [])].filter(
       (p, i, all) => normalize(p) && all.findIndex((q) => normalize(q) === normalize(p)) === i,
     );
-    expand("person", name, phrases, evidence, base, accept);
+    expand("person", named, phrases, evidence, base, accept);
   }
 
   for (const place of annotation.places) {
@@ -308,34 +372,52 @@ export function verify(
       reject("place", name, place.mention, "A common noun, not the name of a place, so it can't be the same place in another story.");
       continue;
     }
-    const evidence = findEvidence(segments, range.from, range.to, place.segment, evidencePhrases(name, place.mention, null));
+    let named = name;
+    let provenance: Provenance = "said";
+    let evidence = spoken(name, place.segment);
+    if (evidence && !isKnown(known.places, name) && !writtenAsName(segments, name)) {
+      reject("place", name, place.mention, "Written here as a common word, so that it is the name of a place would be a guess.");
+      continue;
+    }
     if (!evidence) {
-      reject("place", name, place.mention, "Not found in the words of this story.");
+      const found = findEvidence(segments, range.from, range.to, place.segment, evidencePhrases(name, place.mention, null));
+      const proper = properWords(name);
+      if (found && proper.length && !proper.some((w) => tokens(found.evidence).includes(w))) {
+        reject("place", name, found.evidence, `The words only say “${found.evidence}”; that it is ${name} would be a guess.`);
+        continue;
+      }
+      if (found && isKnown(known.places, name)) {
+        evidence = found;
+        provenance = place.explicit ? "extracted" : "inferred";
+      } else {
+        const alias = spokenAlias(place.mention, place.segment);
+        if (alias && !seenEntities.has(`place:${normalize(alias.name)}`)) {
+          reject("place", name, place.mention, `Not said as one expression; kept as “${alias.name}”, the words actually said.`);
+          named = alias.name;
+          evidence = alias.evidence;
+        }
+      }
+    }
+    if (!evidence) {
+      reject("place", name, place.mention, unsaid(name));
       continue;
     }
-    const named = properWords(name);
-    const heard = new Set(tokens(evidence.evidence));
-    if (named.length && !named.some((w) => heard.has(w))) {
-      reject("place", name, evidence.evidence, `The words only say “${evidence.evidence}”; that it is ${name} would be a guess.`);
-      continue;
-    }
-    seenEntities.add(`place:${key}`);
-    const literal = containsPhrase(byIdx.get(evidence.seg)?.text ?? "", name);
-    const provenance: Provenance = literal ? "said" : place.explicit ? "extracted" : "inferred";
+    const namedKey = normalize(named);
+    seenEntities.add(`place:${namedKey}`);
     const alias = properAlias(place.mention);
-    const aliases = alias && normalize(alias) !== key ? [alias] : [];
+    const aliases = alias && normalize(alias) !== namedKey ? [alias] : [];
     const base = {
       kind: "place" as const,
-      value: name,
+      value: named,
       detail: null,
       yearFrom: null,
       yearTo: null,
       note: null,
-      entity: { name, relation: null, aliases },
+      entity: { name: named, relation: null, aliases },
     };
     facts.push({ ...base, provenance, primary: true, ...evidence });
-    const phrases = [name, ...aliases].filter((p, i, all) => all.findIndex((q) => normalize(q) === normalize(p)) === i);
-    expand("place", name, phrases, evidence, base);
+    const phrases = [named, ...aliases].filter((p, i, all) => all.findIndex((q) => normalize(q) === normalize(p)) === i);
+    expand("place", named, phrases, evidence, base);
   }
 
   const currentYear = new Date().getFullYear();

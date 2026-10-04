@@ -215,6 +215,7 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
       updateRecording(id, { detail: JSON.stringify({ annotating: i + 1, total: planned.length }), progress: i / planned.length });
       const story = planned[i];
       const storySegments = segments.filter((s) => s.idx >= story.segStart && s.idx <= story.segEnd);
+      const known = knownEntities();
       const annotation = await interpreter.annotateStory({
         narrator: vault.subject,
         birthYear: vault.birthYear,
@@ -222,10 +223,10 @@ const stages: Record<WorkStage, (id: string) => Promise<void>> = {
         language: recording.language,
         title: story.title,
         segments: storySegments,
-        known: knownEntities(),
+        known,
         earlier: earlier.slice(-4),
       });
-      const verified = verify(annotation, segments, { from: story.segStart, to: story.segEnd }, vault.subject, vault.birthYear);
+      const verified = verify(annotation, segments, { from: story.segStart, to: story.segEnd }, vault.subject, vault.birthYear, known);
       const carried = carry(verified.facts);
       const facts = carried.facts;
       const title = restoreNames(story.title, facts);
