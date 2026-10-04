@@ -13,6 +13,7 @@ import { Transcript } from "@/components/story/Transcript";
 import { StoryRow } from "@/components/StoryRow";
 import { formatClock, formatDate, formatDuration, languageName, sameDay } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { config } from "@/lib/server/config";
 import { loadVault } from "@/lib/server/data";
 import { getPeaks, getRecording, getSegments } from "@/lib/server/evidence";
 import { entitiesOnlyIn, factsForStories, storiesOfRecording } from "@/lib/server/interpretation";
@@ -247,13 +248,13 @@ export default async function RecordingPage(props: PageProps<"/recordings/[id]">
           </h2>
           <div className="mt-4 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-10">
             <RecordLink label={t.nav.record} />
-            <ImportButton hint={false} />
+            {!config.readOnly && <ImportButton hint={false} />}
           </div>
           <div className="mt-10 flex flex-col items-start gap-4 border-t border-rule pt-6 sm:flex-row sm:items-start sm:gap-8">
             <a href={`/api/recordings/${id}/original`} className="inline-flex min-h-11 items-center gap-2 text-[0.9375rem] underline decoration-rule-2 underline-offset-[0.3em] hover:decoration-ink">
               {t.recording.download}
             </a>
-            <RemoveRecording id={id} message={removeMessage} />
+            {!config.readOnly && <RemoveRecording id={id} message={removeMessage} />}
           </div>
         </Column>
       </section>

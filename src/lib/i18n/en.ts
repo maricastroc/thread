@@ -6,6 +6,17 @@ export const en = {
   privacy: "Recordings stay on this computer.",
   skipToContent: "Skip to content",
 
+  readOnly: {
+    notice: "A read-only copy of a demo archive. Recording and processing run on your own computer.",
+    run: "How to run Thread",
+    footer: "A read-only demo. When Thread runs on your computer, the recordings stay there.",
+    refused: "This archive is a read-only demo. Recording and processing run on your own computer.",
+    recordTitle: "Recording happens on your own computer",
+    recordBody: (name: string) =>
+      `This is a read-only copy of ${possessive(name)} archive, so nothing can be recorded or imported here. With Thread running on your computer, you record someone, their voice is kept as it was said, and the stories in it are found and organized without the recordings leaving the machine.`,
+    question: "The question you chose",
+  },
+
   nav: {
     label: "Archive",
     life: "Life",

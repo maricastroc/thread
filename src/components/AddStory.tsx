@@ -10,10 +10,14 @@ import { t } from "@/lib/i18n";
 type Props = {
   subject: string;
   align?: "end" | "start";
+  readOnly?: boolean;
   className?: string;
 };
 
-export function AddStory({ subject, align = "end", className = "" }: Props) {
+const buttonClass =
+  "inline-flex h-11 items-center gap-2 rounded-full bg-ink pr-5 pl-4 text-[0.9375rem] font-medium whitespace-nowrap text-paper transition-[background-color,transform] duration-150 hover:bg-[color-mix(in_oklab,var(--text),var(--canvas)_16%)] active:scale-[0.98]";
+
+export function AddStory({ subject, align = "end", readOnly = false, className = "" }: Props) {
   const pathname = usePathname();
   const [openAt, setOpenAt] = useState<string | null>(null);
   const open = openAt === pathname;
@@ -49,6 +53,15 @@ export function AddStory({ subject, align = "end", className = "" }: Props) {
     };
   }, [open]);
 
+  if (readOnly) {
+    return (
+      <Link href="/record" className={`${buttonClass} ${className}`}>
+        <PlusIcon size={15} />
+        {t.add.button}
+      </Link>
+    );
+  }
+
   return (
     <div ref={root} className={`relative ${className}`}>
       <button
@@ -57,7 +70,7 @@ export function AddStory({ subject, align = "end", className = "" }: Props) {
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-controls={panelId}
-        className="inline-flex h-11 items-center gap-2 rounded-full bg-ink pr-5 pl-4 text-[0.9375rem] font-medium whitespace-nowrap text-paper transition-[background-color,transform] duration-150 hover:bg-[color-mix(in_oklab,var(--text),var(--canvas)_16%)] active:scale-[0.98]"
+        className={buttonClass}
       >
         <PlusIcon size={15} className={`transition-transform duration-200 ${open ? "rotate-45" : ""}`} />
         {t.add.button}

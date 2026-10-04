@@ -1,5 +1,6 @@
 import "server-only";
 import type { Moment, StorySummary } from "@/lib/types";
+import { config } from "./config";
 import { db } from "./db";
 import { embedQuery, searchVersion } from "./indexer";
 import { getSegments } from "./evidence";
@@ -131,20 +132,22 @@ export async function search(query: string, birthYear: number | null): Promise<S
   }
 
   let semantic = false;
-  try {
-    const queryVector = await embedQuery(q);
-    const ranked = chunks
-      .filter((c) => c.vector)
-      .map((c) => ({ chunk: c, cos: dot(queryVector, c.vector!) }))
-      .sort((a, b) => b.cos - a.cos)
-      .slice(0, 60);
-    semantic = ranked.length > 0;
-    ranked.forEach(({ chunk, cos }, rank) => {
-      const s = entry(chunk);
-      s.cos = cos;
-      s.rrf += 1 / (60 + rank);
-    });
-  } catch {}
+  if (!config.readOnly) {
+    try {
+      const queryVector = await embedQuery(q);
+      const ranked = chunks
+        .filter((c) => c.vector)
+        .map((c) => ({ chunk: c, cos: dot(queryVector, c.vector!) }))
+        .sort((a, b) => b.cos - a.cos)
+        .slice(0, 60);
+      semantic = ranked.length > 0;
+      ranked.forEach(({ chunk, cos }, rank) => {
+        const s = entry(chunk);
+        s.cos = cos;
+        s.rrf += 1 / (60 + rank);
+      });
+    } catch {}
+  }
 
   const groups = new Map<string, Scored>();
   for (const s of scores.values()) {

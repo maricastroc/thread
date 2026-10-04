@@ -1,10 +1,13 @@
 import { getVault, saveVault } from "@/lib/server/archive";
+import { readOnlyRefusal } from "@/lib/server/read-only";
 
 export async function GET() {
   return Response.json(getVault());
 }
 
 export async function POST(request: Request) {
+  const refused = readOnlyRefusal();
+  if (refused) return refused;
   const body = (await request.json().catch(() => null)) as { subject?: unknown; narrator?: unknown; birthYear?: unknown; language?: unknown } | null;
   const given = typeof body?.subject === "string" ? body.subject : typeof body?.narrator === "string" ? body.narrator : "";
   const subject = given.trim().slice(0, 80);

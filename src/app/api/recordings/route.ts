@@ -10,6 +10,7 @@ import { enqueue, ensureWorker } from "@/lib/server/pipeline";
 import { getVault } from "@/lib/server/archive";
 import { createRecording } from "@/lib/server/evidence";
 import { markQuestionAsked } from "@/lib/server/interpretation";
+import { readOnlyRefusal } from "@/lib/server/read-only";
 
 const extensions: Record<string, string> = {
   "audio/webm": "webm",
@@ -53,6 +54,8 @@ function validDate(value: string | null): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  const refused = readOnlyRefusal();
+  if (refused) return refused;
   if (!getVault()) return Response.json({ error: "The archive isn’t set up yet." }, { status: 409 });
   if (!request.body) return Response.json({ error: "No audio was sent." }, { status: 400 });
 

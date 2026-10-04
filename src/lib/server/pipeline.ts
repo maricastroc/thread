@@ -43,7 +43,7 @@ class StageError extends Error {
 }
 
 export function ensureWorker(): void {
-  if (state.started) return;
+  if (state.started || config.readOnly) return;
   state.started = true;
   for (const id of pendingRecordingIds()) enqueue(id);
 }

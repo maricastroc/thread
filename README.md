@@ -124,6 +124,18 @@ node scripts/archive-report.mjs /tmp/cofre-second http://localhost:3901 /tmp/rep
 
 The results before and after the generalization work, case by case, are in [`docs/generalization`](docs/generalization/README.md).
 
+## The online demo
+
+The online version is a read-only copy of the demo archive, so anyone can listen to it without installing anything. It runs from `demo/archive/`: the database and the audio of the demo's four recordings, kept in the repository. On Vercel, or with `COFRE_READ_ONLY=1`, Thread opens a working copy of that folder and refuses every change: nothing can be recorded, imported, renamed or removed, and search works by words only, because the models are not there. Recording and processing need Thread running on your own computer.
+
+After reprocessing the demo locally, refresh the copy and try it the way it runs online:
+
+```bash
+npm run snapshot
+npm run build
+COFRE_READ_ONLY=1 npx next start
+```
+
 ## Built with
 
 Next.js, TypeScript, Tailwind CSS, SQLite (built into Node), whisper.cpp, Ollama, Gemma 4, EmbeddingGemma. Fonts: Newsreader, and Atkinson Hyperlegible Next and Mono, designed by the Braille Institute for readers with low vision.

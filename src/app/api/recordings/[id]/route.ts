@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { ensureWorker, removeRecording } from "@/lib/server/pipeline";
+import { readOnlyRefusal } from "@/lib/server/read-only";
 import { recordingStatus } from "@/lib/server/status";
 
 export async function GET(request: NextRequest, context: RouteContext<"/api/recordings/[id]">) {
@@ -13,6 +14,8 @@ export async function GET(request: NextRequest, context: RouteContext<"/api/reco
 }
 
 export async function DELETE(_request: NextRequest, context: RouteContext<"/api/recordings/[id]">) {
+  const refused = readOnlyRefusal();
+  if (refused) return refused;
   const { id } = await context.params;
   const removed = await removeRecording(id);
   return removed ? Response.json({ ok: true }) : Response.json({ error: "Not found or still processing." }, { status: 409 });

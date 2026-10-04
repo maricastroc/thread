@@ -7,6 +7,7 @@ import { RecordLink } from "@/components/SiteHeader";
 import { WaveSignature } from "@/components/WaveSignature";
 import { formatDate, formatDuration, formatMonthYear, languageName, sameDay } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { config } from "@/lib/server/config";
 import { loadVault } from "@/lib/server/data";
 import { getPeaks, listRecordings, transcriptSizes } from "@/lib/server/evidence";
 import { storyCountsByRecording } from "@/lib/server/interpretation";
@@ -39,7 +40,7 @@ export default async function RecordingsPage() {
       {recordings.length > 0 && <p className="mt-3 text-[0.9375rem]">{t.recordings.summary(recordings.length, formatDuration(seconds, "long"), stories)}</p>}
       <div className="mt-8 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-10">
         <RecordLink label={t.nav.record} />
-        <ImportButton hint={false} />
+        {!config.readOnly && <ImportButton hint={false} />}
       </div>
 
       {recordings.length === 0 ? (

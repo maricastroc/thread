@@ -4,7 +4,8 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   poweredByHeader: false,
   turbopack: { root: process.cwd() },
-  outputFileTracingExcludes: { "*": ["data/**", "models/**", "demo/**"] },
+  outputFileTracingIncludes: { "*": ["demo/archive/**"] },
+  outputFileTracingExcludes: { "*": ["data/**", "models/**", "demo/audio/**", "fixtures/**"] },
 };
 
 export default nextConfig;

@@ -1,10 +1,13 @@
 import type { WorkStage } from "@/lib/types";
 import { enqueue, ensureWorker } from "@/lib/server/pipeline";
 import { getRecording, updateRecording } from "@/lib/server/evidence";
+import { readOnlyRefusal } from "@/lib/server/read-only";
 
 const allowed: WorkStage[] = ["transcribing", "organizing", "indexing"];
 
 export async function POST(request: Request, context: RouteContext<"/api/recordings/[id]/reprocess">) {
+  const refused = readOnlyRefusal();
+  if (refused) return refused;
   const { id } = await context.params;
   const recording = getRecording(id);
   if (!recording) return Response.json({ error: "Not found" }, { status: 404 });

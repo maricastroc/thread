@@ -177,6 +177,14 @@ type Holder = { db?: DatabaseSync; schema?: string };
 const holder = globalThis as unknown as { __cofreDb?: Holder };
 holder.__cofreDb ??= {};
 
+function copySnapshot(): void {
+  const partial = `${config.dataDir}.partial`;
+  fs.rmSync(partial, { recursive: true, force: true });
+  fs.cpSync(config.snapshotDir, partial, { recursive: true });
+  fs.rmSync(config.dataDir, { recursive: true, force: true });
+  fs.renameSync(partial, config.dataDir);
+}
+
 export function db(): DatabaseSync {
   const h = holder.__cofreDb!;
   if (h.db) {
@@ -186,6 +194,7 @@ export function db(): DatabaseSync {
     }
     return h.db;
   }
+  if (config.readOnly && !fs.existsSync(path.join(config.dataDir, "cofre.db"))) copySnapshot();
   fs.mkdirSync(config.dataDir, { recursive: true });
   const database = new DatabaseSync(path.join(config.dataDir, "cofre.db"));
   database.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");

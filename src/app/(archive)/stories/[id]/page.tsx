@@ -13,6 +13,7 @@ import { StoryRow } from "@/components/StoryRow";
 import { whenText } from "@/components/when";
 import { formatClock, formatDate, formatDuration } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { config } from "@/lib/server/config";
 import { loadVault } from "@/lib/server/data";
 import { slicePeaks } from "@/lib/server/peaks";
 import { getPeaks, getRecording } from "@/lib/server/evidence";
@@ -104,7 +105,7 @@ export default async function StoryPage(props: PageProps<"/stories/[id]">) {
               {kickerStage}
             </p>
           )}
-          <RenameTitle storyId={story.id} title={story.title} titleBy={story.titleBy} language={story.language} />
+          <RenameTitle storyId={story.id} title={story.title} titleBy={story.titleBy} language={story.language} readOnly={config.readOnly} />
           <p className="t-meta mt-6">
             <Link href={{ pathname: "/", query: { story: story.id } }} className="link">
               {t.story.inLife(vault.subject)}

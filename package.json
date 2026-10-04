@@ -12,6 +12,7 @@
     "setup": "bash scripts/setup.sh",
     "demo": "bash scripts/import-demo.sh http://localhost:3000",
     "reprocess": "bash scripts/reprocess.sh http://localhost:3000",
+    "snapshot": "node --experimental-transform-types --no-warnings --import ./test/register.mjs scripts/demo-snapshot.ts",
     "test": "node --experimental-transform-types --no-warnings --import ./test/register.mjs --test test/*.test.ts"
   },
   "dependencies": {

@@ -8,6 +8,7 @@ import { Setup } from "@/components/Setup";
 import { RecordLink } from "@/components/SiteHeader";
 import { formatDate, formatDuration } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { config } from "@/lib/server/config";
 import { loadVault } from "@/lib/server/data";
 import { listRecordings } from "@/lib/server/evidence";
 import { archiveStats, listStories } from "@/lib/server/interpretation";
@@ -58,7 +59,7 @@ function EmptyArchive({ subject, recordings }: { subject: string; recordings: Re
       <Pending recordings={recordings} />
       <div className="mt-12 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-10">
         <RecordLink label={t.home.recordFirst} className="h-14 px-7 text-[1.0625rem]" />
-        <ImportButton />
+        {!config.readOnly && <ImportButton />}
       </div>
     </section>
   );
@@ -75,7 +76,7 @@ function NoStoriesYet({ subject, recordings }: { subject: string; recordings: Re
           {t.home.seeRecordings} <ArrowIcon size={16} />
         </Link>
         <RecordLink label={t.home.recordAnother} />
-        <ImportButton hint={false} />
+        {!config.readOnly && <ImportButton hint={false} />}
       </div>
     </section>
   );
@@ -114,7 +115,7 @@ export default async function Home(props: PageProps<"/">) {
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Lifeline life={life} initialStory={story} initialTrail={trail} />
         <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-rule pt-8">
-          <AddStory subject={vault.subject} align="start" />
+          <AddStory subject={vault.subject} align="start" readOnly={config.readOnly} />
           <p className="t-small text-ink-2">{t.add.closing(vault.subject)}</p>
         </div>
       </div>

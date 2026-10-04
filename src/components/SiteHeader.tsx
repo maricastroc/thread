@@ -6,6 +6,7 @@ import { SearchField } from "@/components/SearchField";
 import { RecordDot } from "@/components/icons";
 import { ThemeChoice } from "@/components/ThemeChoice";
 import { t } from "@/lib/i18n";
+import { config } from "@/lib/server/config";
 import { storedTheme } from "@/lib/server/theme";
 
 export function RecordLink({ className = "", label = t.nav.record }: { className?: string; label?: string }) {
@@ -38,6 +39,14 @@ function Sections() {
 export function SiteHeader({ subject, search = true }: { subject: string | null; search?: boolean }) {
   return (
     <header className="relative z-30">
+      {config.readOnly && (
+        <p className="t-small border-b border-rule px-4 py-2.5 text-center text-ink-2">
+          {t.readOnly.notice}{" "}
+          <a href={config.repository} className="underline decoration-rule-2 underline-offset-[0.25em] hover:text-ink hover:decoration-ink">
+            {t.readOnly.run}
+          </a>
+        </p>
+      )}
       <div className="mx-auto flex min-h-16 max-w-6xl items-center gap-x-3 px-4 py-2 sm:min-h-20 sm:gap-x-6 sm:px-6">
         <Link
           href="/"
@@ -65,7 +74,7 @@ export function SiteHeader({ subject, search = true }: { subject: string | null;
             <SearchField subject={subject} id="header-search" />
           </HeaderSearch>
         )}
-        {subject && <AddStory subject={subject} className="shrink-0" />}
+        {subject && <AddStory subject={subject} readOnly={config.readOnly} className="shrink-0" />}
       </div>
       {subject && (
         <nav aria-label={t.nav.archiveOf(subject)} className="mx-auto -mt-2 flex max-w-6xl flex-wrap items-center gap-x-1 px-2 pb-1 lg:hidden">
@@ -84,7 +93,7 @@ export async function SiteFooter() {
       <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-1 border-t border-rule pt-3">
         <p className="t-small flex items-center gap-2 text-ink-2">
           <span aria-hidden="true" className="inline-block size-1.5 rounded-full bg-ink-3" />
-          {t.privacy}
+          {config.readOnly ? t.readOnly.footer : t.privacy}
         </p>
         <ThemeChoice initial={theme} />
       </div>
